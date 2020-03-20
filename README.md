@@ -8,4 +8,4 @@ We aim to simulate both how the economy would react with just stablecoins as the
 
 ## Documentation & Useful Links:
 
- * [Resources] (docs/resources.md)
+ * [Resources](docs/resources.md)
