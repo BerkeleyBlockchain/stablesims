@@ -5,3 +5,5 @@
  * [ ] [Basis: A Price-Stable Cryptocurrency with an Algorithmic Central Bank](https://www.basis.io/basis_whitepaper_en.pdf)
  * [ ] [(In)Stability for the Blockchain - Deleveraging Spirals and Stablecoin attacks](https://arxiv.org/abs/1906.02152) (maybe)
  * [ ] [Creating a Non-Collateralized Stablecoin](https://levelup.gitconnected.com/creating-a-non-collateralized-stablecoin-82fb1258647e)
+ * [ ] [MakerDao (Protocol)](https://makerdao.com/whitepaper/White%20Paper%20-The%20Maker%20Protocol_%20MakerDAO%E2%80%99s%20Multi-Collateral%20Dai%20(MCD)%20System-FINAL-%20021720.pdf)
+ * [ ] [DAI (Coin)](https://makerdao.com/whitepaper/DaiDec17WP.pdf)
