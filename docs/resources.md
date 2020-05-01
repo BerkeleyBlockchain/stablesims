@@ -10,3 +10,4 @@
  * [ ] [Stablecoin Report](https://download.blockdata.tech/blockdata-stablecoin-report-blockchain-technology.pdf)
  * [x] [Investigating the Impact of Global Stablecoins](https://www.bis.org/cpmi/publ/d187.pdf)
  * [ ] [While Stability Lasts: A Stochastic Model of Stablecoins](https://arxiv.org/abs/2004.01304)
+ * [ ] [Dai Black Thursday Event - Sehyun](https://docs.google.com/document/d/17cY5HvQ2F2JdF1oYVkyUW29kaGhDzP8VTa6maXgxtg/edit?usp=sharing)
