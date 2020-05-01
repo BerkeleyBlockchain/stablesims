@@ -1,0 +1,10 @@
+{
+  "name": "dai_test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@makerdao/dai": "^0.29.0",
+    "@makerdao/dai-plugin-mcd": "^1.3.12"
+  }
+}

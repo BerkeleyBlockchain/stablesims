@@ -18,7 +18,7 @@ MARKET_SPEED = 0.2
 
 # DEMAND ratio settings
 PRICE_SCALE = 1e-4
-VAR_SCALE = 5e-4
+VAR_SCALE = 1e-5
 
 # TRADER settings
 BASIC_TRADER_THRESHOLD = 0.02 # trades when BAS < 0.95 or BAS > 1.05
@@ -27,7 +27,7 @@ BASIC_TRADER_THRESHOLD = 0.02 # trades when BAS < 0.95 or BAS > 1.05
 trader_demographics = OrderedDict()
 trader_demographics['IdealTrader'] = 5
 trader_demographics['AverageTrader'] = 500
-trader_demographics['BasicTrader'] = 200
+trader_demographics['BasicTrader'] = 100
 trader_demographics['InvestorTrader'] = 5
 
 # SIMULATION SETTINGS 
