@@ -9,6 +9,7 @@
     "yarn.lock"
   ],
   "dependencies": {
-    "ganache-cli": "makerdao/ganache-cli#fix/gas-est-crash"
+    "ganache-cli": "makerdao/ganache-cli#fix/gas-est-crash",
+    "mem": "^4.0.0"
   }
 }
