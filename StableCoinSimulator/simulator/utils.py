@@ -1,8 +1,6 @@
 import numpy as np
 import json
 
-from .constants import *
-
 def biased_coin(prob):
     return int(np.random.random() < prob)
 
@@ -20,9 +18,9 @@ def months_to_seconds(mths):
 
 eth_prices = json.load(open('etherium.json'))
 
-def get_eth_price(t):
-    idx = ETH_DAY_OFFSET + (t // TRADES_PER_DAY)
-    lin = (t % TRADES_PER_DAY) / (1. * TRADES_PER_DAY)
+def get_eth_price(t, market):
+    idx = market.params["ETH_DAY_OFFSET"] + (t // market.params["TRADES_PER_DAY"])
+    lin = (t % market.params["TRADES_PER_DAY"]) / (1. * market.params["TRADES_PER_DAY"])
     if idx >= len(eth_prices) - 1:
         return eth_prices[-1]
     return eth_prices[idx] * (1.0 - lin) + eth_prices[idx + 1] * lin

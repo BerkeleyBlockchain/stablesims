@@ -1,4 +1,4 @@
-from .constants import *
+from .constants import Params
 from .market import Market
 from .protocols import BasisProtocol
 from .utils import *

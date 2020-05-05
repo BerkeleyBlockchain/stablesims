@@ -1,6 +1,5 @@
 from collections import deque
 import time
-from .constants import *
 
 class BasisBond: 
     def __init__(self, tid, timestamp, amount, expiry):
@@ -22,11 +21,11 @@ class BasisProtocol(Protocol):
     def __init__(self, totalSupply, market):
         super().__init__(totalSupply)
         self.market = market
-        self.bond_expiry = BOND_EXPIRY # 5 year expiry
+        self.bond_expiry = self.market.params["BOND_EXPIRY"] # 5 year expiry
         self.bondsForAuction = 0
         self.bondQueue = deque()
         self.bondQueueLength = 0
-        self.delay = BOND_DELAY # In Steps
+        self.delay = self.market.params["BOND_DELAY"] # In Steps
         self.lastAuction = 0 # Last aucion
         self.currentStep = 0
         
@@ -41,7 +40,7 @@ class BasisProtocol(Protocol):
         price = self.market.getCurrentUSDValue()
         self.currentStep += 1
         
-        LOWER, UPPER = BOND_RANGE
+        LOWER, UPPER = self.market.params["BOND_RANGE"]
         
         if self.currentStep < self.lastAuction + self.delay:
             return

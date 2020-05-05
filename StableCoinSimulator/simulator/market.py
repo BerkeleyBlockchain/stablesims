@@ -1,11 +1,12 @@
 from collections import defaultdict
 from .PyLOB import OrderBook
-from .constants import *
 from .traders import InvestorTrader
 import numpy as np
 
 class Market:
-    def __init__(self):
+    def __init__(self, params):
+        self.params = params
+        
         self.demandRatio = 0.5 # in [0, 1]
         
         # ETH Trades
@@ -17,13 +18,13 @@ class Market:
         self.prices = defaultdict(list)
         self.prices['MAday'] = [0]
         self.protocol = None
-        self.marketSpeed = MARKET_SPEED
+        self.marketSpeed = self.params["MARKET_SPEED"]
         
         self.askVolume = 0
         self.bidVolume = 0
         self.totalVolume = 0
-        self.volMAvel = 1. / VOL_MA_STEPS
-        self.priceMAvel = 1. / PRICE_MA_STEPS
+        self.volMAvel = 1. / self.params["VOL_MA_STEPS"]
+        self.priceMAvel = 1. / self.params["PRICE_MA_STEPS"]
         
     def setTraderPool(self, traderPool):
         self.traderPool = traderPool
@@ -93,18 +94,18 @@ class Market:
         # Demand varies on the price
         if bas_eth < usd_eth and self.demandRatio < 0.8:
             delta = (usd_eth - bas_eth) / usd_eth
-            self.updateDemandRatio(1 + delta * PRICE_SCALE)
+            self.updateDemandRatio(1 + delta * self.params["PRICE_SCALE"])
         elif bas_eth > usd_eth and self.demandRatio > 0.2:   
             delta = (bas_eth - usd_eth) / usd_eth
-            self.updateDemandRatio(1 - delta * PRICE_SCALE)
+            self.updateDemandRatio(1 - delta * self.params["PRICE_SCALE"])
             
         # Demand based on variation
         var = 1e2 * ((usd_eth - bas_eth) / usd_eth) ** 2
         
         if var <= 1e-2 and self.demandRatio < 0.6: # 1 cent 
-            self.updateDemandRatio(1 + VAR_SCALE)
+            self.updateDemandRatio(1 + self.params["VAR_SCALE"])
         else:
-            self.updateDemandRatio(1 - var * VAR_SCALE)
+            self.updateDemandRatio(1 - var * self.params["VAR_SCALE"])
         
     def processOrder(self, quote):
         trades, idNum = self.orderbook.processOrder(quote, False, False)

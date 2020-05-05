@@ -1,7 +1,6 @@
 from random import randint
 from numpy.random import normal
 
-from .constants import *
 from .utils import clamp_bas_qty, clamp_bas_price, biased_coin
 
 class Trader: 
@@ -20,11 +19,11 @@ class Trader:
         
     def get_price(self, side, base_price):        
         # Set price around BASE_PRICE
-        price = normal(base_price, PRICE_NOISE)
+        price = normal(base_price, self.market.params["PRICE_NOISE"])
         if side == 'bid':
-            price -= (base_price * BASE_SPREAD) 
+            price -= (base_price * self.market.params["BASE_SPREAD"]) 
         else:
-            price += (base_price * BASE_SPREAD) 
+            price += (base_price * self.market.params["BASE_SPREAD"]) 
         return clamp_bas_price(price)
         
     def get_qty(self):
@@ -123,7 +122,7 @@ class BasicTrader(Trader):
     def __init__(self, tid, protocol, market):
         super().__init__(tid, protocol, market)
         self.riskRatio = 0.05
-        self.threshold = BASIC_TRADER_THRESHOLD
+        self.threshold = self.market.params["BASIC_TRADER_THRESHOLD"]
         self.bas = int(1e4)
         
     def marketStep(self):
