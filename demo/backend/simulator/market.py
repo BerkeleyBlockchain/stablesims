@@ -15,6 +15,7 @@ class Market:
         self.orderbook = OrderBook(tick_size=0.0001)
         self.traderPool = {}
         
+        self.cur_time = 0
         self.prices = defaultdict(list)
         self.prices['MAday'] = [0]
         self.protocol = None

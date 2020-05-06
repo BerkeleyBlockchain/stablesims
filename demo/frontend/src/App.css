@@ -36,3 +36,17 @@
     transform: rotate(360deg);
   }
 }
+
+.data {
+  width: 100vw;
+  overflow: hidden;
+  overflow-y: scroll;
+}
+
+.warmup {
+  max-height: 20vh;
+}
+
+.market {
+  max-height: 60vh;
+}
