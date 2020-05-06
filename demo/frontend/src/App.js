@@ -71,7 +71,6 @@ export default class App extends React.Component {
   getData() {
     socket.emit("run", {});
     this.setState({ marketData: [] });
-    console.log("GET DATA");
     const data = [
       { x: 1, y: 1.0 },
       { x: 2, y: 1.09 },
@@ -83,7 +82,6 @@ export default class App extends React.Component {
     const { marketData } = this.state;
     let data = [];
     marketData.forEach((y, index) => data.push({ x: index, y: y }));
-    console.log(data.length);
     return data;
   }
 
@@ -108,7 +106,6 @@ export default class App extends React.Component {
                   Run
                 </Button>
                 <Graph data={this.reformatData()} />
-                <Button onClick={() => this.reformatData()}>Get Data</Button>
               </div>
             </div>
           )}

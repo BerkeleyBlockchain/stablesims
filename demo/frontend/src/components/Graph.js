@@ -13,6 +13,15 @@ const divStyle = {
   flexDirection: "row",
 };
 
+function getTicks(data) {
+  const ticks = [];
+  for (let i = 1; i <= data.length; i++) {
+    ticks.push(i);
+  }
+  console.log(ticks);
+  return ticks;
+}
+
 function Graph(props) {
   return (
     <div style={divStyle}>
@@ -26,8 +35,7 @@ function Graph(props) {
           // tickValues specifies both the number of ticks and where
           // they are placed on the axis
           style={{ tickLabels: { fill: "white" } }}
-          tickValues={[1, 2, 3, 4, 5]}
-          tickFormat={[1, 2, 3, 4, 5]}
+          domain={{ x: [0, 100], y: [0, 10] }}
         />
         <VictoryAxis
           dependentAxis
