@@ -49,6 +49,7 @@ export default class App extends React.Component {
     this.getWarmupData = this.getWarmupData.bind(this);
     this.getMarketData = this.getMarketData.bind(this);
     this.getTrackerData = this.getTrackerData.bind(this);
+    this.setParam = this.setParam.bind(this);
     this.run = this.run.bind(this);
     this.formatData = this.formatData.bind(this);
   }
@@ -106,7 +107,7 @@ export default class App extends React.Component {
             <div className="App">
               <div className="App-header">
                 <h1>Basis Simulation</h1>
-                <Parameters />
+                <Parameters setParam={this.setParam} />
                 <Button
                   variant="contained"
                   color="primary"

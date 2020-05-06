@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Parameters(props) {
   const textHandler = (paramKey) => (event) => {
-    props.setParams(paramKey, parseFloat(event.target.value))
+    props.setParam(paramKey, parseFloat(event.target.value))
   }
   return (
     <div>
