@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/Users/andrew/projects/bab-stablecoin_sims_research/StableCoinSimulator/simulator/PYLOB")
+sys.path.append("/Users/andrew/projects/bab-stablecoin_sims_research/demo/backend/simulator/PYLOB")
 
 from random import randint
 from simulator import *
