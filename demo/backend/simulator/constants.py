@@ -24,10 +24,13 @@ def Params(params):
         "trader_demographics": trader_demographics,
         "NUM_ORDERS_INIT": 3000,
         "NUM_ORDERS_LIVE": 600000,
-        "TRACK_FREQ": 100
+        "TRACK_FREQ": 1000
     }
+
+    for key in params:
+        defaults[key] = params[key]
     
-    return defaults if not params else params
+    return defaults
 
 # NOTES
 '''

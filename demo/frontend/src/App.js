@@ -26,15 +26,31 @@ export default class App extends React.Component {
     super(props);
     this.state = {
       data: [],
-      dataReceived: false,
       warmupData: [],
       marketData: [],
       trackerData: {},
+      params: {
+        TRADES_PER_DAY: 15000,
+        NUM_ORDERS_INIT: 3000,
+        NUM_ORDERS_LIVE: 600000,
+        TRACK_FREQ: 1000,
+        MARKET_SPEED: 0.2,
+        BASE_SPREAD: 0.001,
+        PRICE_NOISE: 0.0001,
+        BASIC_TRADER_THRESHOLD: 0.02,
+        PRICE_SCALE: 0.0001,
+        VAR_SCALE: 0.00001,
+        BOND_EXPIRY: 60 * (30 * 24 * 60 * 60),
+        BOND_DELAY: 15000,
+      },
       landing: false,
+
     };
     this.getWarmupData = this.getWarmupData.bind(this);
     this.getMarketData = this.getMarketData.bind(this);
     this.getTrackerData = this.getTrackerData.bind(this);
+    this.run = this.run.bind(this);
+    this.formatData = this.formatData.bind(this);
   }
 
   componentDidMount = () => {
@@ -45,15 +61,13 @@ export default class App extends React.Component {
 
   getWarmupData = () => {
     socket.on("warmup", (warmupDataObj) => {
-      const warmupData = Array.from(warmupDataObj);
-      this.setState({ warmupData: [...this.state.warmupData, ...warmupData] });
+      this.setState({ warmupData: [...this.state.warmupData, warmupDataObj] });
     });
   };
-
+  
   getMarketData = () => {
     socket.on("data", (marketDataObj) => {
-      const marketData = Array.from(marketDataObj);
-      this.setState({ marketData: [...this.state.marketData, ...marketData] });
+      this.setState({ marketData: [...this.state.marketData, marketDataObj] });
     });
   };
 
@@ -63,26 +77,22 @@ export default class App extends React.Component {
     });
   };
 
-  onClick = () => {
-    socket.emit("run", {});
+  run = () => {
+    socket.emit("run", this.state.params);
     this.setState({ marketData: [] });
-  };
-
-  getData() {
-    socket.emit("run", {});
-    this.setState({ marketData: [] });
-    const data = [
-      { x: 1, y: 1.0 },
-      { x: 2, y: 1.09 },
-      { x: 3, y: 0.99 },
-    ];
+    this.setState({ warmupData: [] });
   }
 
-  reformatData() {
-    const { marketData } = this.state;
+  formatData = (priceData) => {
     let data = [];
-    marketData.forEach((y, index) => data.push({ x: index, y: y }));
+    priceData.forEach((y, index) => data.push({ x: index, y: y }));
     return data;
+  }
+
+  setParam = (paramKey, paramVal) => {
+    const params = this.state.params;
+    params[paramKey] = paramVal;
+    this.setState({ params });
   }
 
   render() {
@@ -100,12 +110,12 @@ export default class App extends React.Component {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => this.getData()}
+                  onClick={this.run}
                   size="large"
                 >
                   Run
                 </Button>
-                <Graph data={this.reformatData()} />
+                <Graph warmupData={this.formatData(this.state.warmupData)} marketData={this.formatData(this.state.marketData)} />
               </div>
             </div>
           )}

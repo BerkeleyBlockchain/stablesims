@@ -15,47 +15,27 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+
 export default function Parameters(props) {
-  const classes = useStyles();
+  const textHandler = (paramKey) => (event) => {
+    props.setParams(paramKey, parseFloat(event.target.value))
+  }
   return (
     <div>
       <Grid container direction="column" justify="center" alignItems="center">
-        <form className={classes.root} noValidate autoComplete="off">
-          <TextField id="standard-basic" label="Steps" />
-          <TextField id="filled-basic" label="Steps Per Day" variant="filled" />
-          <TextField
-            id="outlined-basic"
-            label="Bond Delay"
-            variant="outlined"
-          />
-        </form>
-        <form className={classes.root} noValidate autoComplete="off">
-          <TextField id="standard-basic" label="Bond Delay" />
-          <TextField id="filled-basic" label="Bond Range" variant="filled" />
-          <TextField
-            id="outlined-basic"
-            label="Base Spread"
-            variant="outlined"
-          />
-        </form>
-        <form className={classes.root} noValidate autoComplete="off">
-          <TextField id="standard-basic" label="Steps" />
-          <TextField id="filled-basic" label="Price Spread" variant="filled" />
-          <TextField
-            id="outlined-basic"
-            label="Price Noise"
-            variant="outlined"
-          />
-        </form>
-        <form className={classes.root} noValidate autoComplete="off">
-          <TextField id="standard-basic" label="Market Speed" />
-          <TextField id="filled-basic" label="Level Effect" variant="filled" />
-          <TextField
-            id="outlined-basic"
-            label="Variance Effect"
-            variant="outlined"
-          />
-        </form>
+          <TextField label="Trades per Day" onChange={textHandler("TRADES_PER_DAY")} defaultValue={15000} type="number" variant="outlined"/>
+          <TextField label="Warmup Length" onChange={textHandler("NUM_ORDERS_INIT")} defaultValue={3000} type="number" variant="outlined"/>
+          <TextField label="Trade Length" onChange={textHandler("NUM_ORDERS_LIVE")} defaultValue={600000} type="number" variant="outlined"/>
+          <TextField label="Tracking Freq" onChange={textHandler("TRACK_FREQ")} defaultValue={1000} type="number" variant="outlined"/>
+          <TextField label="Market Speed" onChange={textHandler("MARKET_SPEED")} defaultValue={0.2} type="number" variant="outlined"/>
+          <TextField label="Base Spread" onChange={textHandler("BASE_SPREAD")} defaultValue={0.001} type="number" variant="outlined"/>
+          <TextField label="Price Noise" onChange={textHandler("PRICE_NOISE")} defaultValue={0.0001} type="number" variant="outlined"/>
+          <TextField label="Basic Trader Threshold" onChange={textHandler("BASIC_TRADER_THRESHOLD")} defaultValue={0.02} type="number" variant="outlined"/>
+          <TextField label="Level Effect" onChange={textHandler("PRICE_SCALE")} defaultValue={0.0001} type="number" variant="outlined"/>
+          <TextField label="Variance Effect" onChange={textHandler("VAR_SCALE")} defaultValue={0.00001} type="number" variant="outlined"/>
+          <TextField label="Bond Expiry" onChange={textHandler("BOND_EXPIRY")} defaultValue={60 * (30 * 24 * 60 * 60)} type="number" variant="outlined"/>
+          <TextField label="Bond Delay" onChange={textHandler("BOND_DELAY")} defaultValue={15000} type="number" variant="outlined"/>
+          {/* <TextField label="Bond Range" onChange={textHandler("BOND_RANGE")} defaultValue={0.001} type="number" variant="outlined"/> */}
       </Grid>
     </div>
   );

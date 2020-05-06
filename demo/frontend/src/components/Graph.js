@@ -35,6 +35,33 @@ function Graph(props) {
           // tickValues specifies both the number of ticks and where
           // they are placed on the axis
           style={{ tickLabels: { fill: "white" } }}
+          domain={{ x: [0, 50], y: [0, 10] }}
+        />
+        <VictoryAxis
+          dependentAxis
+          // tickFormat specifies how ticks should be displayed
+          style={{ tickLabels: { fill: "white" } }}
+          tickFormat={(x) => `$${x}`}
+        />
+        <VictoryLine
+          style={{
+            data: { stroke: "#c43a31" },
+            parent: { border: "1px solid #ccc" },
+          }}
+          data={props.warmupData}
+        />
+      </VictoryChart>
+
+      <VictoryChart
+        theme={VictoryTheme.material}
+        domainPadding={20}
+        width={500}
+        height={500}
+      >
+        <VictoryAxis
+          // tickValues specifies both the number of ticks and where
+          // they are placed on the axis
+          style={{ tickLabels: { fill: "white" } }}
           domain={{ x: [0, 100], y: [0, 10] }}
         />
         <VictoryAxis
@@ -48,34 +75,7 @@ function Graph(props) {
             data: { stroke: "#c43a31" },
             parent: { border: "1px solid #ccc" },
           }}
-          data={props.data}
-        />
-      </VictoryChart>
-      <VictoryChart
-        theme={VictoryTheme.material}
-        domainPadding={20}
-        width={500}
-        height={500}
-      >
-        <VictoryAxis
-          // tickValues specifies both the number of ticks and where
-          // they are placed on the axis
-          style={{ tickLabels: { fill: "white" } }}
-          tickValues={[1, 2, 3, 4, 5]}
-          tickFormat={[1, 2, 3, 4, 5]}
-        />
-        <VictoryAxis
-          dependentAxis
-          // tickFormat specifies how ticks should be displayed
-          style={{ tickLabels: { fill: "white" } }}
-          tickFormat={(x) => `$${x}`}
-        />
-        <VictoryLine
-          style={{
-            data: { stroke: "#c43a31" },
-            parent: { border: "1px solid #ccc" },
-          }}
-          data={null}
+          data={props.marketData}
         />
       </VictoryChart>
     </div>

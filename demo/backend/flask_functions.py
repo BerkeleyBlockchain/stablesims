@@ -31,8 +31,9 @@ def warmup(market):
 
     for i in range(market.params["NUM_ORDERS_INIT"]):
         market.usd_eth = 1.0 / get_eth_price(market.cur_time, market)
-        if i % TRACK_FREQ == 0:
-            emit("warmup", market.prices['wavg_fair'][-TRACK_FREQ:])
+        if i % (TRACK_FREQ//100) == 0 and i > 0:
+            snippet = market.prices['wavg_fair'][-TRACK_FREQ//100:]
+            emit("warmup", sum(snippet)/len(snippet))
             socketio.sleep(0.01)
 
         tid = randint(1, NUM_TRADERS)
@@ -52,15 +53,16 @@ def trade(market, trackers):
 
     for i in range(market.params["NUM_ORDERS_LIVE"]):
         market.usd_eth = 1 / get_eth_price(market.cur_time, market) 
-        if i % TRACK_FREQ == 0:
+        if i % TRACK_FREQ == 0 and i > 0:
             track(trackers, market)
-            emit("data", market.prices['MAday'][-TRACK_FREQ:])
+            snippet = market.prices['MAday'][-TRACK_FREQ:]
+            emit("data", sum(snippet)/len(snippet))
             socketio.sleep(0.01)
 
         tid = randint(OFFSET_TRADERS + 1, OFFSET_TRADERS + NUM_TRADERS)
         orders = market.traderPool[tid].marketStep()
         for order in orders:
-            market.processOrder(order)    
+            market.processOrder(order) 
         market.cur_time += 1
             
 
@@ -83,12 +85,14 @@ def run(params):
 
     warmup(market)
 
-    emit("warmup", market.prices['wavg_fair'][-TRACK_FREQ:])
+    last_warmup_snippet = market.prices['wavg_fair'][-TRACK_FREQ//100:]
+    emit("warmup", sum(last_warmup_snippet)/len(last_warmup_snippet))
     socketio.sleep(0.01)
 
     trade(market, trackers)
 
-    emit("data", market.prices['MAday'][-TRACK_FREQ:])
-    emit("trackers", trackers)
+    last_market_snippet = market.prices['MAday'][-TRACK_FREQ:] 
+    emit("data", sum(last_market_snippet)/len(last_market_snippet))
+    # emit("trackers", trackers)
 
 socketio.run(app)
