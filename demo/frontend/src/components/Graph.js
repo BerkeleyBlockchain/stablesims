@@ -67,7 +67,7 @@ function Graph(props) {
             data: { stroke: "#c43a31" },
             parent: { border: "1px solid #ccc" },
           }}
-          data={props.data}
+          data={null}
         />
       </VictoryChart>
     </div>
