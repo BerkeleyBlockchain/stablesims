@@ -9,7 +9,7 @@ import {
   createMuiTheme,
   ThemeProvider,
 } from "@material-ui/core/styles";
-import logo from "./logo_horizontal.png";
+import logo from "./images/logo_horizontal.png";
 
 const theme = createMuiTheme({
   palette: {
@@ -44,7 +44,7 @@ export default class App extends React.Component {
         BOND_EXPIRY: 60 * (30 * 24 * 60 * 60),
         BOND_DELAY: 15000,
       },
-      landing: false,
+      landing: true,
     };
     this.getWarmupData = this.getWarmupData.bind(this);
     this.getMarketData = this.getMarketData.bind(this);
@@ -52,6 +52,7 @@ export default class App extends React.Component {
     this.setParam = this.setParam.bind(this);
     this.run = this.run.bind(this);
     this.formatData = this.formatData.bind(this);
+    this.openSim = this.openSim.bind(this);
   }
 
   componentDidMount = () => {
@@ -96,13 +97,17 @@ export default class App extends React.Component {
     this.setState({ params });
   }
 
+  openSim = () => {
+    this.setState({ landing: false });
+  }
+
   render() {
     const { landing } = this.state;
     return (
       <div>
         <ThemeProvider theme={theme}>
           {landing ? (
-            <LandingPage />
+            <LandingPage onClick={this.openSim}/>
           ) : (
             <div className="App">
               <div className="dashboard">
@@ -110,7 +115,7 @@ export default class App extends React.Component {
                   <h1 style={{margin:"2rem 0 3rem", fontFamily:"Poppins", fontWeight:"bold"}}>Basis Simulator</h1>
                   <Parameters setParam={this.setParam} />
                   <Button style={{ width: "100%" }} variant="contained" color="primary" onClick={this.run} size="large">Run</Button>
-                  <img src={logo} style={{width:"10rem", position:"relative", top: "2.5rem"}}/>
+                  <img src={logo} alt="B@B logo" style={{width:"10rem", position:"relative", top: "3rem"}}/>
                 </div>
                 <Graph marketXDomain={this.state.params.NUM_ORDERS_LIVE/this.state.params.TRACK_FREQ} warmupXDomain={this.state.params.NUM_ORDERS_INIT * 100 / this.state.params.TRACK_FREQ} warmupData={this.formatData(this.state.warmupData)} marketData={this.formatData(this.state.marketData)} />
               </div>

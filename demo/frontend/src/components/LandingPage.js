@@ -2,12 +2,10 @@ import React from "react";
 import "./LandingPage.css";
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
-import CardContent from "@material-ui/core/CardContent";
-import Typography from "@material-ui/core/Typography";
 import CardActionArea from "@material-ui/core/CardActionArea";
 import basis from "./../images/basis.jpg";
 import dai from "./../images/dai.jpg";
-import bab from "./../images/bablogo.png";
+// import logo from "../images/logo_horizontal.png";
 import CardMedia from "@material-ui/core/CardMedia";
 
 const useStyles = makeStyles({
@@ -21,7 +19,6 @@ const useStyles = makeStyles({
 });
 
 export default function LandingPage(props) {
-  console.log(props);
   const classes = useStyles();
   return (
     <div className="main">
@@ -46,16 +43,16 @@ export default function LandingPage(props) {
         </Card>
       </div>
       <div style={{ width: "100%" }}>
-        <img
-          src={bab}
+        {/* <img
+          src={logo}
+          alt="B@B logo"
           style={{
             height: 100,
-            width: 100,
             paddingLeft: 100,
             paddingTop: 20,
             paddingBottom: 0,
           }}
-        />
+        /> */}
       </div>
     </div>
   );
