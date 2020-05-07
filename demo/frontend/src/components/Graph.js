@@ -1,16 +1,16 @@
 import React from "react";
 import {
-  VictoryBar,
   VictoryChart,
   VictoryAxis,
   VictoryTheme,
-  VictoryLine,
+  VictoryArea,
+  VictoryLine
 } from "victory";
-import Grid from "@material-ui/core/Grid";
+import _ from "lodash";
 
 const divStyle = {
   display: "flex",
-  flexDirection: "row",
+  flexDirection: "column",
 };
 
 function getTicks(data) {
@@ -23,30 +23,40 @@ function getTicks(data) {
 }
 
 function Graph(props) {
+  console.log(props.warmupData);
   return (
     <div style={divStyle}>
+      <svg style={{ position: "absolute" }}>
+        <defs>
+          <linearGradient id="graphGradient" 
+            x1="0%" y1="0%" x2="0%" y2="100%"
+          >
+            <stop offset="0%"   stopColor="rgba(62, 81, 181, 0.5)"/>
+            <stop offset="50%" stopColor="rgba(62, 81, 181, 0)"/>
+          </linearGradient>
+        </defs>
+      </svg>
+
       <VictoryChart
         theme={VictoryTheme.material}
         domainPadding={20}
-        width={500}
-        height={500}
+        width={800}
+        height={300}
       >
         <VictoryAxis
-          // tickValues specifies both the number of ticks and where
-          // they are placed on the axis
-          style={{ tickLabels: { fill: "white" } }}
-          domain={{ x: [0, 50], y: [0, 10] }}
-        />
+          style={{ tickLabels: { fill: "white" }, grid: { stroke: "rgba(0, 0, 0, 0)" } }}
+          />
         <VictoryAxis
           dependentAxis
-          // tickFormat specifies how ticks should be displayed
-          style={{ tickLabels: { fill: "white" } }}
-          tickFormat={(x) => `$${x}`}
+          style={{ tickLabels: { fill: "white" }, grid: { stroke: "rgba(0, 0, 0, 0)" } }}
+          tickFormat={(y) => `$${y}`}
         />
-        <VictoryLine
+        <VictoryArea
+          domain={ props.warmupData.length <= 0 ? { x : [0, props.warmupXDomain] } :
+            { x : [0, props.warmupXDomain],
+              y: [_.minBy(props.warmupData, d => d.y).y, _.maxBy(props.warmupData, d => d.y).y] }}
           style={{
-            data: { stroke: "#c43a31" },
-            parent: { border: "1px solid #ccc" },
+            data: { fill: "url(#graphGradient)", stroke: "rgba(62, 81, 181, 1)", strokeWidth: 3 },
           }}
           data={props.warmupData}
         />
@@ -55,25 +65,23 @@ function Graph(props) {
       <VictoryChart
         theme={VictoryTheme.material}
         domainPadding={20}
-        width={500}
-        height={500}
+        width={800}
+        height={450}
       >
         <VictoryAxis
-          // tickValues specifies both the number of ticks and where
-          // they are placed on the axis
-          style={{ tickLabels: { fill: "white" } }}
-          domain={{ x: [0, 100], y: [0, 10] }}
-        />
+          style={{ tickLabels: { fill: "white" }, grid: { stroke: "rgba(0, 0, 0, 0)" } }}
+          />
         <VictoryAxis
           dependentAxis
-          // tickFormat specifies how ticks should be displayed
-          style={{ tickLabels: { fill: "white" } }}
-          tickFormat={(x) => `$${x}`}
+          style={{ tickLabels: { fill: "white" }, grid: { stroke: "rgba(0, 0, 0, 0)" } }}
+          tickFormat={(y) => `$${y}`}
         />
-        <VictoryLine
+        <VictoryArea
+          domain={ props.marketData.length <= 0 ? { x : [0, props.marketXDomain] } :
+            { x: [0, props.marketXDomain],
+              y: [_.minBy(props.marketData, d => d.y).y, _.maxBy(props.marketData, d => d.y).y] }}
           style={{
-            data: { stroke: "#c43a31" },
-            parent: { border: "1px solid #ccc" },
+            data: { fill: "url(#graphGradient)", stroke: "rgba(62, 81, 181, 1)", strokeWidth: 3 },
           }}
           data={props.marketData}
         />
