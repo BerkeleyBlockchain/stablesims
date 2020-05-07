@@ -4,7 +4,6 @@ import {
   VictoryAxis,
   VictoryTheme,
   VictoryArea,
-  VictoryLine
 } from "victory";
 import _ from "lodash";
 
@@ -12,15 +11,6 @@ const divStyle = {
   display: "flex",
   flexDirection: "column",
 };
-
-function getTicks(data) {
-  const ticks = [];
-  for (let i = 1; i <= data.length; i++) {
-    ticks.push(i);
-  }
-  console.log(ticks);
-  return ticks;
-}
 
 function Graph(props) {
   console.log(props.warmupData);

@@ -1,19 +1,6 @@
 import React from "react";
 import TextField from "@material-ui/core/TextField";
-import { createMuiTheme, makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    "& > *": {
-      margin: theme.spacing(1),
-      width: "10ch",
-    },
-  },
-  input: {
-    color: "white",
-  },
-}));
 
 const divStyle = {
   display: "flex",

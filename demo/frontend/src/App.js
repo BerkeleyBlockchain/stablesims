@@ -7,7 +7,6 @@ import io from "socket.io-client";
 import LandingPage from "./components/LandingPage";
 import {
   createMuiTheme,
-  makeStyles,
   ThemeProvider,
 } from "@material-ui/core/styles";
 
@@ -44,7 +43,6 @@ export default class App extends React.Component {
         BOND_DELAY: 15000,
       },
       landing: false,
-
     };
     this.getWarmupData = this.getWarmupData.bind(this);
     this.getMarketData = this.getMarketData.bind(this);
