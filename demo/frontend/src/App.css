@@ -6,7 +6,7 @@
 .dashboard {
   height: calc(100vh - 2rem);
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: flex-start;
   font-size: calc(10px + 2vmin);
   color: white;

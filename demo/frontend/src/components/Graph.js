@@ -13,7 +13,6 @@ const divStyle = {
 };
 
 function Graph(props) {
-  console.log(props.warmupData);
   return (
     <div style={divStyle}>
       <svg style={{ position: "absolute" }}>
@@ -21,8 +20,8 @@ function Graph(props) {
           <linearGradient id="graphGradient" 
             x1="0%" y1="0%" x2="0%" y2="100%"
           >
-            <stop offset="0%"   stopColor="rgba(62, 81, 181, 0.5)"/>
-            <stop offset="100%" stopColor="rgba(62, 81, 181, 0)"/>
+            <stop offset="0%"   stopColor="rgba(254, 203, 51, 0.5)"/>
+            <stop offset="100%" stopColor="rgba(254, 203, 51, 0)"/>
           </linearGradient>
         </defs>
       </svg>
@@ -31,7 +30,7 @@ function Graph(props) {
         theme={VictoryTheme.material}
         domainPadding={20}
         width={800}
-        height={300}
+        height={325}
       >
         <VictoryAxis
           style={{ tickLabels: { fill: "white" }, grid: { stroke: "rgba(0, 0, 0, 0)" } }}
@@ -46,7 +45,7 @@ function Graph(props) {
             { x : [0, props.warmupXDomain],
               y: [_.minBy(props.warmupData, d => d.y).y, _.maxBy(props.warmupData, d => d.y).y] }}
           style={{
-            data: { fill: "url(#graphGradient)", stroke: "rgba(62, 81, 181, 1)", strokeWidth: 3 },
+            data: { fill: "url(#graphGradient)", stroke: "rgba(254, 203, 51, 1)", strokeWidth: 3 },
           }}
           data={props.warmupData}
         />
@@ -56,7 +55,7 @@ function Graph(props) {
         theme={VictoryTheme.material}
         domainPadding={20}
         width={800}
-        height={450}
+        height={475}
       >
         <VictoryAxis
           style={{ tickLabels: { fill: "white" }, grid: { stroke: "rgba(0, 0, 0, 0)" } }}
@@ -71,7 +70,7 @@ function Graph(props) {
             { x: [0, props.marketXDomain],
               y: [_.minBy(props.marketData, d => d.y).y, _.maxBy(props.marketData, d => d.y).y] }}
           style={{
-            data: { fill: "url(#graphGradient)", stroke: "rgba(62, 81, 181, 1)", strokeWidth: 3 },
+            data: { fill: "url(#graphGradient)", stroke: "rgba(254, 203, 51, 1)", strokeWidth: 3 },
           }}
           data={props.marketData}
         />
