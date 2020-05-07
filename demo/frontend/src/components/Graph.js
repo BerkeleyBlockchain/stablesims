@@ -30,7 +30,7 @@ function Graph(props) {
         theme={VictoryTheme.material}
         domainPadding={20}
         width={800}
-        height={325}
+        height={350}
       >
         <VictoryAxis
           style={{ tickLabels: { fill: "white" }, grid: { stroke: "rgba(0, 0, 0, 0)" } }}
@@ -55,7 +55,7 @@ function Graph(props) {
         theme={VictoryTheme.material}
         domainPadding={20}
         width={800}
-        height={425}
+        height={450}
       >
         <VictoryAxis
           style={{ tickLabels: { fill: "white" }, grid: { stroke: "rgba(0, 0, 0, 0)" } }}
