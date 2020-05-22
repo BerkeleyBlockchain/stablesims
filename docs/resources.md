@@ -12,3 +12,4 @@
  * [ ] [While Stability Lasts: A Stochastic Model of Stablecoins](https://arxiv.org/abs/2004.01304)
  * [ ] [Dai Black Thursday Event - Sehyun](https://docs.google.com/document/d/17cY5HvQ2F2JdF1oYVkyUW29kaGhDzP8VTa6maXgxtg/edit?usp=sharing)
  * [ ] [Competitive Equilibria between Staking and On-Chain Lending](https://arxiv.org/pdf/2001.00919v1.pdf)
+ * [ ] [A State-Space Modeling Framework for Engineering Blockchain-Enabled Economic Systems](https://arxiv.org/abs/1807.00955)
