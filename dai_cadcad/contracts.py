@@ -1,16 +1,16 @@
 class Vat():
     def __init__(self):
         self.vaults = {}
-    
+
     def get_vault(self, vault_id):
         return self.vaults[vault_id]
-    
+
     def create_vault(self, vault_id, collat, debt):
         self.vaults[vault_id] = Vault(vault_id, collat, debt)
 
     def delete_vault(self, vault_id):
         del self.vaults[vault_id]
-    
+
 
 class Cat():
     def bite(self, vault_id, vat, vow, flipper):
@@ -21,22 +21,23 @@ class Cat():
 
 
 class Vault():
-    def  __init__(self, collat, debt):
+    def __init__(self, collat, debt):
         self.vault_id = uuid()
         self.collat = collat
         self.debt = debt
-        ## Risk parameters (collat. ratio, debt ceilings, savings/stability rates)
-    
+        # Risk parameters (collat. ratio, debt ceilings, savings/stability rates)
+
     def get_collat(self):
         pass
+
 
 class Vow():
     def __init__(self):
         self.vaults = {}
         self.debt = 0
         self.surplus = 0
-        ## Auction parameters (hump, bump, dump, sump)
-    
+        # Auction parameters (hump, bump, dump, sump)
+
     def get_vault(self, vault_id):
         return self.vaults[vault_id]
 
@@ -52,6 +53,40 @@ class Auction():
         self.lot = lot
         self.type = auction_type
         self.highest_bidder = ""
+
+    def exipred(self):
+      pass
+      # return self.duration >= self.expiry
+
+
+class TendAuction(Auction):
+  def accept_bid(self, bid, vault_id):
+    # does assert belong in policy function?
+    assert bid > self.bid
+    assert self.expired() == False
+    # assert bid - self.bid > FLOP_BEG/FLAP_BEG
+    self.bid = bid
+    self.highest_bidder = vault_id
+
+  def end_auction(self):
+    assert self.expired()
+    # send lot (DAI) to self.highest_bidder
+    # burn self.bid
+
+
+class DentAuction(Auction):
+   def accept_bid(self, bid, vault_id):
+    # does assert belong in policy function?
+    assert bid < self.bid
+    assert self.expired() == False
+    # assert self.bid - bid > FLOP_BEG/FLAP_BEG
+    self.bid = bid
+    self.highest_bidder = vault_id
+
+  def end_auction(self):
+    assert self.expired()
+    # send lot (MKR) to self.highest_bidder
+    # burn self.bid 
 
 # class AuctionHouse():
 
@@ -82,6 +117,10 @@ class Flopper():
         self.auction_exp = 0
         self.min_lot_decr = 0 # Dent
         self.debt_limit = 0
+
+        def start_auction(self, vault_id, vow):
+          vault = vow.get_vault(vault_id)
+          auction = DentAuction(0, )
 
 class Flapper():
     def __init__(self):
