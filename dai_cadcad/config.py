@@ -47,5 +47,78 @@ initial_state = {
         "expiry": 0,          # Auction expiration timestep
       }
     }
+  },
+  "keepers": {
+    "dummy_keeper": {
+      "profit": 0,
+      "my_profit_threshold": 0
+    }
   }
 }
+
+def policy_generator(keeper_id):
+  def agent_policy(_params, substep, sH, s, **kwargs):
+    keeper = s["keepers"]["keeper_id"]
+    # Policy logic policy logic yada yada
+    # Have it use keeper.info
+    # Check my profits
+    # Put up a flip bid
+  return agent_policy
+
+
+def update_vat(_params, substep, sH, s, _input, **kwargs):
+  curr_vat = s["vat"]
+  
+  # Read in policy signals
+  # Modify appropriate vaults, record in new_vat object
+  # Merge new_vat and old_vat
+
+  # E.g. warmup policies
+  # Warmup signal = { "warmup": { "vaults": { ... } } }
+  # new_vat = _params["warmup"]
+
+  return ("vat", new_vat)
+
+def update_vow(_params, substep, sH, s, _input, **kwargs):
+  curr_vow = s["vow"]
+
+  return ("vow", new_vow)
+
+def update_flipper(_params, substep, sH, s, _input, **kwargs):
+  curr_vat = s["vat"]
+  
+  # Read in policy signals
+  # Modify appropriate vaults, record in new_vat object
+  # Merge new_vat and old_vat
+
+  # E.g. warmup policies
+  # Warmup signal = { "warmup": { "vaults": { ... } } }
+  # new_vat = _params["warmup"]
+
+  return ("vat", new_vat)
+
+def update_flopper(_params, substep, sH, s, _input, **kwargs):
+  curr_vat = s["vat"]
+  
+  # Read in policy signals
+  # Modify appropriate vaults, record in new_vat object
+  # Merge new_vat and old_vat
+
+  # E.g. warmup policies
+  # Warmup signal = { "warmup": { "vaults": { ... } } }
+  # new_vat = _params["warmup"]
+
+  return ("vat", new_vat)
+
+def update_flapper(_params, substep, sH, s, _input, **kwargs):
+  curr_vat = s["vat"]
+  
+  # Read in policy signals
+  # Modify appropriate vaults, record in new_vat object
+  # Merge new_vat and old_vat
+
+  # E.g. warmup policies
+  # Warmup signal = { "warmup": { "vaults": { ... } } }
+  # new_vat = _params["warmup"]
+
+  return ("vat", new_vat)
