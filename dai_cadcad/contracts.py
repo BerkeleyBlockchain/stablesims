@@ -54,7 +54,7 @@ class Auction():
         self.type = auction_type
         self.highest_bidder = ""
 
-    def exipred(self):
+    def expired(self):
       pass
       # return self.duration >= self.expiry
 
@@ -75,12 +75,12 @@ class TendAuction(Auction):
 
 
 class DentAuction(Auction):
-   def accept_bid(self, bid, vault_id):
+   def accept_bid(self, lot, vault_id):
     # does assert belong in policy function?
-    assert bid < self.bid
+    assert lot < self.lot
     assert self.expired() == False
     # assert self.bid - bid > FLOP_BEG/FLAP_BEG
-    self.bid = bid
+    self.lot = lot
     self.highest_bidder = vault_id
 
   def end_auction(self):
@@ -105,10 +105,14 @@ class Flipper():
         vault = vow.get_vault(vault_id)
         auction = Auction(0, Dai(self.min_bid_incr), vault.get_collat(), "tend")
         self.kick_tend(id)
+        self.kick_tend(id)
     
     def kick_tend(self, id):
         auction = self.get_auction(id)
 
+    def kick_tend(self):
+       auction = self.get_auction(id)
+        # TODO: how to instantiate 2 different types of auctions
 
 class Flopper():
     def __init__(self):
@@ -120,7 +124,14 @@ class Flopper():
 
         def start_auction(self, vault_id, vow):
           vault = vow.get_vault(vault_id)
-          auction = DentAuction(0, )
+          auction = DentAuction(0, Dai(), vow.get_debt(), "dent")
+          self.kick_dent(id)
+          
+        
+        def kick_dent(self):
+          auction = self.get_auction(id)
+
+
 
 class Flapper():
     def __init__(self):
@@ -128,3 +139,12 @@ class Flapper():
         self.bid_exp = 0
         self.auction_exp = 0
         self.min_bid_incr = 0 # Tend
+
+        def start_auction(self, vault_id, vow):
+          vault = vow.get_vault(vault_id)
+          auction = TendAuction(0, MKR(), vow.get_surplus(), "tend")
+          self.kick_dent(id)
+        
+        def kick_dent(self):
+          auction = self.get_auction(id)
+
