@@ -16,3 +16,10 @@ FLOP_TAU = 0    # Auction duration
 # Flapper
 FLAP_BEG = 0    # Minimum MKR bid increase
 FLAP_TAU = 0    # Auction duration
+
+# ETH
+ETH_LINE = 0    # ETH debt ceiling (system-wide?)
+ETH_DUST = 0    # ETH debt floor (system-wide?)
+
+# Pot
+DSR = 0         # Dai savings rate
