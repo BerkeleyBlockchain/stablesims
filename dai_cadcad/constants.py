@@ -18,8 +18,8 @@ FLAP_BEG = 0    # Minimum MKR bid increase
 FLAP_TAU = 0    # Auction duration
 
 # ETH
-ETH_LINE = 0    # ETH debt ceiling (system-wide?)
-ETH_DUST = 0    # ETH debt floor (system-wide?)
+ETH_LINE = 0    # ETH debt ceiling
+ETH_DUST = 0    # ETH debt floor
 
 # Pot
 DSR = 0         # Dai savings rate

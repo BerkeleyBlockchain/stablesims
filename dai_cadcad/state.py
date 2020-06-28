@@ -1,7 +1,3 @@
-from cadCAD.configuration import append_configs
-from cadCAD.configuration.utils import config_sim
-from constants import *
-
 initial_state = {
   "vat": {
     "vaults": {
