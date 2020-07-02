@@ -1,7 +1,7 @@
 initial_state = {
   "vat": {
     "dummy_vault": {
-      "id": "",             # Vault ID
+      "vault_id": "",             # Vault ID
       "eth": 0,             # Vault collateralization (ETH)
       "dai": 0,             # Vault debt (DAI)
     }
@@ -12,7 +12,8 @@ initial_state = {
   },
   "flipper": {                # Tend -> dent
     "dummy_flip": {
-      "id": "",             # Auction ID
+      "flip_id": "",             # Auction ID
+      "phase": "",          # Auction phase ("tend" or "dent")
       "debt_to_flip": 0,    # Desired amount of DAI to be raised from auction
       "vault": "",          # Vault to send remaining ETH to after dent
       "lot_eth": 0,         # Current lot (ETH)
