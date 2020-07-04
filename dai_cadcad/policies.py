@@ -12,8 +12,8 @@ def make_join(eth, dai):
     debt_dai = s["eth_ilk"]["debt_dai"]
     assert (debt_dai + dai < ETH_LINE)
     # TODO: Consider making the collateralization ratio assertion a helper function
-    spot = s["eth_ilk"]["spot_rate"]
-    assert (spot * eth >= dai)
+    spot_rate = s["eth_ilk"]["spot_rate"]
+    assert (spot_rate * eth >= dai)
     
     # Create the new vault to be joined
     vault_id = uuid4()
@@ -32,6 +32,8 @@ def make_join(eth, dai):
 
   return join
 
+# ---------------------------------------------
+
 
 # Cat
 
@@ -41,10 +43,10 @@ def make_bite(vault_id):
 
     eth = s["vat"][vault_id]["eth"]
     dai = s["vat"][vault_id]["dai"]
-    spot = spot = s["eth_ilk"]["spot_rate"]
-    assert (spot * eth >= dai)
+    spot_rate = s["eth_ilk"]["spot_rate"]
+    assert (spot_rate * eth >= dai)
 
-    # Create the flipper auction to be kicked
+    # Create the Flipper auction to be kicked
     # Adding it to the flipper is the same as kicking it
     flip_id = uuid4()
     stability_rate = s["eth_ilk"]["stability_rate"]
@@ -66,6 +68,8 @@ def make_bite(vault_id):
     return { "flipper": new_flipper }
 
   return bite
+
+# ---------------------------------------------
 
 
 # Flipper
@@ -123,7 +127,7 @@ def make_flip_dent(flip_id, lot, keeper_id):
   return flip_dent
 
 
-def make_flip_deal(flip_id, keeper_id):
+def make_flip_deal(flip_id):
 
   def flip_deal(_params, substep, sH, s, **kwargs):
 
@@ -132,25 +136,31 @@ def make_flip_deal(flip_id, keeper_id):
     expiry = flip["expiry"]
     assert (expiry == 0)
 
-    # Move lot to bidder (remaining eth left in user vault)
-    new_vat = deepcopy(s["vat"])
-    new_vault = new_vat[flip["vault"]]
-    lot = flip["lot_eth"]
-    new_vault["eth"] -= lot
-    # TODO: Should vault cleanup logic be handled here?
+    # Move DAI bid from Keeper to Vow surplus
     new_keepers = deepcopy(s["keepers"])
     new_keeper = new_keepers[flip["bidder"]]
-    new_keeper["eth"] += lot
-
-    # Move bid to vow surplus
+    new_keeper["dai"] -= bid_dai
     new_vow = deepcopy(s["vow"])
-    bid = flip["bid_dai"]
-    new_vow["surplus_dai"] += bid
-    new_keeper["dai"] -= bid
+    bid_dai = flip["bid_dai"]
+    new_vow["surplus_dai"] += bid_dai
 
-    return { "vat": new_vat, "keepers": new_keepers, "vow": new_vow }
+    # Move ETH lot from Vault to Keeper
+    new_vat = deepcopy(s["vat"])
+    new_vault = new_vat[flip["vault"]]
+    lot_eth = flip["lot_eth"]
+    new_vault["eth"] -= lot_eth
+    # TODO: Should vault cleanup logic be handled here?
+    new_keeper["eth"] += lot_eth
+
+    # Delete Flipper auction
+    new_flipper = deepcopy(s["flipper"])
+    del new_flipper[flip_id]
+
+    return {  "vow": new_vow, "keepers": new_keepers, "vat": new_vat, "flipper": new_flipper }
   
   return flip_deal
+
+# ---------------------------------------------
 
 
 # Flapper
@@ -175,6 +185,38 @@ def make_flap_tend(flap_id, bid, keeper_id):
   return flap_tend
 
 
+def make_flap_deal(flap_id):
+
+  def flap_deal(_params, substep, sH, s, **kwargs):
+
+    flap = s["flapper"][flap_id]
+
+    expiry = flap["expiry"]
+    assert (expiry == 0)
+
+    # Burn Keeper's MKR bid
+    bid_mkr = flap["bid_mkr"]
+    new_keepers = deepcopy(s["keepers"])
+    new_keeper = new_keepers[flap["bidder"]]
+    new_keeper["mkr"] -= bid_mkr
+
+    # Move DAI lot from Vow surplus to Keeper
+    new_vow = deepcopy(s["vow"])
+    lot_dai = flap["lot_dai"]
+    new_vow["surplus_dai"] -= lot_dai
+    new_keeper["dai"] += lot_dai
+
+    # Delete Flapper auction
+    new_flapper = deepcopy(s["flapper"])
+    del new_flapper[flap_id]
+
+    return { "keepers": new_keepers, "vow": new_vow, "flapper": new_flapper }
+  
+  return flap_deal
+
+# ---------------------------------------------
+
+
 # Flopper
 
 def make_flop_dent(flop_id, lot, keeper_id):
@@ -196,3 +238,34 @@ def make_flop_dent(flop_id, lot, keeper_id):
 
   return flop_dent
 
+
+def make_flop_deal(flop_id):
+
+  def flop_deal(_params, substep, sH, s, **kwargs):
+
+    flop = s["flopper"][flop_id]
+
+    expiry = flop["expiry"]
+    assert (expiry == 0)
+
+    # Move DAI bid from Keeper to Vow surplus
+    new_keepers = deepcopy(s["keepers"])
+    new_keeper = new_keepers[flop["bidder"]]
+    bid_dai = flop["bid_dai"]
+    new_keeper["dai"] -= bid_dai
+    new_vow = deepcopy(s["vow"])
+    new_vow["surplus_dai"] += bid_dai
+
+    # Mint MKR lot
+    lot_mkr = flop["lot_mkr"]
+    new_keeper["mkr"] += lot_mkr
+
+    # Delete Flopper auction
+    new_flopper = deepcopy(s["flopper"])
+    del new_flopper[flop_id]
+
+    return { "vow": new_vow, "keepers": new_keepers, "flopper": new_flopper }
+  
+  return flap_deal
+
+# ---------------------------------------------

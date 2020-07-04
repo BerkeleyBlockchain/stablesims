@@ -22,20 +22,20 @@ initial_state = {
       "expiry": 0,            # Auction expiration timestep
     }
   },
-  "flopper": {                # Dent
-    "dummy_flop": {
-      "flop_id": "",          # Auction ID
-      "lot_mkr": 0,           # Current lot (MKR)
-      "bid_dai": 0,           # Current bid (DAI)
-      "bidder": "",           # Current highest bidder
-      "expiry": 0,            # Auction expiration timestep
-    }
-  },
   "flapper": {                # Tend
     "dummy_flap": {
       "flap_id": "",          # Auction ID
       "lot_dai": 0,           # Current lot (DAI)
       "bid_mkr": 0,           # Current bid (MKR)
+      "bidder": "",           # Current highest bidder
+      "expiry": 0,            # Auction expiration timestep
+    }
+  },
+  "flopper": {                # Dent
+    "dummy_flop": {
+      "flop_id": "",          # Auction ID
+      "lot_mkr": 0,           # Current lot (MKR)
+      "bid_dai": 0,           # Current bid (DAI)
       "bidder": "",           # Current highest bidder
       "expiry": 0,            # Auction expiration timestep
     }
