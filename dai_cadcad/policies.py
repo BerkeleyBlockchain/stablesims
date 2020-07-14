@@ -11,9 +11,6 @@ def make_join(eth, dai):
 
     debt_dai = s["eth_ilk"]["debt_dai"]
     assert (debt_dai + dai < ETH_LINE)
-    # TODO: Consider making the collateralization ratio assertion a helper function
-    spot_rate = s["eth_ilk"]["spot_rate"]
-    assert (spot_rate * eth >= dai)
     
     # Create the new vault to be joined
     vault_id = uuid4()
@@ -44,13 +41,14 @@ def make_bite(vault_id):
     eth = s["vat"][vault_id]["eth"]
     dai = s["vat"][vault_id]["dai"]
     spot_rate = s["eth_ilk"]["spot_rate"]
-    assert (spot_rate * eth >= dai)
+    stability_rate = s["eth_ilk"]["stability_rate"]
+    debt_to_flip = dai * stability_rate
+    assert (spot_rate * eth >= debt_to_flip)
+
 
     # Create the Flipper auction to be kicked
     # Adding it to the flipper is the same as kicking it
     flip_id = uuid4()
-    stability_rate = s["eth_ilk"]["stability_rate"]
-    debt_to_flip = dai * stability_rate
     new_flip = {
       "flip_id": flip_id,
       "phase": "tend",
