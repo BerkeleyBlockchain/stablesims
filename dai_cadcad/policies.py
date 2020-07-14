@@ -113,6 +113,9 @@ def make_flip_dent(flip_id, lot, keeper_id):
 
     flip = s["flipper"][flip_id]
 
+    phase = flip["phase"]
+    assert (phase == "dent")
+
     lot_eth = flip["lot_eth"]
     assert (lot < lot_eth * FLIP_BEG)
 
@@ -139,10 +142,12 @@ def make_flip_deal(flip_id):
     # Move DAI bid from Keeper to Vow surplus
     new_keepers = deepcopy(s["keepers"])
     new_keeper = new_keepers[flip["bidder"]]
+    bid_dai = flip["bid_dai"]
     new_keeper["dai"] -= bid_dai
     new_vow = deepcopy(s["vow"])
-    bid_dai = flip["bid_dai"]
     new_vow["surplus_dai"] += bid_dai
+
+    # If not enough Dai raised, put remainder of debt in Vow
 
     # Move ETH lot from Vault to Keeper
     new_vat = deepcopy(s["vat"])
