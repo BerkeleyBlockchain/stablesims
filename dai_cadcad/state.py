@@ -4,6 +4,7 @@ initial_state = {
       "vault_id": "",         # Vault ID
       "eth": 0,               # Vault collateralization (ETH)
       "dai": 0,               # Vault debt (DAI)
+      "bitten": False         # Whether or not the vault has been bitten
     }
   },
   "vow": {
@@ -59,9 +60,7 @@ initial_state = {
 }
 
 def update_vat(_params, substep, sH, s, _input, **kwargs):
-  curr_vat = s["vat"]
-  # Set new_vat
-  return ("vat", new_vat)
+  return ("vat", _input["vat"])
 
 def update_vow(_params, substep, sH, s, _input, **kwargs):
   curr_vow = s["vow"]
@@ -69,9 +68,7 @@ def update_vow(_params, substep, sH, s, _input, **kwargs):
   return ("vow", new_vow)
 
 def update_flipper(_params, substep, sH, s, _input, **kwargs):
-  curr_flipper = s["flipper"]
-  # Set new_flipper
-  return ("flipper", new_flipper)
+  return ("flipper", _input["flipper"])
 
 def update_flopper(_params, substep, sH, s, _input, **kwargs):
   curr_flopper = s["flopper"]
