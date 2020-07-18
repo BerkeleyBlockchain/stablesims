@@ -60,8 +60,6 @@ initial_state = {
 
 
 def update_vat(_params, substep, sH, s, _input, **kwargs):
-    curr_vat = s["vat"]
-    # Set new_vat
     new_vat = _input['vat']
     return ("vat", new_vat)
 
