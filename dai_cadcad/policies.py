@@ -1,5 +1,5 @@
 from uuid import uuid4
-import constants
+from constants import *
 from copy import deepcopy
 
 
@@ -10,10 +10,10 @@ def make_join(eth, dai):
     def join(_params, substep, sH, s, **kwargs):
 
         debt_dai = s["eth_ilk"]["debt_dai"]
-        assert (debt_dai + dai < constants.ETH_LINE)
+        assert (debt_dai + dai < ETH_LINE)
 
         # Create the new vault to be joined
-        vault_id = uuid4()
+        vault_id = uuid4().hex
         new_vault = {
             "vault_id": vault_id,
             "eth": eth,
@@ -38,16 +38,19 @@ def make_bite(vault_id):
 
     def bite(_params, substep, sH, s, **kwargs):
 
-        eth = s["vat"][vault_id]["eth"]
-        dai = s["vat"][vault_id]["dai"]
+        vault = s["vat"][vault_id]
+        assert (not vault["bitten"])
+
+        eth = vault["eth"]
+        dai = vault["dai"]
         spot_rate = s["eth_ilk"]["spot_rate"]
         stability_rate = s["eth_ilk"]["stability_rate"]
         debt_to_flip = dai * stability_rate
-        assert (spot_rate * eth >= debt_to_flip)
+        assert (debt_to_flip >= spot_rate * eth)
 
         # Create the Flipper auction to be kicked
         # Adding it to the flipper is the same as kicking it
-        flip_id = uuid4()
+        flip_id = uuid4().hex
         new_flip = {
             "flip_id": flip_id,
             "phase": "tend",
@@ -62,7 +65,10 @@ def make_bite(vault_id):
         new_flipper = deepcopy(s["flipper"])
         new_flipper[flip_id] = new_flip
 
-        return {"flipper": new_flipper}
+        new_vat = deepcopy(s["vat"])
+        new_vat[vault_id]["bitten"] = True
+
+        return {"flipper": new_flipper, "vat": new_vat}
 
     return bite
 
@@ -270,4 +276,13 @@ def make_flop_deal(flop_id):
 
     return flap_deal
 
+
 # ---------------------------------------------
+
+
+# Utility
+
+def policy_reduce(policy_value_a, policy_value_b):
+    return {**policy_value_a, **policy_value_b}
+
+
