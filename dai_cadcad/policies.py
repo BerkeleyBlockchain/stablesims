@@ -6,9 +6,13 @@ from copy import deepcopy
 # Vat
 
 # TODO
+# Be sure to remember the ETH_LINE assertion, and to add `eth` to `state.eth_ilk`'s `debt_dai`.
 def join_all(_params, substep, sH, s, **kwargs):
-  '''Generates and executes all `join` operations.'''
-  pass
+    '''Generates and executes all `join` operations.'''
+    new_vat = deepcopy(s["vat"])
+    join(150, 100, new_vat)
+    return {"vat": new_vat}
+
 
 def join(eth, dai, new_vat):
 
@@ -17,7 +21,8 @@ def join(eth, dai, new_vat):
     new_vault = {
         "vault_id": vault_id,
         "eth": eth,
-        "dai": dai
+        "dai": dai,
+        "bitten": False
     }
 
     new_vat[vault_id] = new_vault
@@ -28,31 +33,32 @@ def join(eth, dai, new_vat):
 # Cat
 
 def bite_all(_params, substep, sH, s, **kwargs):
-  '''Searches through all vaults in the vat, and returns a list
-     of `bite` policy functions for each undercollateralized one.'''
-    
+    '''Searches through all vaults in the vat, and returns a list
+       of `bite` policy functions for each undercollateralized one.'''
+
     new_vat = deepcopy(s["vat"])
     new_flipper = deepcopy(s["flipper"])
     spot_rate = s["eth_ilk"]["spot_rate"]
     stability_rate = s["eth_ilk"]["stability_rate"]
 
     for vault_id in new_vat:
-      
-      vault = new_vat[vault_id]
-      eth = vault["eth"]
-      dai = vault["dai"]
-      debt_to_flip = dai * stability_rate
-      max_allowable_debt = spot_rate * eth
-      
-      if (not vault["bitten"] and debt_to_flip >= max_allowable_debt):
-        bite(vault_id, debt_to_flip, eth, new_vat, new_flipper)
-    
+
+        vault = new_vat[vault_id]
+        eth = vault["eth"]
+        dai = vault["dai"]
+        debt_to_flip = dai * stability_rate
+        max_allowable_debt = spot_rate * eth
+
+        if (not vault["bitten"] and debt_to_flip > max_allowable_debt):
+            bite(vault_id, debt_to_flip, eth, new_vat, new_flipper)
+
     return {"flipper": new_flipper, "vat": new_vat}
 
+# TODO: Should we still do assertions within the function itself?
 def bite(vault_id, debt_to_flip, eth, new_vat, new_flipper):
-  '''Modifies the passed-in vat and flipper state variables to reflect
-     the given vault being bitten.'''
-    
+    '''Modifies the passed-in vat and flipper state variables to reflect
+       the given vault being bitten.'''
+
     # Create the Flipper auction to be kicked (adding it to the flipper is the same as kicking it)
     flip_id = uuid4().hex
     new_flip = {
@@ -281,5 +287,3 @@ def make_flop_deal(flop_id):
 
 def policy_reduce(policy_value_a, policy_value_b):
     return {**policy_value_a, **policy_value_b}
-
-

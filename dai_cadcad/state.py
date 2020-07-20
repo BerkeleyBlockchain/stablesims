@@ -54,8 +54,8 @@ initial_state = {
   },
   "eth_ilk": {
     "debt_dai": 0,            # Total amount of DAI collateralized by ETH
-    "spot_rate": 0,           # Conversion rate (max amount of DAI per ETH)
-    "stability_rate": 0       # Stability fee rate
+    "spot_rate": 2/3,         # Conversion rate (max amount of DAI per ETH)
+    "stability_rate": 1       # Stability fee rate
   },
 }
 
