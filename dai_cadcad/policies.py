@@ -5,74 +5,71 @@ from copy import deepcopy
 
 # Vat
 
-def make_join(eth, dai):
+# TODO
+def join_all(_params, substep, sH, s, **kwargs):
+  '''Generates and executes all `join` operations.'''
+  pass
 
-    def join(_params, substep, sH, s, **kwargs):
+def join(eth, dai, new_vat):
 
-        debt_dai = s["eth_ilk"]["debt_dai"]
-        assert (debt_dai + dai < ETH_LINE)
+    # Create the new vault to be joined
+    vault_id = uuid4().hex
+    new_vault = {
+        "vault_id": vault_id,
+        "eth": eth,
+        "dai": dai
+    }
 
-        # Create the new vault to be joined
-        vault_id = uuid4().hex
-        new_vault = {
-            "vault_id": vault_id,
-            "eth": eth,
-            "dai": dai
-        }
+    new_vat[vault_id] = new_vault
 
-        # Pretty sure copying is necessary here
-        # TODO: Consider making a copy+merge helper function
-        new_vat = deepcopy(s["vat"])
-        new_vat[vault_id] = new_vault
-
-        return {"vat": new_vat}
-
-    return join
-
-# ---------------------------------------------
+# ---
 
 
 # Cat
 
-def make_bite(vault_id):
+def bite_all(_params, substep, sH, s, **kwargs):
+  '''Searches through all vaults in the vat, and returns a list
+     of `bite` policy functions for each undercollateralized one.'''
+    
+    new_vat = deepcopy(s["vat"])
+    new_flipper = deepcopy(s["flipper"])
+    spot_rate = s["eth_ilk"]["spot_rate"]
+    stability_rate = s["eth_ilk"]["stability_rate"]
 
-    def bite(_params, substep, sH, s, **kwargs):
+    for vault_id in new_vat:
+      
+      vault = new_vat[vault_id]
+      eth = vault["eth"]
+      dai = vault["dai"]
+      debt_to_flip = dai * stability_rate
+      max_allowable_debt = spot_rate * eth
+      
+      if (not vault["bitten"] and debt_to_flip >= max_allowable_debt):
+        bite(vault_id, debt_to_flip, eth, new_vat, new_flipper)
+    
+    return {"flipper": new_flipper, "vat": new_vat}
 
-        vault = s["vat"][vault_id]
-        assert (not vault["bitten"])
+def bite(vault_id, debt_to_flip, eth, new_vat, new_flipper):
+  '''Modifies the passed-in vat and flipper state variables to reflect
+     the given vault being bitten.'''
+    
+    # Create the Flipper auction to be kicked (adding it to the flipper is the same as kicking it)
+    flip_id = uuid4().hex
+    new_flip = {
+        "flip_id": flip_id,
+        "phase": "tend",
+        "debt_to_flip": debt_to_flip,
+        "vault": vault_id,
+        "lot_eth": eth,
+        "bid_dai": 0,
+        "bidder": "",
+        "expiry": FLIP_TAU
+    }
 
-        eth = vault["eth"]
-        dai = vault["dai"]
-        spot_rate = s["eth_ilk"]["spot_rate"]
-        stability_rate = s["eth_ilk"]["stability_rate"]
-        debt_to_flip = dai * stability_rate
-        assert (debt_to_flip >= spot_rate * eth)
+    new_flipper[flip_id] = new_flip
+    new_vat[vault_id]["bitten"] = True
 
-        # Create the Flipper auction to be kicked
-        # Adding it to the flipper is the same as kicking it
-        flip_id = uuid4().hex
-        new_flip = {
-            "flip_id": flip_id,
-            "phase": "tend",
-            "debt_to_flip": debt_to_flip,
-            "vault": vault_id,
-            "lot_eth": eth,
-            "bid_dai": 0,
-            "bidder": "",
-            "expiry": FLIP_TAU
-        }
-
-        new_flipper = deepcopy(s["flipper"])
-        new_flipper[flip_id] = new_flip
-
-        new_vat = deepcopy(s["vat"])
-        new_vat[vault_id]["bitten"] = True
-
-        return {"flipper": new_flipper, "vat": new_vat}
-
-    return bite
-
-# ---------------------------------------------
+# ---
 
 
 # Flipper
@@ -168,7 +165,7 @@ def make_flip_deal(flip_id):
 
     return flip_deal
 
-# ---------------------------------------------
+# ---
 
 
 # Flapper
@@ -222,7 +219,7 @@ def make_flap_deal(flap_id):
 
     return flap_deal
 
-# ---------------------------------------------
+# ---
 
 
 # Flopper
@@ -277,7 +274,7 @@ def make_flop_deal(flop_id):
     return flap_deal
 
 
-# ---------------------------------------------
+# ---
 
 
 # Utility
