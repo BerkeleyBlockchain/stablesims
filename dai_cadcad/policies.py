@@ -8,13 +8,17 @@ from copy import deepcopy
 # TODO
 # Be sure to remember the ETH_LINE assertion, and to add `eth` to `state.eth_ilk`'s `debt_dai`.
 def join_all(_params, substep, sH, s, **kwargs):
-    '''Generates and executes all `join` operations.'''
-    new_vat = deepcopy(s["vat"])
-    join(150, 100, new_vat)
-    return {"vat": new_vat}
+    '''Generates and executes all `join` operations.
+       Currently, this only occurs in a 1-step warmup period.'''
+    if (_params["warmup_end"] >= s["timestep"]):
+      new_vat = deepcopy(s["vat"])
+      new_eth_ilk = deepcopy(s["eth_ilk"])
+      for i in range(1000):
+        join(150, 100, new_vat, new_eth_ilk)
+      return {"vat": new_vat}
 
 
-def join(eth, dai, new_vat):
+def join(eth, dai, new_vat, new_eth_ilk):
 
     # Create the new vault to be joined
     vault_id = uuid4().hex
@@ -26,6 +30,8 @@ def join(eth, dai, new_vat):
     }
 
     new_vat[vault_id] = new_vault
+
+    new_eth_ilk["debt_dai"] += dai
 
 # ---
 
@@ -56,8 +62,7 @@ def bite_all(_params, substep, sH, s, **kwargs):
 
 # TODO: Should we still do assertions within the function itself?
 def bite(vault_id, debt_to_flip, eth, new_vat, new_flipper):
-    '''Modifies the passed-in vat and flipper state variables to reflect
-       the given vault being bitten.'''
+    ''' Marks the given vault as bitten, and creates a new flip (effectively kicking it).'''
 
     # Create the Flipper auction to be kicked (adding it to the flipper is the same as kicking it)
     flip_id = uuid4().hex
