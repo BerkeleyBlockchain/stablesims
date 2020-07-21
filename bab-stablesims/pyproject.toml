@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "bab-stablesims"
+version = "0.1.0"
+description = ""
+authors = ["Andrew Kirillov <kirillov.edu@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+cadcad = "^0.4.17"
+numpy = "^1.19.0"
+pandas = "^1.0.5"
+matplotlib = "^3.3.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+ipykernel = "^5.3.3"
+jupyter = "^1.0.0"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
