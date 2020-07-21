@@ -814,6 +814,14 @@ six = "*"
 test = ["pytest", "mock"]
 
 [[package]]
+category = "main"
+description = "UUID object and generation functions (Python 2.3 or higher)"
+name = "uuid"
+optional = false
+python-versions = "*"
+version = "1.30"
+
+[[package]]
 category = "dev"
 description = "Measures the displayed width of unicode strings in a terminal"
 name = "wcwidth"
@@ -841,7 +849,7 @@ version = "3.5.1"
 notebook = ">=4.4.1"
 
 [metadata]
-content-hash = "154f225cdafc57b304606adcac8b646e73268c6ecb250fbadd5e1e3bc8e020e0"
+content-hash = "1cbac2444f5ae06b4a9aa5ee728ae466e6d00f5ad7ed8be14c71c7af80f2df6f"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -1286,6 +1294,9 @@ tornado = [
 traitlets = [
     {file = "traitlets-4.3.3-py2.py3-none-any.whl", hash = "sha256:70b4c6a1d9019d7b4f6846832288f86998aa3b9207c6821f3578a6a6a467fe44"},
     {file = "traitlets-4.3.3.tar.gz", hash = "sha256:d023ee369ddd2763310e4c3eae1ff649689440d4ae59d7485eb4cfbbe3e359f7"},
+]
+uuid = [
+    {file = "uuid-1.30.tar.gz", hash = "sha256:1f87cc004ac5120466f36c5beae48b4c48cc411968eed0eaecd3da82aa96193f"},
 ]
 wcwidth = [
     {file = "wcwidth-0.2.5-py2.py3-none-any.whl", hash = "sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784"},

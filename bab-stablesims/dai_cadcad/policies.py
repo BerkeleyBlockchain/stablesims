@@ -1,5 +1,4 @@
 from uuid import uuid4
-from constants import *
 from copy import deepcopy
 
 
@@ -10,7 +9,7 @@ from copy import deepcopy
 def join_all(_params, substep, sH, s, **kwargs):
     '''Generates and executes all `join` operations.
        Currently, this only occurs in a 1-step warmup period.'''
-    if (_params["warmup_end"] >= s["timestep"]):
+    if (_params["WARM_TAU"] >= s["timestep"]):
       new_vat = deepcopy(s["vat"])
       new_eth_ilk = deepcopy(s["eth_ilk"])
       for i in range(1000):
@@ -56,12 +55,13 @@ def bite_all(_params, substep, sH, s, **kwargs):
         max_allowable_debt = spot_rate * eth
 
         if (not vault["bitten"] and debt_to_flip > max_allowable_debt):
-            bite(vault_id, debt_to_flip, eth, new_vat, new_flipper)
+            flip_tau = _params["FLIP_TAU"]
+            bite(vault_id, debt_to_flip, eth, flip_tau, new_vat, new_flipper)
 
     return {"flipper": new_flipper, "vat": new_vat}
 
 # TODO: Should we still do assertions within the function itself?
-def bite(vault_id, debt_to_flip, eth, new_vat, new_flipper):
+def bite(vault_id, debt_to_flip, eth, flip_tau, new_vat, new_flipper):
     ''' Marks the given vault as bitten, and creates a new flip (effectively kicking it).'''
 
     # Create the Flipper auction to be kicked (adding it to the flipper is the same as kicking it)
@@ -74,7 +74,7 @@ def bite(vault_id, debt_to_flip, eth, new_vat, new_flipper):
         "lot_eth": eth,
         "bid_dai": 0,
         "bidder": "",
-        "expiry": FLIP_TAU
+        "expiry": flip_tau
     }
 
     new_flipper[flip_id] = new_flip
@@ -98,7 +98,7 @@ def make_flip_tend(flip_id, bid, keeper_id):
         phase = flip["phase"]
         assert (phase == "tend")
         bid_dai = flip["bid_dai"]
-        assert (bid > bid_dai * FLIP_BEG)
+        assert (bid > bid_dai * _params["FLIP_BEG"])
         # Not sure why we don't want to raise more, but this is from the smart contract
         # https://github.com/makerdao/dss/blob/master/src/flip.sol
         debt_to_flip = flip["debt_to_flip"]
@@ -128,7 +128,7 @@ def make_flip_dent(flip_id, lot, keeper_id):
         assert (phase == "dent")
 
         lot_eth = flip["lot_eth"]
-        assert (lot < lot_eth * FLIP_BEG)
+        assert (lot < lot_eth * _params["FLIP_BEG"])
 
         new_flipper = deepcopy(s["flipper"])
         new_flip = new_flipper[flip_id]
@@ -188,7 +188,7 @@ def make_flap_tend(flap_id, bid, keeper_id):
         flap = s["flapper"][flap_id]
 
         bid_mkr = flap["bid_mkr"]
-        assert (bid > bid_mkr * FLAP_BEG)
+        assert (bid > bid_mkr * _params["FLAP_BEG"])
 
         new_flapper = deepcopy(s["flapper"])
         new_flap = new_flapper[flap_id]
@@ -242,7 +242,7 @@ def make_flop_dent(flop_id, lot, keeper_id):
         flop = s["flopper"][flop_id]
 
         lot_mkr = flop["lot_mkr"]
-        assert (lot < lot_mkr * FLOP_BEG)
+        assert (lot < lot_mkr * _params["FLOP_BEG"])
 
         new_flopper = deepcopy(s["flopper"])
         new_flop = new_flopper[flop_id]
