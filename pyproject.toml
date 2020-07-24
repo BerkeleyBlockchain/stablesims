@@ -16,6 +16,15 @@ uuid = "^1.30"
 pytest = "^5.2"
 ipykernel = "^5.3.3"
 jupyter = "^1.0.0"
+pylint = "^2.5.3"
+black = "^19.10b0"
+autohooks = "^2.1.0"
+autohooks-plugin-pylint = "^1.2.0"
+autohooks-plugin-black = "^1.2.0"
+
+[tool.autohooks]
+mode = "poetry"
+pre-commit = ["autohooks.plugins.black", "autohooks.plugins.pylint"]
 
 [build-system]
 requires = ["poetry>=0.12"]
