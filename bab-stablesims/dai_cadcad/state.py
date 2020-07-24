@@ -4,6 +4,7 @@ initial_state = {
       "vault_id": "",         # Vault ID
       "eth": 0,               # Vault collateralization (ETH)
       "dai": 0,               # Vault debt (DAI)
+      "bitten": False         # Whether or not the vault has been bitten
     }
   },
   "vow": {
@@ -53,42 +54,42 @@ initial_state = {
   },
   "eth_ilk": {
     "debt_dai": 0,            # Total amount of DAI collateralized by ETH
-    "spot_rate": 0,           # Conversion rate (max amount of DAI per ETH)
-    "stability_rate": 0       # Stability fee rate
+    "spot_rate": 2/3,         # Conversion rate (max amount of DAI per ETH)
+    "stability_rate": 1       # Stability fee rate
   },
 }
 
+
 def update_vat(_params, substep, sH, s, _input, **kwargs):
-  curr_vat = s["vat"]
-  # Set new_vat
-  return ("vat", new_vat)
+    new_vat = _input['vat']
+    return ("vat", new_vat)
+
 
 def update_vow(_params, substep, sH, s, _input, **kwargs):
-  curr_vow = s["vow"]
-  # Set new_vow
-  return ("vow", new_vow)
+    new_vow = _input["vow"]
+    return ("vow", new_vow)
+
 
 def update_flipper(_params, substep, sH, s, _input, **kwargs):
-  curr_flipper = s["flipper"]
-  # Set new_flipper
-  return ("flipper", new_flipper)
+    new_flipper = _input["flipper"]
+    return ("flipper", new_flipper)
+
 
 def update_flopper(_params, substep, sH, s, _input, **kwargs):
-  curr_flopper = s["flopper"]
-  # Set new_flopper
-  return ("flopper", new_flopper)
+    new_flopper = _input["flopper"]
+    return ("flopper", new_flopper)
+
 
 def update_flapper(_params, substep, sH, s, _input, **kwargs):
-  curr_flapper = s["flapper"]
-  # Set new_flapper
-  return ("flapper", new_flapper)
+    new_flapper = _input["flapper"]
+    return ("flapper", new_flapper)
+
 
 def update_keepers(_params, substep, sH, s, _input, **kwargs):
-  curr_keepers = s["keepers"]
-  # Set new_keepers
-  return ("keepers", new_keepers)
+    new_keepers = _input["keepers"]
+    return ("keepers", new_keepers)
+
 
 def update_eth_ilk(_params, substep, sH, s, _input, **kwargs):
-  curr_eth_ilk = s["eth_ilk"]
-  # Set new_eth_ilk
-  return ("eth_ilk", eth_ilk)
+    new_eth_ilk = _input["eth_ilk"]
+    return ("eth_ilk", new_eth_ilk)
