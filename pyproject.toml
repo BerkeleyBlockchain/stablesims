@@ -24,6 +24,7 @@ autohooks-plugin-black = "^1.2.0"
 
 [tool.autohooks]
 mode = "poetry"
+pre-commit = ["autohooks.plugins.pylint", "autohooks.plugins.black"]
 
 [build-system]
 requires = ["poetry>=0.12"]
