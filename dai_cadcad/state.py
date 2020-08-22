@@ -29,6 +29,14 @@ initial_state = {
             "bid_dai": 0,  # Current bid (DAI)
             "bidder": "",  # Current highest bidder
             "expiry": 0,  # Auction expiration timestep
+            "pending_bids": [
+              {
+                "bid": 0,# int
+                "lot": 0, # int
+                "phase": "dent", # dent/tend
+                "keeper_id": "", 
+              }
+            ] # Buffer for pending bids
         }
     },
     "flapper": {  # Tend

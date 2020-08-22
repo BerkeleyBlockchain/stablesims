@@ -338,6 +338,34 @@ def make_flop_deal(flop_id):
 
 # ---
 
+# Keeper
+
+def process_bid_all(params, _substep, _state_hist, state):
+    """ Generates and executes all `bid` operations.
+
+    """
+    # for (flipper in state["flipper"]):
+    #   new_flipper = deepcopy(flipper)
+
+      
+    return {}
+
+
+def process_bid(bid, keeper_id, new_flipper):
+  """ Executes a single 'bid' from a Keeper.
+
+      Changes fields in an existing Flipper Auction.
+  """
+  assert new_flipper["expiry"] != 0
+  assert bid > new_flipper["bid"]
+  # include keeper should bid logic here
+
+  new_flipper["bid"] = bid
+  new_flipper["bidder"] = keeper_id
+
+
+# ---
+
 
 # Utility
 
