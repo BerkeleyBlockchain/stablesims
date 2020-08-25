@@ -1,48 +1,39 @@
 """ Prices Module
 
-Contains functions for generating price feeds using numpy and the CoinGecko API.
+Contains functions for generating price feeds using CoinAPI.
 
 Current approach is to sample from historical data, rather than fully simulating price feeds, or
 just using historical data out-the-box.
 """
 
-import numpy as np
-from numpy.random import default_rng
-from pycoingecko import CoinGeckoAPI
+from coinapi_rest_v1 import coinapi_rest_v1
 
-rng = default_rng()
-cg = CoinGeckoAPI()
+from dai_cadcad import environment
+
+coin_api = coinapi_rest_v1.CoinAPIv1(environment.COIN_API_KEY)
 
 
-def generate_price_feed(coin_id, time_range, batch_size):
-    """ Generates a price feed (in USD) for the given coin (ETH, DAI, MKR).
+def get_historic_price_feed(symbol_id, time_range):
+    """ Fetches historic a price feed (in USD) for the given coin (ETH, DAI, MKR) and time range.
 
-      Does this by:
-      1. Obtaining the price distribution for `coin_id` (from the CoinGecko API) over `time_range`
-      2. Batching it into `batch_factor` evenly-sized regions
-      3. Fitting a normal curve to the same mean & SD as each region
-      4. Sampling from each normal to create a time series (same # of datapoints)
+        `symbol_id` is a string representing an asset trading pair on a given exchange, which can
+        be found in /coinapi_symbols.json.
+
+        `time_range` is a 2-value array with ISO 8601 "from" and "to" timestamps, respectively.
+
+        TODO: Currently too lazy to implement checking against `time_range` to see if multiple
+        API calls are necessary, should the limit of 100000 data points be exceeded. As of now this
+        allows us a time range of <= 69 days (lol).
     """
 
-    res = cg.get_coin_market_chart_range_by_id(
-        coin_id, "usd", time_range[0], time_range[1]
+    ohlcv_historical = coin_api.ohlcv_historical_data(
+        symbol_id,
+        {
+            "period_id": "1MIN",
+            "time_start": time_range[0],
+            "time_end": time_range[1],
+            "limit": 100000,
+        },
     )
-    prices = [res["prices"][i][1] for i in range(len(res["prices"]))]
 
-    generated_prices = []
-
-    num_batches = len(prices) // batch_size
-
-    for i in range(num_batches):
-        sample = prices[i * batch_size : (i + 1) * batch_size]
-        sample_mu = np.mean(sample)
-        sample_sd = np.std(sample)
-        generated_prices.extend(list(rng.normal(sample_mu, sample_sd, batch_size)))
-
-    tail_size = len(prices) - (num_batches * batch_size)
-    tail_sample = prices[-tail_size:]
-    tail_mu = np.mean(tail_sample)
-    tail_sd = np.std(tail_sample)
-    generated_prices.extend(list(rng.normal(tail_mu, tail_sd, tail_size)))
-
-    return (prices, generated_prices)
+    return [period["price_close"] for period in ohlcv_historical]
