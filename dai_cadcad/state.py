@@ -71,6 +71,7 @@ initial_state = {
 def update_vat(_params, _substep, _state_hist, _state, policy_signals):
     """ Updates `vat` state variable.
     """
+
     new_vat = policy_signals["vat"]
     return ("vat", new_vat)
 
@@ -78,6 +79,7 @@ def update_vat(_params, _substep, _state_hist, _state, policy_signals):
 def update_vow(_params, _substep, _state_hist, _state, policy_signals):
     """ Updates `vow` state variable.
     """
+
     new_vow = policy_signals["vow"]
     return ("vow", new_vow)
 
@@ -85,6 +87,7 @@ def update_vow(_params, _substep, _state_hist, _state, policy_signals):
 def update_flipper(_params, _substep, _state_hist, _state, policy_signals):
     """ Updates `flipper` state variable.
     """
+
     new_flipper = policy_signals["flipper"]
     return ("flipper", new_flipper)
 
@@ -92,6 +95,7 @@ def update_flipper(_params, _substep, _state_hist, _state, policy_signals):
 def update_flopper(_params, _substep, _state_hist, _state, policy_signals):
     """ Updates `flopper` state variable.
     """
+
     new_flopper = policy_signals["flopper"]
     return ("flopper", new_flopper)
 
@@ -99,6 +103,7 @@ def update_flopper(_params, _substep, _state_hist, _state, policy_signals):
 def update_flapper(_params, _substep, _state_hist, _state, policy_signals):
     """ Updates `flapper` state variable.
     """
+
     new_flapper = policy_signals["flapper"]
     return ("flapper", new_flapper)
 
@@ -106,6 +111,7 @@ def update_flapper(_params, _substep, _state_hist, _state, policy_signals):
 def update_keepers(_params, _substep, _state_hist, _state, policy_signals):
     """ Updates `keepers` state variable.
     """
+
     new_keepers = policy_signals["keepers"]
     return ("keepers", new_keepers)
 
@@ -113,5 +119,6 @@ def update_keepers(_params, _substep, _state_hist, _state, policy_signals):
 def update_eth_ilk(_params, _substep, _state_hist, _state, policy_signals):
     """ Updates `eth_ilk` state variable.
     """
+
     new_eth_ilk = policy_signals["eth_ilk"]
     return ("eth_ilk", new_eth_ilk)
