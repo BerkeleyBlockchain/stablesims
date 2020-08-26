@@ -65,6 +65,8 @@ initial_state = {
         "spot_rate": 2 / 3,  # Conversion rate (max amount of DAI per ETH)
         "stability_rate": 1,  # Stability fee rate
     },
+    "eth_price_usd": 0,
+    "dai_price_usd": 0,
 }
 
 
