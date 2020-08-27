@@ -14,19 +14,55 @@ as well as checking the necessary conditions.
 
 from uuid import uuid4
 from copy import deepcopy
+import json
+
+
+# Price Feeds
+
+
+def read_dai_price_usd(params, _substep, _state_hist, state):
+    """ Reads in the DAI price in USD for the given timestep from the local price feed.
+    """
+
+    timestep = state["timestep"]
+    warm_tau = params["WARM_TAU"]
+    if timestep >= warm_tau:
+        with open("../price_feeds/dai.json") as dai_price_feed_json:
+            dai_price_usd = json.load(dai_price_feed_json)[timestep - warm_tau][
+                "price_close"
+            ]
+        return {"dai_price_usd": dai_price_usd}
+    return {}
+
+
+def read_eth_price_usd(params, _substep, _state_hist, state):
+    """ Reads in the ETH price in USD for the given timestep from the local price feed.
+    """
+
+    timestep = state["timestep"]
+    warm_tau = params["WARM_TAU"]
+    if timestep >= warm_tau:
+        with open("../price_feeds/eth.json") as eth_price_feed_json:
+            eth_price_usd = json.load(eth_price_feed_json)[timestep - warm_tau][
+                "price_close"
+            ]
+        return {"eth_price_usd": eth_price_usd}
+    return {}
+
+
+# ---
 
 
 # Vat
 
-# TODO
-# Be sure to remember the ETH_LINE assertion, and to add `eth` to `state.eth_ilk`'s `debt_dai`.
+
 def join_all(params, _substep, _state_hist, state):
     """ Generates and executes all `join` operations.
 
         Currently, this only occurs in a 1-step warmup period.
     """
 
-    if params["WARM_TAU"] >= state["timestep"]:
+    if state["timestep"] < params["WARM_TAU"]:
         new_vat = deepcopy(state["vat"])
         new_eth_ilk = deepcopy(state["eth_ilk"])
         for _ in range(1000):
@@ -35,6 +71,7 @@ def join_all(params, _substep, _state_hist, state):
     return {}
 
 
+# TODO: Be sure to remember the ETH_LINE assertion
 def join(eth, dai, new_vat, new_eth_ilk):
     """ Executes a single `join` operation.
 
