@@ -65,60 +65,78 @@ initial_state = {
         "spot_rate": 2 / 3,  # Conversion rate (max amount of DAI per ETH)
         "stability_rate": 1,  # Stability fee rate
     },
+    "eth_price_usd": 0,
+    "dai_price_usd": 0,
 }
 
 
-def update_vat(_params, _substep, _state_hist, _state, policy_signals):
+def update_vat(_params, _substep, _state_hist, state, policy_signals):
     """ Updates `vat` state variable.
     """
 
-    new_vat = policy_signals["vat"]
+    new_vat = policy_signals.get("vat", state["vat"])
     return ("vat", new_vat)
 
 
-def update_vow(_params, _substep, _state_hist, _state, policy_signals):
+def update_vow(_params, _substep, _state_hist, state, policy_signals):
     """ Updates `vow` state variable.
     """
 
-    new_vow = policy_signals["vow"]
+    new_vow = policy_signals.get("vow", state["vow"])
     return ("vow", new_vow)
 
 
-def update_flipper(_params, _substep, _state_hist, _state, policy_signals):
+def update_flipper(_params, _substep, _state_hist, state, policy_signals):
     """ Updates `flipper` state variable.
     """
 
-    new_flipper = policy_signals["flipper"]
+    new_flipper = policy_signals.get("flipper", state["flipper"])
     return ("flipper", new_flipper)
 
 
-def update_flopper(_params, _substep, _state_hist, _state, policy_signals):
+def update_flopper(_params, _substep, _state_hist, state, policy_signals):
     """ Updates `flopper` state variable.
     """
 
-    new_flopper = policy_signals["flopper"]
+    new_flopper = policy_signals.get("flopper", state["flopper"])
     return ("flopper", new_flopper)
 
 
-def update_flapper(_params, _substep, _state_hist, _state, policy_signals):
+def update_flapper(_params, _substep, _state_hist, state, policy_signals):
     """ Updates `flapper` state variable.
     """
 
-    new_flapper = policy_signals["flapper"]
+    new_flapper = policy_signals.get("flapper", state["flapper"])
     return ("flapper", new_flapper)
 
 
-def update_keepers(_params, _substep, _state_hist, _state, policy_signals):
+def update_keepers(_params, _substep, _state_hist, state, policy_signals):
     """ Updates `keepers` state variable.
     """
 
-    new_keepers = policy_signals["keepers"]
+    new_keepers = policy_signals.get("keepers", state["keepers"])
     return ("keepers", new_keepers)
 
 
-def update_eth_ilk(_params, _substep, _state_hist, _state, policy_signals):
+def update_eth_ilk(_params, _substep, _state_hist, state, policy_signals):
     """ Updates `eth_ilk` state variable.
     """
 
-    new_eth_ilk = policy_signals["eth_ilk"]
+    new_eth_ilk = policy_signals.get("eth_ilk", state["eth_ilk"])
     return ("eth_ilk", new_eth_ilk)
+
+
+def update_eth_price_usd(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `eth_price_usd` state variable.
+    """
+
+    new_eth_price_usd = policy_signals.get("eth_price_usd", state["eth_price_usd"])
+    return ("eth_price_usd", new_eth_price_usd)
+
+
+def update_dai_price_usd(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `dai_price_usd` state variable.
+    """
+
+    new_dai_price_usd = policy_signals.get("dai_price_usd", state["dai_price_usd"])
+    return ("dai_price_usd", new_dai_price_usd)
