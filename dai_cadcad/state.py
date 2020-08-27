@@ -66,7 +66,7 @@ initial_state = {
         "stability_rate": 1,  # Stability fee rate
     },
     "eth_price_usd": 0,
-    "dai_price_usd": 0,
+    "dai_price_usd": 1,
 }
 
 

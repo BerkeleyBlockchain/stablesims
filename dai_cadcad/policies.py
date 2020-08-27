@@ -15,6 +15,7 @@ as well as checking the necessary conditions.
 from uuid import uuid4
 from copy import deepcopy
 import json
+import random
 
 
 # Price Feeds
@@ -56,24 +57,32 @@ def read_eth_price_usd(params, _substep, _state_hist, state):
 # Vat
 
 
-def join_all(params, _substep, _state_hist, state):
-    """ Generates and executes all `join` operations.
+def join_vault_all(params, _substep, _state_hist, state):
+    """ Generates and executes all `join_vault` operations.
 
         Currently, this only occurs in a 1-step warmup period.
     """
 
+    new_vat = deepcopy(state["vat"])
+    new_eth_ilk = deepcopy(state["eth_ilk"])
+    dai_price_usd = state["dai_price_usd"]
+
     if state["timestep"] < params["WARM_TAU"]:
-        new_vat = deepcopy(state["vat"])
-        new_eth_ilk = deepcopy(state["eth_ilk"])
         for _ in range(1000):
-            join(150, 100, new_vat, new_eth_ilk)
+            join_vault(150, 100, new_vat, new_eth_ilk)
         return {"vat": new_vat}
+    if dai_price_usd > 1:
+        delta = dai_price_usd - 1
+        prob = 5 * delta + 0.05
+        if random.random() <= prob:
+            join_vault(150, 100, new_vat, new_eth_ilk)
+
     return {}
 
 
 # TODO: Be sure to remember the ETH_LINE assertion
-def join(eth, dai, new_vat, new_eth_ilk):
-    """ Executes a single `join` operation.
+def join_vault(eth, dai, new_vat, new_eth_ilk):
+    """ Executes a single `join_vault` operation.
 
         Creates a new vault in the `vat` containing `eth` and `dai`.
     """
@@ -85,6 +94,17 @@ def join(eth, dai, new_vat, new_eth_ilk):
     new_vat[vault_id] = new_vault
 
     new_eth_ilk["debt_dai"] += dai
+
+
+def exit_vault(vault_id, new_vat):
+    """ Executes a single `exit_vault` operation.
+
+        Closes out a vault in the `vat` by burning the `dai` and paying back the `eth`.
+        Since our simulation has no notion of external markets, this really just means deleting the
+        vault from the `vat`.
+    """
+
+    del new_vat[vault_id]
 
 
 # ---
