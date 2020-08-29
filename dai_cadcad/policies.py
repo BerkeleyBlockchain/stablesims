@@ -59,8 +59,6 @@ def read_eth_price_usd(params, _substep, _state_hist, state):
 
 def join_vault_all(params, _substep, _state_hist, state):
     """ Generates and executes all `join_vault` operations.
-
-        Currently, this only occurs in a 1-step warmup period.
     """
 
     new_vat = deepcopy(state["vat"])
@@ -96,14 +94,39 @@ def join_vault(eth, dai, new_vat, new_eth_ilk):
     new_eth_ilk["debt_dai"] += dai
 
 
-def exit_vault(vault_id, new_vat):
+def exit_vault_all(_params, _substep, _state_hist, state):
+    """ Generates and executes all `join_vault` operations.
+    """
+
+    new_vat = deepcopy(state["vat"])
+    new_eth_ilk = deepcopy(state["eth_ilk"])
+    dai_price_usd = state["dai_price_usd"]
+
+    if dai_price_usd < 1:
+        delta = 1 - dai_price_usd
+        prob = 5 * delta + 0.05
+        if random.random() <= prob:
+            # Pick a random, unbitten vault to exit
+            # TODO: Make sure to remove "dummy_vault" from state
+            vault_id = random.choice(new_vat.keys())
+            while new_vat[vault_id]["bitten"]:
+                vault_id = random.choice(new_vat.keys())
+
+            exit_vault(vault_id, new_vat, new_eth_ilk)
+
+    return {}
+
+
+def exit_vault(vault_id, new_vat, new_eth_ilk):
     """ Executes a single `exit_vault` operation.
 
         Closes out a vault in the `vat` by burning the `dai` and paying back the `eth`.
-        Since our simulation has no notion of external markets, this really just means deleting the
-        vault from the `vat`.
+        Since our simulation has no notion of external markets/addresses, this really just means
+        deleting the vault from the `vat` and subtracting from the total DAI tally in `eth_ilk`
     """
 
+    dai = new_vat[vault_id]["dai"]
+    new_eth_ilk["debt_dai"] -= dai
     del new_vat[vault_id]
 
 

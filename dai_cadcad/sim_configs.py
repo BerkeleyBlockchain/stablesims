@@ -83,3 +83,29 @@ read_dai_price_sim_config = config_sim(
         },
     }
 )
+
+
+vault_join_exit_sim_config = config_sim(
+    {
+        **dummy_sim_config,
+        **{
+            "T": range(100),
+            "M": {
+                "SUMP": [0],
+                "DUMP": [0],
+                "BUMP": [0],
+                "HUMP": [0],
+                "FLIP_BEG": [0],
+                "FLIP_TAU": [0],
+                "FLOP_BEG": [0],
+                "FLOP_TAU": [0],
+                "FLAP_BEG": [0],
+                "FLAP_TAU": [0],
+                "ETH_LINE": [0, 160000],
+                "ETH_DUST": [0],
+                "DSR": [0],
+                "WARM_TAU": [1, 1],
+            },
+        },
+    }
+)
