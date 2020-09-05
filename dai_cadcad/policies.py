@@ -91,7 +91,7 @@ def join_vault(eth, dai, new_vat, new_eth_ilk):
 
     new_vat[vault_id] = new_vault
 
-    new_eth_ilk["debt_dai"] += dai
+    new_eth_ilk["total_dai"] += dai
 
 
 def exit_vault_all(_params, _substep, _state_hist, state):
@@ -126,7 +126,7 @@ def exit_vault(vault_id, new_vat, new_eth_ilk):
     """
 
     dai = new_vat[vault_id]["dai"]
-    new_eth_ilk["debt_dai"] -= dai
+    new_eth_ilk["total_dai"] -= dai
     del new_vat[vault_id]
 
 
@@ -147,13 +147,14 @@ def bite_all(params, _substep, _state_hist, state):
     new_flipper = deepcopy(state["flipper"])
     spot_rate = state["eth_ilk"]["spot_rate"]
     stability_rate = state["eth_ilk"]["stability_rate"]
+    liquidation_rate = state["eth_ilk"]["liquidation_rate"]
 
     for vault_id in new_vat:
 
         vault = new_vat[vault_id]
         eth = vault["eth"]
         dai = vault["dai"]
-        debt_to_flip = dai * stability_rate
+        debt_to_flip = dai * stability_rate * liquidation_rate
         max_allowable_debt = spot_rate * eth
 
         if not vault["bitten"] and debt_to_flip > max_allowable_debt:

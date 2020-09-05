@@ -7,49 +7,51 @@ policies).
 """
 
 initial_state = {
-    "vat": {
-        "dummy_vault": {
-            "vault_id": "",  # Vault ID
-            "eth": 0,  # Vault collateralization (ETH)
-            "dai": 0,  # Vault debt (DAI)
-            "bitten": False,  # Whether or not the vault has been bitten
-        }
+    "cat": {"ilks": {"eth": {"chop": 1.13}}},  # Liquidation penalty rate
+    "flapper": {
+        "beg": 1.05,  # Minimum bid increase
+        "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
+        "bids": {
+            "dummy_bid": {
+                "id": "dummy_bid",  # Bid ID (TOREMOVE?)
+                "bid": 0,  # Current bid (MKR)
+                "lot": 0,  # Current lot (DAI)
+                "guy": "",  # Current highest bidder
+                "end": 0,  # Auction expiry timestep
+            }
+        },
     },
-    "vow": {
-        "debt_dai": 0,  # System debt (DAI)
-        "surplus_dai": 0,  # System surplus (DAI)
-    },
-    "flipper": {  # Tend -> dent
-        "dummy_flip": {
-            "flip_id": "",  # Auction ID
-            "phase": "",  # Auction phase ("tend" or "dent")
-            "debt_to_flip": 0,  # Desired amount of DAI to be raised from auction
-            "vault": "",  # Vault to send remaining ETH to after dent
-            "lot_eth": 0,  # Current lot (ETH)
-            "bid_dai": 0,  # Current bid (DAI)
-            "bidder": "",  # Current highest bidder
-            "expiry": 0,  # Auction expiration timestep
-        }
-    },
-    "flapper": {  # Tend
-        "dummy_flap": {
-            "flap_id": "",  # Auction ID
-            "lot_dai": 0,  # Current lot (DAI)
-            "bid_mkr": 0,  # Current bid (MKR)
-            "bidder": "",  # Current highest bidder
-            "expiry": 0,  # Auction expiration timestep
-        }
+    "flipper": {
+        "beg": 1.05,  # Minimum bid increase
+        "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
+        "bids": {
+            "dummy_bid": {  # Called a "bid" but really it's a Flipper auction
+                "id": "dummy_bid",  # Bid ID (TOREMOVE?)
+                "bid": 0,  # Current bid (DAI)
+                "lot": 0,  # Current lot (COLLAT)
+                "guy": "",  # Current highest bidder
+                "end": 0,  # Auction expiry timestep
+                "usr": "",  # ID of urn being auctioned
+                "gal": "vow",  # Recipient of bid (vow) (TOREMOVE?)
+                "tab": 0,  # Desired amount of DAI to be raised
+            }
+        },
     },
     "flopper": {  # Dent
-        "dummy_flop": {
-            "flop_id": "",  # Auction ID
-            "lot_mkr": 0,  # Current lot (MKR)
-            "bid_dai": 0,  # Current bid (DAI)
-            "bidder": "",  # Current highest bidder
-            "expiry": 0,  # Auction expiration timestep
-        }
+        "beg": 1.05,  # Minimum bid increase
+        "pad": 1.5,  # Lot increase per timestep
+        "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
+        "bids": {
+            "dummy_bid": {
+                "id": "",  # Bid ID (TOREMOVE?)
+                "bid": 0,  # Current bid (DAI)
+                "lot": 0,  # Current lot (MKR)
+                "guy": "",  # Current highest bidder
+                "end": 0,  # Auction expiry timestep
+            }
+        },
     },
-    "keepers": {
+    "keepers": {  # (TOREMOVE?)
         "dummy_keeper": {
             "keeper_id": "",  # Keeper ID
             "dai": 0,  # DAI balance
@@ -60,13 +62,35 @@ initial_state = {
             "flap_tolerance": 0,  # (TODO)
         }
     },
-    "eth_ilk": {
-        "debt_dai": 0,  # Total amount of DAI collateralized by ETH
-        "spot_rate": 2 / 3,  # Conversion rate (max amount of DAI per ETH)
-        "stability_rate": 1,  # Stability fee rate
+    "spotter": {},  # TODO
+    "vat": {
+        "sin": {"vow": 0,},  # System debt
+        "dai": {"vow": 0,},  # System surplus
+        "debt": 0,  # Total DAI issued
+        "urns": {  # Vaults
+            "dummy_urn": {
+                "id": "dummy_urn",  # Vault ID (TOREMOVE?)
+                "ink": 0,  # Vault collateral balance
+                "art": 0,  # Vault debt (DAI)
+                "bitten": False,  # Whether or not the vault has been bitten (CUSTOM) (TOREMOVE?)
+            }
+        },
+        "ilks": {
+            "eth": {
+                "Art": 0,  # Total debt (DAI)
+                "rate": 1,  # Accumulated stability fee rates
+                "spot": 0,  # Collateral price w/ safety margin (max DAI per unit of collateral)
+                "line": 0,  # Debt ceiling for ilk
+                "dust": 0,  # Debt floor for ilk
+            }
+        },
     },
-    "eth_price_usd": 0,
-    "dai_price_usd": 1,
+    "vow": {
+        "dump": 0,  # Flop initial lot size
+        "sump": 0,  # Flop fixed bid size
+        "bump": 0,  # Flap fixed lot size
+        "hump": 0,  # Surplus buffer
+    },
 }
 
 
