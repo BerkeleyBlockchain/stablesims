@@ -21,6 +21,7 @@ initial_state = {
         },
     },
     "flipper": {
+        "ilk": "eth",  # Collateral type
         "beg": 1.05,  # Minimum bid increase
         "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
         "bids": {
@@ -76,8 +77,9 @@ initial_state = {
     "vat": {
         "sin": {"vow": 0,},  # System debt
         "dai": {"vow": 0,},  # Debt ledger  # System surplus
-        "gem": {},  # Collateral ledger
+        "gem": {"eth": {"cat": 0, "flipper": 0,}},  # Collateral ledger
         "debt": 0,  # Total DAI issued
+        "vice": 0,  # Total unbacked DAI
         "Line": 0,  # Total debt ceiling
         "urns": {  # Vaults
             "eth": {
@@ -98,6 +100,8 @@ initial_state = {
         },
     },
     "vow": {
+        "Sin": 0,  # Amount of debt queued
+        "Ash": 0,  # Amount of debt on auction
         "dump": 0,  # Flop initial lot size
         "sump": 0,  # Flop fixed bid size
         "bump": 0,  # Flap fixed lot size

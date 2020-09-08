@@ -57,6 +57,14 @@ def read_eth_price_usd(params, _substep, _state_hist, state):
 # Vat
 
 
+def flux(vat, ilk_id, src, dst, wad):
+    """ Moves gem from one address to another.
+    """
+
+    vat["gem"][ilk_id][src] -= wad
+    vat["gem"][ilk_id][dst] += wad
+
+
 def frob(vat, ilk_id, user_id, dink, dart):
     """ Sets an urn (whether it exists or not) in the Vat.
     """
@@ -78,7 +86,7 @@ def frob(vat, ilk_id, user_id, dink, dart):
     assert urn["art"] == 0 or tab >= ilk["dust"]
 
     vat["debt"] += dtab
-    vat["gem"][user_id] -= dink
+    vat["gem"][ilk_id][user_id] -= dink
     vat["dai"][user_id] += dtab
 
     vat["urns"][ilk_id][user_id] = urn
@@ -104,44 +112,40 @@ def reduce_frob(params, _substep, _state_hist, state):
         prob = 5 * ddai_val + 0.05
         if random.random() <= prob:
             frob(new_vat, "eth", uuid4().hex, eth_val, eth_val * 4 / 7)
+            return {"vat": new_vat}
 
     return {}
 
 
-def exit_vault_all(_params, _substep, _state_hist, state):
-    """ Generates and executes all `join_vault` operations.
+def grab(vat, ilk_id, user_id, dink, dart):
+    """ Confiscates a vault.
     """
 
-    new_vat = deepcopy(state["vat"])
-    new_eth_ilk = deepcopy(state["eth_ilk"])
-    dai_price_usd = state["dai_price_usd"]
+    urn = vat["urns"][ilk_id][user_id]
+    ilk = vat["ilks"][ilk_id]
 
-    if dai_price_usd < 1:
-        delta = 1 - dai_price_usd
-        prob = 5 * delta + 0.05
-        if random.random() <= prob:
-            # Pick a random, unbitten vault to exit
-            # TODO: Make sure to remove "dummy_vault" from state
-            vault_id = random.choice(new_vat.keys())
-            while new_vat[vault_id]["bitten"]:
-                vault_id = random.choice(new_vat.keys())
+    urn["ink"] += dink
+    urn["art"] += dart
+    ilk["Art"] += dart
 
-            exit_vault(vault_id, new_vat, new_eth_ilk)
+    dtab = ilk["rate"] * dart
 
-    return {}
+    vat["gem"][ilk_id]["cat"] -= dink
+    vat["sin"]["vow"] -= dtab
+    vat["vice"] -= dtab
 
 
-def exit_vault(vault_id, new_vat, new_eth_ilk):
-    """ Executes a single `exit_vault` operation.
+# ---
 
-        Closes out a vault in the `vat` by burning the `dai` and paying back the `eth`.
-        Since our simulation has no notion of external markets/addresses, this really just means
-        deleting the vault from the `vat` and subtracting from the total DAI tally in `eth_ilk`
+
+# Vow
+
+
+def fess(vow, tab):
+    """ Pushes to the debt queue.
     """
 
-    dai = new_vat[vault_id]["dai"]
-    new_eth_ilk["total_dai"] -= dai
-    del new_vat[vault_id]
+    vow["Sin"] += tab
 
 
 # ---
@@ -150,7 +154,7 @@ def exit_vault(vault_id, new_vat, new_eth_ilk):
 # Cat
 
 
-def bite(vat, _cat, ilk_id, user_id):
+def bite(vat, vow, cat, flipper, ilk_id, user_id, now):
     """ Liquidates an undercollateralized vault and puts its collateral up for a Flipper auction.
     """
 
@@ -165,17 +169,13 @@ def bite(vat, _cat, ilk_id, user_id):
     assert spot > 0 and ink * spot < art * rate
     assert art > 0 and ink > 0
 
-    # milk = cat["ilks"][ilk_id]
+    grab(vat, ilk_id, user_id, -ink, -art)
+    fess(vow, art * rate)
 
-    # TODO
-    # grab(ilk_id, user_id, -ink, -art)
-    # TODO
-    # fess(dart * rate)
+    milk = cat["ilks"][ilk_id]
+    tab = art * rate * milk["chop"]
 
-    # tab = art * rate * milk["chop"]
-
-    # TODO
-    # flip_kick(user_id, "vow", tab, ink, 0)
+    flip_kick(flipper, vat, user_id, "vow", tab, ink, 0, now + flipper["tau"])
 
 
 def reduce_bite(_params, _substep, _state_hist, state):
@@ -183,7 +183,9 @@ def reduce_bite(_params, _substep, _state_hist, state):
     """
 
     new_vat = deepcopy(state["vat"])
+    new_vow = deepcopy(state["vow"])
     new_cat = deepcopy(state["cat"])
+    new_flipper = deepcopy(state["flipper"])
 
     for user_id in new_vat["urns"]["eth"]:
 
@@ -196,9 +198,17 @@ def reduce_bite(_params, _substep, _state_hist, state):
         spot = ilk["spot"]
 
         if ink * spot < art * rate:
-            bite(new_vat, new_cat, "eth", user_id)
+            bite(
+                new_vat,
+                new_vow,
+                new_cat,
+                new_flipper,
+                "eth",
+                user_id,
+                state["timestep"],
+            )
 
-    return {"cat": new_cat, "vat": new_vat}
+    return {"cat": new_cat, "flipper": new_flipper, "vat": new_vat, "vow": new_vow}
 
 
 # ---
@@ -207,227 +217,21 @@ def reduce_bite(_params, _substep, _state_hist, state):
 # Flipper
 
 
-def make_flip_tend(flip_id, bid, keeper_id):
-    """ Needs to be refactored to `_all()` convention.
+def flip_kick(flipper, vat, user_id, gal, tab, lot, bid, end):
+    """ Kicks off a Flip auction.
     """
 
-    def flip_tend(params, _substep, _state_hist, state):
-
-        # TODO: Check that `flip` exists?
-
-        flip = state["flipper"][flip_id]
-
-        # TODO: Check that `flip` has not expired?
-
-        phase = flip["phase"]
-        assert phase == "tend"
-        bid_dai = flip["bid_dai"]
-        assert bid > bid_dai * params["FLIP_BEG"]
-        # Not sure why we don't want to raise more, but this is from the smart contract
-        # https://github.com/makerdao/dss/blob/master/src/flip.sol
-        debt_to_flip = flip["debt_to_flip"]
-        assert bid <= debt_to_flip
-
-        new_flipper = deepcopy(state["flipper"])
-        new_flip = new_flipper[flip_id]
-        new_flip["bid_dai"] = bid
-        new_flip["bidder"] = keeper_id
-        if bid == debt_to_flip:
-            new_flip["phase"] = "dent"
-        # TODO: Should timekeeping be handled here?
-        new_flip["expiry"] -= 1
-
-        return {"flipper": new_flipper}
-
-    return flip_tend
-
-
-def make_flip_dent(flip_id, lot, keeper_id):
-    """ Needs to be refactored to `_all()` convention.
-    """
-
-    def flip_dent(params, _substep, _state_hist, state):
-
-        flip = state["flipper"][flip_id]
-
-        phase = flip["phase"]
-        assert phase == "dent"
-
-        lot_eth = flip["lot_eth"]
-        assert lot < lot_eth * params["FLIP_BEG"]
-
-        new_flipper = deepcopy(state["flipper"])
-        new_flip = new_flipper[flip_id]
-        new_flip["lot_eth"] = lot
-        new_flip["bidder"] = keeper_id
-        new_flip["expiry"] -= 1
-
-        return {"flipper": new_flipper}
-
-    return flip_dent
-
-
-def make_flip_deal(flip_id):
-    """ Needs to be refactored to `_all()` convention.
-    """
-
-    def flip_deal(_params, _substep, _state_hist, state):
-
-        flip = state["flipper"][flip_id]
-
-        expiry = flip["expiry"]
-        assert expiry == 0
-
-        # Move DAI bid from Keeper to Vow surplus
-        new_keepers = deepcopy(state["keepers"])
-        new_keeper = new_keepers[flip["bidder"]]
-        bid_dai = flip["bid_dai"]
-        new_keeper["dai"] -= bid_dai
-        new_vow = deepcopy(state["vow"])
-        new_vow["surplus_dai"] += bid_dai
-
-        # If not enough Dai raised, put remainder of debt in Vow
-
-        # Move ETH lot from Vault to Keeper
-        new_vat = deepcopy(state["vat"])
-        new_vault = new_vat[flip["vault"]]
-        lot_eth = flip["lot_eth"]
-        new_vault["eth"] -= lot_eth
-        # TODO: Should vault cleanup logic be handled here?
-        new_keeper["eth"] += lot_eth
-
-        # Delete Flipper auction
-        new_flipper = deepcopy(state["flipper"])
-        del new_flipper[flip_id]
-
-        return {
-            "vow": new_vow,
-            "keepers": new_keepers,
-            "vat": new_vat,
-            "flipper": new_flipper,
-        }
-
-    return flip_deal
-
-
-# ---
-
-
-# Flapper
-
-
-def make_flap_tend(flap_id, bid, keeper_id):
-    """ Needs to be refactored to `_all()` convention.
-    """
-
-    def flap_tend(params, _substep, _state_hist, state):
-
-        flap = state["flapper"][flap_id]
-
-        bid_mkr = flap["bid_mkr"]
-        assert bid > bid_mkr * params["FLAP_BEG"]
-
-        new_flapper = deepcopy(state["flapper"])
-        new_flap = new_flapper[flap_id]
-        new_flap["bid_mkr"] = bid
-        new_flap["bidder"] = keeper_id
-        new_flap["expiry"] -= 1
-
-        return {"flapper": new_flapper}
-
-    return flap_tend
-
-
-def make_flap_deal(flap_id):
-    """ Needs to be refactored to `_all()` convention.
-    """
-
-    def flap_deal(_params, _substep, _state_hist, state):
-
-        flap = state["flapper"][flap_id]
-
-        expiry = flap["expiry"]
-        assert expiry == 0
-
-        # Burn Keeper's MKR bid
-        bid_mkr = flap["bid_mkr"]
-        new_keepers = deepcopy(state["keepers"])
-        new_keeper = new_keepers[flap["bidder"]]
-        new_keeper["mkr"] -= bid_mkr
-
-        # Move DAI lot from Vow surplus to Keeper
-        new_vow = deepcopy(state["vow"])
-        lot_dai = flap["lot_dai"]
-        new_vow["surplus_dai"] -= lot_dai
-        new_keeper["dai"] += lot_dai
-
-        # Delete Flapper auction
-        new_flapper = deepcopy(state["flapper"])
-        del new_flapper[flap_id]
-
-        return {"keepers": new_keepers, "vow": new_vow, "flapper": new_flapper}
-
-    return flap_deal
-
-
-# ---
-
-
-# Flopper
-
-
-def make_flop_dent(flop_id, lot, keeper_id):
-    """ Needs to be refactored to `_all()` convention.
-    """
-
-    def flop_dent(params, _substep, _state_hist, state):
-
-        flop = state["flopper"][flop_id]
-
-        lot_mkr = flop["lot_mkr"]
-        assert lot < lot_mkr * params["FLOP_BEG"]
-
-        new_flopper = deepcopy(state["flopper"])
-        new_flop = new_flopper[flop_id]
-        new_flop["lot_mkr"] = lot
-        new_flop["bidder"] = keeper_id
-        new_flop["expiry"] -= 1
-
-        return {"flopper": new_flopper}
-
-    return flop_dent
-
-
-def make_flop_deal(flop_id):
-    """ Needs to be refactored to `_all()` convention.
-    """
-
-    def flop_deal(_params, _substep, _state_hist, state):
-
-        flop = state["flopper"][flop_id]
-
-        expiry = flop["expiry"]
-        assert expiry == 0
-
-        # Move DAI bid from Keeper to Vow surplus
-        new_keepers = deepcopy(state["keepers"])
-        new_keeper = new_keepers[flop["bidder"]]
-        bid_dai = flop["bid_dai"]
-        new_keeper["dai"] -= bid_dai
-        new_vow = deepcopy(state["vow"])
-        new_vow["surplus_dai"] += bid_dai
-
-        # Mint MKR lot
-        lot_mkr = flop["lot_mkr"]
-        new_keeper["mkr"] += lot_mkr
-
-        # Delete Flopper auction
-        new_flopper = deepcopy(state["flopper"])
-        del new_flopper[flop_id]
-
-        return {"vow": new_vow, "keepers": new_keepers, "flopper": new_flopper}
-
-    return flop_deal
+    flipper["bids"][uuid4().hex] = {
+        "bid": bid,
+        "lot": lot,
+        "guy": "cat",
+        "end": end,
+        "usr": user_id,
+        "gal": gal,
+        "tab": tab,
+    }
+
+    flux(vat, flipper["ilk"], "cat", "flipper", lot)
 
 
 # ---
