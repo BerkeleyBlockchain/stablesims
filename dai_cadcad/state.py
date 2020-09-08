@@ -13,7 +13,6 @@ initial_state = {
         "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
         "bids": {
             "dummy_bid": {
-                "id": "dummy_bid",  # Bid ID (TOREMOVE?)
                 "bid": 0,  # Current bid (MKR)
                 "lot": 0,  # Current lot (DAI)
                 "guy": "",  # Current highest bidder
@@ -26,7 +25,6 @@ initial_state = {
         "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
         "bids": {
             "dummy_bid": {  # Called a "bid" but really it's a Flipper auction
-                "id": "dummy_bid",  # Bid ID (TOREMOVE?)
                 "bid": 0,  # Current bid (DAI)
                 "lot": 0,  # Current lot (COLLAT)
                 "guy": "",  # Current highest bidder
@@ -43,7 +41,6 @@ initial_state = {
         "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
         "bids": {
             "dummy_bid": {
-                "id": "",  # Bid ID (TOREMOVE?)
                 "bid": 0,  # Current bid (DAI)
                 "lot": 0,  # Current lot (MKR)
                 "guy": "",  # Current highest bidder
@@ -53,7 +50,6 @@ initial_state = {
     },
     "keepers": {  # (TOREMOVE?)
         "dummy_keeper": {
-            "keeper_id": "",  # Keeper ID
             "dai": 0,  # DAI balance
             "eth": 0,  # ETH balance
             "mkr": 0,  # MKR balance
@@ -62,17 +58,33 @@ initial_state = {
             "flap_tolerance": 0,  # (TODO)
         }
     },
-    "spotter": {},  # TODO
+    "spotter": {
+        "par": 1,  # Target price of DAI (USD/DAI)
+        "ilks": {
+            "eth": {
+                "pip": "../price_feeds/eth.json",  # Price feed file
+                "val": 0,  # Current USD price (cached for efficiency) (CUSTOM)
+                "mat": 1.5,  # Liquidation ratio
+            },
+            "dai": {  # DAI isn't an ilk but it makes the most sense to store price here
+                "pip": "../price_feeds/dai.json",
+                "val": 1,
+                "mat": 1,
+            },
+        },
+    },
     "vat": {
         "sin": {"vow": 0,},  # System debt
-        "dai": {"vow": 0,},  # System surplus
+        "dai": {"vow": 0,},  # Debt ledger  # System surplus
+        "gem": {},  # Collateral ledger
         "debt": 0,  # Total DAI issued
+        "Line": 0,  # Total debt ceiling
         "urns": {  # Vaults
-            "dummy_urn": {
-                "id": "dummy_urn",  # Vault ID (TOREMOVE?)
-                "ink": 0,  # Vault collateral balance
-                "art": 0,  # Vault debt (DAI)
-                "bitten": False,  # Whether or not the vault has been bitten (CUSTOM) (TOREMOVE?)
+            "eth": {
+                "dummy_urn": {
+                    "ink": 0,  # Vault collateral balance
+                    "art": 0,  # Vault debt (DAI)
+                }
             }
         },
         "ilks": {
@@ -94,20 +106,20 @@ initial_state = {
 }
 
 
-def update_vat(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `vat` state variable.
+def update_cat(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `cat` state variable.
     """
 
-    new_vat = policy_signals.get("vat", state["vat"])
-    return ("vat", new_vat)
+    new_cat = policy_signals.get("cat", state["cat"])
+    return ("cat", new_cat)
 
 
-def update_vow(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `vow` state variable.
+def update_flapper(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `flapper` state variable.
     """
 
-    new_vow = policy_signals.get("vow", state["vow"])
-    return ("vow", new_vow)
+    new_flapper = policy_signals.get("flapper", state["flapper"])
+    return ("flapper", new_flapper)
 
 
 def update_flipper(_params, _substep, _state_hist, state, policy_signals):
@@ -126,14 +138,6 @@ def update_flopper(_params, _substep, _state_hist, state, policy_signals):
     return ("flopper", new_flopper)
 
 
-def update_flapper(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `flapper` state variable.
-    """
-
-    new_flapper = policy_signals.get("flapper", state["flapper"])
-    return ("flapper", new_flapper)
-
-
 def update_keepers(_params, _substep, _state_hist, state, policy_signals):
     """ Updates `keepers` state variable.
     """
@@ -142,25 +146,25 @@ def update_keepers(_params, _substep, _state_hist, state, policy_signals):
     return ("keepers", new_keepers)
 
 
-def update_eth_ilk(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `eth_ilk` state variable.
+def update_spotter(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `spotter` state variable.
     """
 
-    new_eth_ilk = policy_signals.get("eth_ilk", state["eth_ilk"])
-    return ("eth_ilk", new_eth_ilk)
+    new_spotter = policy_signals.get("spotter", state["spotter"])
+    return ("spotter", new_spotter)
 
 
-def update_eth_price_usd(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `eth_price_usd` state variable.
+def update_vat(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `vat` state variable.
     """
 
-    new_eth_price_usd = policy_signals.get("eth_price_usd", state["eth_price_usd"])
-    return ("eth_price_usd", new_eth_price_usd)
+    new_vat = policy_signals.get("vat", state["vat"])
+    return ("vat", new_vat)
 
 
-def update_dai_price_usd(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `dai_price_usd` state variable.
+def update_vow(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `vow` state variable.
     """
 
-    new_dai_price_usd = policy_signals.get("dai_price_usd", state["dai_price_usd"])
-    return ("dai_price_usd", new_dai_price_usd)
+    new_vow = policy_signals.get("vow", state["vow"])
+    return ("vow", new_vow)

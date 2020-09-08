@@ -57,41 +57,55 @@ def read_eth_price_usd(params, _substep, _state_hist, state):
 # Vat
 
 
-def join_vault_all(params, _substep, _state_hist, state):
-    """ Generates and executes all `join_vault` operations.
+def frob(vat, ilk_id, user_id, dink, dart):
+    """ Sets an urn (whether it exists or not) in the Vat.
+    """
+
+    urn = deepcopy(vat["urns"][ilk_id].get(user_id, {"ink": 0, "art": 0}))
+    ilk = deepcopy(vat["ilks"][ilk_id])
+
+    urn["ink"] += dink
+    urn["art"] += dart
+    ilk["Art"] += dart
+
+    dtab = ilk["rate"] * dart
+    tab = ilk["rate"] * urn["art"]
+
+    assert dart <= 0 or (
+        ilk["Art"] * ilk["rate"] <= ilk["line"] and vat["debt"] <= vat["Line"]
+    )
+    assert (dart <= 0 <= dink) or tab <= urn["ink"] * ilk["spot"]
+    assert urn["art"] == 0 or tab >= ilk["dust"]
+
+    vat["debt"] += dtab
+    vat["gem"][user_id] -= dink
+    vat["dai"][user_id] += dtab
+
+    vat["urns"][ilk_id][user_id] = urn
+    vat["ilks"][ilk_id] = ilk
+
+
+def reduce_frob(params, _substep, _state_hist, state):
+    """ Executes all `frob` operations for a timestep.
     """
 
     new_vat = deepcopy(state["vat"])
-    new_eth_ilk = deepcopy(state["eth_ilk"])
-    dai_price_usd = state["dai_price_usd"]
+    dai_val = state["spotter"]["ilks"]["dai"]["val"]
+    eth_val = state["spotter"]["ilks"]["eth"]["val"]
 
     if state["timestep"] < params["WARM_TAU"]:
         for _ in range(1000):
-            join_vault(150, 100, new_vat, new_eth_ilk)
+            # Open a vault w/ 1 ETH @ 175% collateralization
+            # TODO: Associate this with an "Ideal" or "Basic" user behavior
+            frob(new_vat, "eth", uuid4().hex, eth_val, eth_val * 4 / 7)
         return {"vat": new_vat}
-    if dai_price_usd > 1:
-        delta = dai_price_usd - 1
-        prob = 5 * delta + 0.05
+    if dai_val > 1:
+        ddai_val = dai_val - 1
+        prob = 5 * ddai_val + 0.05
         if random.random() <= prob:
-            join_vault(150, 100, new_vat, new_eth_ilk)
+            frob(new_vat, "eth", uuid4().hex, eth_val, eth_val * 4 / 7)
 
     return {}
-
-
-# TODO: Be sure to remember the ETH_LINE assertion
-def join_vault(eth, dai, new_vat, new_eth_ilk):
-    """ Executes a single `join_vault` operation.
-
-        Creates a new vault in the `vat` containing `eth` and `dai`.
-    """
-
-    # Create the new vault to be joined
-    vault_id = uuid4().hex
-    new_vault = {"vault_id": vault_id, "eth": eth, "dai": dai, "bitten": False}
-
-    new_vat[vault_id] = new_vault
-
-    new_eth_ilk["total_dai"] += dai
 
 
 def exit_vault_all(_params, _substep, _state_hist, state):
@@ -136,56 +150,55 @@ def exit_vault(vault_id, new_vat, new_eth_ilk):
 # Cat
 
 
-def bite_all(params, _substep, _state_hist, state):
-    """ Generates and executes all `bite` operations.
+def bite(vat, _cat, ilk_id, user_id):
+    """ Liquidates an undercollateralized vault and puts its collateral up for a Flipper auction.
+    """
 
-        Searches through all vaults in the vat, and returns a list
-        of `bite` policy functions for each undercollateralized one.
+    ilk = vat["ilks"][ilk_id]
+
+    rate = ilk["rate"]
+    spot = ilk["spot"]
+
+    ink = vat["urns"][ilk_id][user_id]["ink"]
+    art = vat["urns"][ilk_id][user_id]["art"]
+
+    assert spot > 0 and ink * spot < art * rate
+    assert art > 0 and ink > 0
+
+    # milk = cat["ilks"][ilk_id]
+
+    # TODO
+    # grab(ilk_id, user_id, -ink, -art)
+    # TODO
+    # fess(dart * rate)
+
+    # tab = art * rate * milk["chop"]
+
+    # TODO
+    # flip_kick(user_id, "vow", tab, ink, 0)
+
+
+def reduce_bite(_params, _substep, _state_hist, state):
+    """ Executes all `bite` operations for a timestep.
     """
 
     new_vat = deepcopy(state["vat"])
-    new_flipper = deepcopy(state["flipper"])
-    spot_rate = state["eth_ilk"]["spot_rate"]
-    stability_rate = state["eth_ilk"]["stability_rate"]
-    liquidation_rate = state["eth_ilk"]["liquidation_rate"]
+    new_cat = deepcopy(state["cat"])
 
-    for vault_id in new_vat:
+    for user_id in new_vat["urns"]["eth"]:
 
-        vault = new_vat[vault_id]
-        eth = vault["eth"]
-        dai = vault["dai"]
-        debt_to_flip = dai * stability_rate * liquidation_rate
-        max_allowable_debt = spot_rate * eth
+        urn = new_vat["urns"]["eth"][user_id]
+        ink = urn["ink"]
+        art = urn["art"]
 
-        if not vault["bitten"] and debt_to_flip > max_allowable_debt:
-            flip_tau = params["FLIP_TAU"]
-            bite(vault_id, debt_to_flip, eth, flip_tau, new_vat, new_flipper)
+        ilk = new_vat["ilks"]["eth"]
+        rate = ilk["rate"]
+        spot = ilk["spot"]
 
-    return {"flipper": new_flipper, "vat": new_vat}
+        if ink * spot < art * rate:
+            bite(new_vat, new_cat, "eth", user_id)
 
-
-# TODO: Should we still do assertions within the function itself?
-def bite(vault_id, debt_to_flip, eth, flip_tau, new_vat, new_flipper):
-    """ Executes a single `bite` operation.
-
-        Marks the given vault as bitten, and creates a new flip (effectively kicking it).
-    """
-
-    # Create the Flipper auction to be kicked (adding it to the flipper is the same as kicking it)
-    flip_id = uuid4().hex
-    new_flip = {
-        "flip_id": flip_id,
-        "phase": "tend",
-        "debt_to_flip": debt_to_flip,
-        "vault": vault_id,
-        "lot_eth": eth,
-        "bid_dai": 0,
-        "bidder": "",
-        "expiry": flip_tau,
-    }
-
-    new_flipper[flip_id] = new_flip
-    new_vat[vault_id]["bitten"] = True
+    return {"cat": new_cat, "vat": new_vat}
 
 
 # ---
