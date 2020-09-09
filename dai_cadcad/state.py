@@ -57,7 +57,7 @@ initial_state = {
             "expiry": 0,  # Auction expiration timestep
         }
     },
-    "keepers": {
+    "keeper": {
         "dummy_keeper": {
             "keeper_id": "",  # Keeper ID
             "dai": 0,  # DAI balance

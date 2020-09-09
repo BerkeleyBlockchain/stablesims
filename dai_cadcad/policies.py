@@ -14,6 +14,7 @@ as well as checking the necessary conditions.
 
 from uuid import uuid4
 from copy import deepcopy
+import random
 
 
 # Vat
@@ -340,28 +341,43 @@ def make_flop_deal(flop_id):
 
 # Keeper
 
-def process_bid_all(params, _substep, _state_hist, state):
+
+def process_bid_all(_substep, _state_hist, state):
     """ Generates and executes all `bid` operations.
 
     """
-    # for (flipper in state["flipper"]):
-    #   new_flipper = deepcopy(flipper)
+    new_flipper = deepcopy(state["flipper"])
+    for flipper in new_flipper.keys():
 
-      
-    return {}
+        curr_flipper = new_flipper[flipper]
+        for keeper in state["keeper"].keys():
+
+            curr_keeper = deepcopy(state["keeper"][keeper])
+            keeper_id = curr_keeper["keeper_id"]
+
+            process_bid(keeper_id, curr_flipper)
+
+    return {"flipper": new_flipper}
 
 
-def process_bid(bid, keeper_id, new_flipper):
-  """ Executes a single 'bid' from a Keeper.
+def process_bid(keeper_id, new_flipper):
+    """ Executes a single 'bid' from a Keeper.
 
       Changes fields in an existing Flipper Auction.
   """
-  assert new_flipper["expiry"] != 0
-  assert bid > new_flipper["bid"]
-  # include keeper should bid logic here
+    #   assert new_flipper["expiry"] != 0
+    #   assert bid > new_flipper["bid"]
+    #   include keeper should bid logic here
+    bid = random.randint(0, 9)
 
-  new_flipper["bid"] = bid
-  new_flipper["bidder"] = keeper_id
+    new_bid = {
+        "bid": bid,
+        "keeper_id": keeper_id,
+        #   "lot": new_flipper["lot"],
+        #   "phase": new_flipper["phase"],
+    }
+
+    new_flipper["pending_bids"].append(new_bid)
 
 
 # ---
