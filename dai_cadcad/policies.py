@@ -18,37 +18,105 @@ import json
 import random
 
 
-# Price Feeds
+# ---
 
 
-def read_dai_price_usd(params, _substep, _state_hist, state):
-    """ Reads in the DAI price in USD for the given timestep from the local price feed.
+# Behaviors
+
+
+def open_eth_vault(vat, eth, dai):
+    """ Opens a new vault with unjoined ETH collateral.
     """
 
-    timestep = state["timestep"]
-    warm_tau = params["WARM_TAU"]
-    if timestep >= warm_tau:
-        with open("../price_feeds/dai.json") as dai_price_feed_json:
-            dai_price_usd = json.load(dai_price_feed_json)[timestep - warm_tau][
-                "price_close"
-            ]
-        return {"dai_price_usd": dai_price_usd}
+    user_id = uuid4().hex
+    gemjoin_join(vat, "eth", user_id, eth)
+    vat_frob(vat, "eth", user_id, eth, dai)
+
+
+def reduce_open_eth_vault(params, _substep, _state_hist, state):
+    """ Executes all `open_eth_vault` policies for a timestep.
+    """
+
+    new_vat = deepcopy(state["vat"])
+    dai_val = state["spotter"]["ilks"]["dai"]["val"]
+    eth_val = state["spotter"]["ilks"]["eth"]["val"]
+
+    if state["timestep"] < params["WARM_TAU"]:
+        for _ in range(1000):
+            # Open a vault w/ 1 ETH @ 175% collateralization
+            # TODO: Associate this with an "Ideal" or "Basic" user behavior
+            open_eth_vault(new_vat, 1, eth_val * 4 / 7)
+        return {"vat": new_vat}
+    if dai_val > 1:
+        ddai_val = dai_val - 1
+        prob = 5 * ddai_val + 0.05
+        if random.random() <= prob:
+            open_eth_vault(new_vat, 1, eth_val * 4 / 7)
+            return {"vat": new_vat}
+
     return {}
 
 
-def read_eth_price_usd(params, _substep, _state_hist, state):
-    """ Reads in the ETH price in USD for the given timestep from the local price feed.
+# ---
+
+
+# Join
+
+
+def gemjoin_join(vat, ilk_id, user_id, wad):
+    """ Records a collateral deposit in the Vat.
     """
 
-    timestep = state["timestep"]
-    warm_tau = params["WARM_TAU"]
-    if timestep >= warm_tau:
-        with open("../price_feeds/eth.json") as eth_price_feed_json:
-            eth_price_usd = json.load(eth_price_feed_json)[timestep - warm_tau][
-                "price_close"
-            ]
-        return {"eth_price_usd": eth_price_usd}
-    return {}
+    assert wad >= 0
+    vat_slip(vat, ilk_id, user_id, wad)
+
+
+def gemjoin_exit(vat, ilk_id, user_id, wad):
+    """ Records a collateral withdrawal in the Vat.
+    """
+
+    vat_slip(vat, ilk_id, user_id, -wad)
+
+
+def daijoin_join(vat, user_id, wad):
+    """ Records an ERC-20 Dai deposit in the Vat.
+    """
+
+    vat_move(vat, "daijoin", user_id, wad)
+
+
+def daijoin_exit(vat, user_id, wad):
+    """ Records an ERC-20 Dai withdrawal in the Vat.
+    """
+
+    vat_move(vat, user_id, "daijoin", wad)
+
+
+# ---
+
+
+# Spotter
+
+
+def spotter_peek(pip, timestep):
+    """ Read in the price value at time `timestep` from feed `pip`.
+    """
+
+    with open(pip) as price_feed_json:
+        return json.load(price_feed_json)[timestep]["price_close"]
+
+
+def spotter_poke(spotter, vat, ilk_id, now):
+    """ Gets the current `spot` value of the given Ilk.
+    """
+
+    ilk = spotter["ilks"][ilk_id]
+    val = spotter_peek(ilk["pip"], now)
+    ilk["val"] = val
+
+    spot = val / spotter["par"] / ilk["mat"]
+
+    vat_file(vat, ilk_id, "spot", spot)
 
 
 # ---
@@ -57,16 +125,47 @@ def read_eth_price_usd(params, _substep, _state_hist, state):
 # Vat
 
 
-def flux(vat, ilk_id, src, dst, wad):
-    """ Moves gem from one address to another.
+def vat_file(vat, ilk_id, what, data):
+    """ Sets the `what` field for the given Ilk to `data`.
+    """
+
+    if what == "spot":
+        vat["ilks"][ilk_id]["spot"] = data
+    elif what == "line":
+        vat["ilks"][ilk_id]["line"] = data
+    elif what == "dust":
+        vat["ilks"][ilk_id]["dust"] = data
+
+
+def vat_slip(vat, ilk_id, user_id, wad):
+    """ Adds to the collateral record of the user. Creates the record if necessary.
+    """
+
+    gem = vat["gem"][ilk_id].get(user_id, 0)
+    gem += wad
+    vat["gem"][ilk_id][user_id] = gem
+
+
+def vat_flux(vat, ilk_id, src, dst, wad):
+    """ Moves gem from one address to another. Assumes both addresses already exist.
     """
 
     vat["gem"][ilk_id][src] -= wad
     vat["gem"][ilk_id][dst] += wad
 
 
-def frob(vat, ilk_id, user_id, dink, dart):
-    """ Sets an urn (whether it exists or not) in the Vat.
+def vat_move(vat, src, dst, rad):
+    """ Moves dai from one address to another. Assumes both addresses already exist.
+    """
+
+    vat["dai"][src] -= rad
+    vat["dai"][dst] += rad
+
+
+def vat_frob(vat, ilk_id, user_id, dink, dart):
+    """ Sets an urn in the Vat and updates the collateral and Dai records approiately.
+
+        Creates an urn and Dai record if they don't exist.
     """
 
     urn = deepcopy(vat["urns"][ilk_id].get(user_id, {"ink": 0, "art": 0}))
@@ -87,38 +186,16 @@ def frob(vat, ilk_id, user_id, dink, dart):
 
     vat["debt"] += dtab
     vat["gem"][ilk_id][user_id] -= dink
-    vat["dai"][user_id] += dtab
+    dai = vat["dai"].get(user_id, 0)
+    dai += dtab
+    vat["dai"][user_id] = dai
 
     vat["urns"][ilk_id][user_id] = urn
     vat["ilks"][ilk_id] = ilk
 
 
-def reduce_frob(params, _substep, _state_hist, state):
-    """ Executes all `frob` operations for a timestep.
-    """
-
-    new_vat = deepcopy(state["vat"])
-    dai_val = state["spotter"]["ilks"]["dai"]["val"]
-    eth_val = state["spotter"]["ilks"]["eth"]["val"]
-
-    if state["timestep"] < params["WARM_TAU"]:
-        for _ in range(1000):
-            # Open a vault w/ 1 ETH @ 175% collateralization
-            # TODO: Associate this with an "Ideal" or "Basic" user behavior
-            frob(new_vat, "eth", uuid4().hex, eth_val, eth_val * 4 / 7)
-        return {"vat": new_vat}
-    if dai_val > 1:
-        ddai_val = dai_val - 1
-        prob = 5 * ddai_val + 0.05
-        if random.random() <= prob:
-            frob(new_vat, "eth", uuid4().hex, eth_val, eth_val * 4 / 7)
-            return {"vat": new_vat}
-
-    return {}
-
-
-def grab(vat, ilk_id, user_id, dink, dart):
-    """ Confiscates a vault.
+def vat_grab(vat, ilk_id, user_id, dink, dart):
+    """ Confiscates an urn.
     """
 
     urn = vat["urns"][ilk_id][user_id]
@@ -141,7 +218,7 @@ def grab(vat, ilk_id, user_id, dink, dart):
 # Vow
 
 
-def fess(vow, tab):
+def vow_fess(vow, tab):
     """ Pushes to the debt queue.
     """
 
@@ -154,7 +231,7 @@ def fess(vow, tab):
 # Cat
 
 
-def bite(vat, vow, cat, flipper, ilk_id, user_id, now):
+def cat_bite(vat, vow, cat, flipper, ilk_id, user_id, now):
     """ Liquidates an undercollateralized vault and puts its collateral up for a Flipper auction.
     """
 
@@ -169,16 +246,17 @@ def bite(vat, vow, cat, flipper, ilk_id, user_id, now):
     assert spot > 0 and ink * spot < art * rate
     assert art > 0 and ink > 0
 
-    grab(vat, ilk_id, user_id, -ink, -art)
-    fess(vow, art * rate)
+    vat_grab(vat, ilk_id, user_id, -ink, -art)
+    vow_fess(vow, art * rate)
 
     milk = cat["ilks"][ilk_id]
     tab = art * rate * milk["chop"]
+    cat["litter"] += tab
 
-    flip_kick(flipper, vat, user_id, "vow", tab, ink, 0, now + flipper["tau"])
+    flipper_kick(flipper, vat, user_id, "vow", tab, ink, 0, now + flipper["tau"])
 
 
-def reduce_bite(_params, _substep, _state_hist, state):
+def reduce_cat_bite(_params, _substep, _state_hist, state):
     """ Executes all `bite` operations for a timestep.
     """
 
@@ -198,7 +276,7 @@ def reduce_bite(_params, _substep, _state_hist, state):
         spot = ilk["spot"]
 
         if ink * spot < art * rate:
-            bite(
+            cat_bite(
                 new_vat,
                 new_vow,
                 new_cat,
@@ -211,27 +289,94 @@ def reduce_bite(_params, _substep, _state_hist, state):
     return {"cat": new_cat, "flipper": new_flipper, "vat": new_vat, "vow": new_vow}
 
 
+def cat_claw(cat, rad):
+    """ Subtracts from the measure of Dai up for liquidation.
+    """
+
+    cat["litter"] -= rad
+
+
 # ---
 
 
 # Flipper
 
 
-def flip_kick(flipper, vat, user_id, gal, tab, lot, bid, end):
-    """ Kicks off a Flip auction.
+def flipper_kick(flipper, vat, user_id, gal, tab, lot, bid, end):
+    """ Kicks off a new Flip auction.
     """
 
     flipper["bids"][uuid4().hex] = {
         "bid": bid,
         "lot": lot,
         "guy": "cat",
+        "tic": 0,
         "end": end,
         "usr": user_id,
         "gal": gal,
         "tab": tab,
     }
 
-    flux(vat, flipper["ilk"], "cat", "flipper", lot)
+    vat_flux(vat, flipper["ilk"], "cat", "flipper", lot)
+
+
+def flipper_tend(flipper, vat, bid_id, user_id, lot, bid, now):
+    """ Places a tend bid on a Flipper auction.
+    """
+
+    curr_bid = flipper["bids"][bid_id]
+
+    assert curr_bid["tic"] > now or curr_bid["tic"] == 0
+    assert curr_bid["end"] > now
+
+    assert lot == curr_bid["lot"]
+    assert bid <= curr_bid["tab"]
+    assert bid > curr_bid["bid"]
+    assert bid >= curr_bid["bid"] * flipper["beg"] or bid == curr_bid["tab"]
+
+    if user_id != curr_bid["guy"]:
+        vat_move(vat, user_id, curr_bid["guy"], curr_bid["bid"])
+        curr_bid["guy"] = user_id
+    vat_move(vat, user_id, curr_bid["gal"], bid - curr_bid["bid"])
+
+    curr_bid["bid"] = bid
+    curr_bid["tic"] = now + flipper["ttl"]
+
+
+def flipper_dent(flipper, vat, bid_id, user_id, lot, bid, now):
+    """ Places a dent bid on a Flipper auction.
+    """
+
+    curr_bid = flipper["bids"][bid_id]
+
+    assert curr_bid["tic"] > now or curr_bid["tic"] == 0
+    assert curr_bid["end"] > now
+
+    assert bid == curr_bid["bid"]
+    assert bid == curr_bid["tab"]
+    assert lot < curr_bid["lot"]
+    assert lot * flipper["beg"] <= curr_bid["lot"]
+
+    if user_id != curr_bid["guy"]:
+        vat_move(vat, user_id, curr_bid["guy"], curr_bid["bid"])
+        curr_bid["guy"] = user_id
+    vat_flux(vat, flipper["ilk"], "flipper", curr_bid["usr"], curr_bid["lot"] - lot)
+
+    curr_bid["lot"] = lot
+    curr_bid["tic"] = now + flipper["ttl"]
+
+
+def flipper_deal(flipper, vat, cat, bid_id, now):
+    """ Deals out a Flipper auction.
+    """
+
+    curr_bid = flipper["bids"][bid_id]
+
+    assert curr_bid["tic"] != 0 and (curr_bid["tic"] < now or curr_bid["end"] < now)
+
+    cat_claw(cat, curr_bid["tab"])
+    vat_flux(vat, flipper["ilk"], "flipper", curr_bid["guy"], curr_bid["lot"])
+    del flipper["bids"][bid_id]
 
 
 # ---

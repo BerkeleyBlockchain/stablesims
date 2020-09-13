@@ -7,15 +7,20 @@ policies).
 """
 
 initial_state = {
-    "cat": {"ilks": {"eth": {"chop": 1.13}}},  # Liquidation penalty rate
+    "cat": {
+        "litter": 0,  # Amount of DAI up for liquidation
+        "ilks": {"eth": {"chop": 1.13}},
+    },
     "flapper": {
         "beg": 1.05,  # Minimum bid increase
+        "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
         "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
         "bids": {
             "dummy_bid": {
                 "bid": 0,  # Current bid (MKR)
                 "lot": 0,  # Current lot (DAI)
                 "guy": "",  # Current highest bidder
+                "tic": 0,  # Current bid expiry timestep
                 "end": 0,  # Auction expiry timestep
             }
         },
@@ -23,12 +28,14 @@ initial_state = {
     "flipper": {
         "ilk": "eth",  # Collateral type
         "beg": 1.05,  # Minimum bid increase
+        "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
         "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
         "bids": {
             "dummy_bid": {  # Called a "bid" but really it's a Flipper auction
                 "bid": 0,  # Current bid (DAI)
                 "lot": 0,  # Current lot (COLLAT)
                 "guy": "",  # Current highest bidder
+                "tic": 0,  # Current bid expiry timestep
                 "end": 0,  # Auction expiry timestep
                 "usr": "",  # ID of urn being auctioned
                 "gal": "vow",  # Recipient of bid (vow) (TOREMOVE?)
@@ -39,12 +46,14 @@ initial_state = {
     "flopper": {  # Dent
         "beg": 1.05,  # Minimum bid increase
         "pad": 1.5,  # Lot increase per timestep
+        "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
         "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
         "bids": {
             "dummy_bid": {
                 "bid": 0,  # Current bid (DAI)
                 "lot": 0,  # Current lot (MKR)
                 "guy": "",  # Current highest bidder
+                "tic": 0,  # Current bid expiry timestep
                 "end": 0,  # Auction expiry timestep
             }
         },
@@ -75,8 +84,8 @@ initial_state = {
         },
     },
     "vat": {
-        "sin": {"vow": 0,},  # System debt
-        "dai": {"vow": 0,},  # Debt ledger  # System surplus
+        "sin": {"vow": 0,},  # Unbacked DAI (system debt)
+        "dai": {"daijoin": 0, "vow": 0,},  # Debt ledger
         "gem": {"eth": {"cat": 0, "flipper": 0,}},  # Collateral ledger
         "debt": 0,  # Total DAI issued
         "vice": 0,  # Total unbacked DAI
