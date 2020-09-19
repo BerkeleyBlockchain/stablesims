@@ -25,7 +25,7 @@ initial_state = {
             }
         },
     },
-    "flipper": {
+    "flipper_eth": {
         "ilk": "eth",  # Collateral type
         "beg": 1.05,  # Minimum bid increase
         "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
@@ -72,12 +72,12 @@ initial_state = {
         "par": 1,  # Target price of DAI (USD/DAI)
         "ilks": {
             "eth": {
-                "pip": "../price_feeds/eth.json",  # Price feed file
+                "pip": "price_feeds/eth.json",  # Price feed file
                 "val": 0,  # Current USD price (cached for efficiency) (CUSTOM)
                 "mat": 1.5,  # Liquidation ratio
             },
             "dai": {  # DAI isn't an ilk but it makes the most sense to store price here
-                "pip": "../price_feeds/dai.json",
+                "pip": "price_feeds/dai.json",
                 "val": 1,
                 "mat": 1,
             },
@@ -86,7 +86,7 @@ initial_state = {
     "vat": {
         "sin": {"vow": 0,},  # Unbacked DAI (system debt)
         "dai": {"daijoin": 0, "vow": 0,},  # Debt ledger
-        "gem": {"eth": {"cat": 0, "flipper": 0,}},  # Collateral ledger
+        "gem": {"eth": {"cat": 0, "flipper_eth": 0,}},  # Collateral ledger
         "debt": 0,  # Total DAI issued
         "vice": 0,  # Total unbacked DAI
         "Line": 0,  # Total debt ceiling
@@ -135,12 +135,12 @@ def update_flapper(_params, _substep, _state_hist, state, policy_signals):
     return ("flapper", new_flapper)
 
 
-def update_flipper(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `flipper` state variable.
+def update_flipper_eth(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `flipper_eth` state variable.
     """
 
-    new_flipper = policy_signals.get("flipper", state["flipper"])
-    return ("flipper", new_flipper)
+    new_flipper_eth = policy_signals.get("flipper_eth", state["flipper_eth"])
+    return ("flipper_eth", new_flipper_eth)
 
 
 def update_flopper(_params, _substep, _state_hist, state, policy_signals):

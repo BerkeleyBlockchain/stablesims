@@ -22,6 +22,52 @@ import random
 
 
 # Behaviors
+def tick(params, _substep, _state_hist, state):
+    """ Performs all expected system upkeep at the start of each non-warmup timestep.
+    """
+
+    now = state["timestep"]
+    new_vat = deepcopy(state["vat"])
+    new_spotter = deepcopy(state["spotter"])
+
+    if now == 0:
+        new_cat = deepcopy(state["cat"])
+        new_flapper = deepcopy(state["flapper"])
+        new_flipper_eth = deepcopy(state["flipper_eth"])
+        new_flopper = deepcopy(state["flopper"])
+        new_vow = deepcopy(state["vow"])
+
+        new_cat["ilks"]["eth"]["chop"] = params["CAT_ETH_CHOP"]
+        new_flapper["beg"] = params["FLAPPER_BEG"]
+        new_flapper["ttl"] = params["FLAPPER_TTL"]
+        new_flapper["tau"] = params["FLAPPER_TAU"]
+        new_flipper_eth["beg"] = params["FLIPPER_ETH_BEG"]
+        new_flipper_eth["ttl"] = params["FLIPPER_ETH_TTL"]
+        new_flipper_eth["tau"] = params["FLIPPER_ETH_TAU"]
+        new_flopper["beg"] = params["FLOPPER_BEG"]
+        new_flopper["pad"] = params["FLOPPER_PAD"]
+        new_flopper["ttl"] = params["FLOPPER_TTL"]
+        new_flopper["tau"] = params["FLOPPER_TAU"]
+        new_spotter["par"] = params["SPOTTER_PAR"]
+        new_spotter["ilks"]["eth"]["mat"] = params["SPOTTER_ETH_MAT"]
+        new_vat["Line"] = params["VAT_LINE"]
+        new_vat["ilks"]["eth"]["rate"] = params["VAT_ILK_ETH_RATE"]
+        new_vat["ilks"]["eth"]["line"] = params["VAT_ILK_ETH_LINE"]
+        new_vat["ilks"]["eth"]["dust"] = params["VAT_ILK_ETH_DUST"]
+        new_vow["dump"] = params["VOW_DUMP"]
+        new_vow["sump"] = params["VOW_SUMP"]
+        new_vow["bump"] = params["VOW_BUMP"]
+        new_vow["hump"] = params["VOW_HUMP"]
+
+        del new_flapper["bids"]["dummy_bid"]
+        del new_flipper_eth["bids"]["dummy_bid"]
+        del new_flopper["bids"]["dummy_bid"]
+        del new_vat["urns"]["eth"]["dummy_urn"]
+
+    spotter_poke(new_spotter, new_vat, "dai", now)
+    spotter_poke(new_spotter, new_vat, "eth", now)
+
+    return {"vat": new_vat, "spotter": new_spotter}
 
 
 def open_eth_vault(vat, eth, dai):
@@ -33,7 +79,7 @@ def open_eth_vault(vat, eth, dai):
     vat_frob(vat, "eth", user_id, eth, dai)
 
 
-def reduce_open_eth_vault(params, _substep, _state_hist, state):
+def open_eth_vault_generator(params, _substep, _state_hist, state):
     """ Executes all `open_eth_vault` policies for a timestep.
     """
 
@@ -41,7 +87,7 @@ def reduce_open_eth_vault(params, _substep, _state_hist, state):
     dai_val = state["spotter"]["ilks"]["dai"]["val"]
     eth_val = state["spotter"]["ilks"]["eth"]["val"]
 
-    if state["timestep"] < params["WARM_TAU"]:
+    if state["timestep"] <= params["WARM_TAU"]:
         for _ in range(1000):
             # Open a vault w/ 1 ETH @ 175% collateralization
             # TODO: Associate this with an "Ideal" or "Basic" user behavior
@@ -67,7 +113,7 @@ def gemjoin_join(vat, ilk_id, user_id, wad):
     """ Records a collateral deposit in the Vat.
     """
 
-    assert wad >= 0
+    assert wad >= 0, "GemJoin/overflow"
     vat_slip(vat, ilk_id, user_id, wad)
 
 
@@ -114,9 +160,9 @@ def spotter_poke(spotter, vat, ilk_id, now):
     val = spotter_peek(ilk["pip"], now)
     ilk["val"] = val
 
-    spot = val / spotter["par"] / ilk["mat"]
-
-    vat_file(vat, ilk_id, "spot", spot)
+    if ilk_id != "dai":
+        spot = val / spotter["par"] / ilk["mat"]
+        vat_file(vat, ilk_id, "spot", spot)
 
 
 # ---
@@ -180,9 +226,9 @@ def vat_frob(vat, ilk_id, user_id, dink, dart):
 
     assert dart <= 0 or (
         ilk["Art"] * ilk["rate"] <= ilk["line"] and vat["debt"] <= vat["Line"]
-    )
-    assert (dart <= 0 <= dink) or tab <= urn["ink"] * ilk["spot"]
-    assert urn["art"] == 0 or tab >= ilk["dust"]
+    ), "Vat/ceiling-exceeded"
+    assert (dart <= 0 <= dink) or tab <= urn["ink"] * ilk["spot"], "Vat/not-safe"
+    assert urn["art"] == 0 or tab >= ilk["dust"], "Vat/dust"
 
     vat["debt"] += dtab
     vat["gem"][ilk_id][user_id] -= dink
@@ -243,8 +289,8 @@ def cat_bite(vat, vow, cat, flipper, ilk_id, user_id, now):
     ink = vat["urns"][ilk_id][user_id]["ink"]
     art = vat["urns"][ilk_id][user_id]["art"]
 
-    assert spot > 0 and ink * spot < art * rate
-    assert art > 0 and ink > 0
+    assert spot > 0 and ink * spot < art * rate, "Cat/not-unsafe"
+    assert art > 0 and ink > 0, "Cat/null-auction"
 
     vat_grab(vat, ilk_id, user_id, -ink, -art)
     vow_fess(vow, art * rate)
@@ -256,14 +302,14 @@ def cat_bite(vat, vow, cat, flipper, ilk_id, user_id, now):
     flipper_kick(flipper, vat, user_id, "vow", tab, ink, 0, now + flipper["tau"])
 
 
-def reduce_cat_bite(_params, _substep, _state_hist, state):
+def cat_bite_generator(_params, _substep, _state_hist, state):
     """ Executes all `bite` operations for a timestep.
     """
 
     new_vat = deepcopy(state["vat"])
     new_vow = deepcopy(state["vow"])
     new_cat = deepcopy(state["cat"])
-    new_flipper = deepcopy(state["flipper"])
+    new_flipper_eth = deepcopy(state["flipper_eth"])
 
     for user_id in new_vat["urns"]["eth"]:
 
@@ -280,13 +326,18 @@ def reduce_cat_bite(_params, _substep, _state_hist, state):
                 new_vat,
                 new_vow,
                 new_cat,
-                new_flipper,
+                new_flipper_eth,
                 "eth",
                 user_id,
                 state["timestep"],
             )
 
-    return {"cat": new_cat, "flipper": new_flipper, "vat": new_vat, "vow": new_vow}
+    return {
+        "cat": new_cat,
+        "flipper_eth": new_flipper_eth,
+        "vat": new_vat,
+        "vow": new_vow,
+    }
 
 
 def cat_claw(cat, rad):
@@ -317,7 +368,7 @@ def flipper_kick(flipper, vat, user_id, gal, tab, lot, bid, end):
         "tab": tab,
     }
 
-    vat_flux(vat, flipper["ilk"], "cat", "flipper", lot)
+    vat_flux(vat, flipper["ilk"], "cat", "flipper_eth", lot)
 
 
 def flipper_tend(flipper, vat, bid_id, user_id, lot, bid, now):
@@ -326,13 +377,17 @@ def flipper_tend(flipper, vat, bid_id, user_id, lot, bid, now):
 
     curr_bid = flipper["bids"][bid_id]
 
-    assert curr_bid["tic"] > now or curr_bid["tic"] == 0
-    assert curr_bid["end"] > now
+    assert (
+        curr_bid["tic"] > now or curr_bid["tic"] == 0
+    ), "Flipper/already-finishied-tic"
+    assert curr_bid["end"] > now, "Flipper/already-finishied-end"
 
-    assert lot == curr_bid["lot"]
-    assert bid <= curr_bid["tab"]
-    assert bid > curr_bid["bid"]
-    assert bid >= curr_bid["bid"] * flipper["beg"] or bid == curr_bid["tab"]
+    assert lot == curr_bid["lot"], "Flipper/lot-not-matching"
+    assert bid <= curr_bid["tab"], "Flipper/higher-than-tab"
+    assert bid > curr_bid["bid"], "Flipper/bid-not-higher"
+    assert (
+        bid >= curr_bid["bid"] * flipper["beg"] or bid == curr_bid["tab"]
+    ), "Flipper/insufficient-increase"
 
     if user_id != curr_bid["guy"]:
         vat_move(vat, user_id, curr_bid["guy"], curr_bid["bid"])
@@ -349,13 +404,13 @@ def flipper_dent(flipper, vat, bid_id, user_id, lot, bid, now):
 
     curr_bid = flipper["bids"][bid_id]
 
-    assert curr_bid["tic"] > now or curr_bid["tic"] == 0
-    assert curr_bid["end"] > now
+    assert curr_bid["tic"] > now or curr_bid["tic"] == 0, "Flipper/already-finished-tic"
+    assert curr_bid["end"] > now, "Flipper/already-finished-end"
 
-    assert bid == curr_bid["bid"]
-    assert bid == curr_bid["tab"]
-    assert lot < curr_bid["lot"]
-    assert lot * flipper["beg"] <= curr_bid["lot"]
+    assert bid == curr_bid["bid"], "Flipper/not-matching-bid"
+    assert bid == curr_bid["tab"], "Flipper/tend-not-finished"
+    assert lot < curr_bid["lot"], "Flipper/lot-not-lower"
+    assert lot * flipper["beg"] <= curr_bid["lot"], "Flipper/insufficient-decrease"
 
     if user_id != curr_bid["guy"]:
         vat_move(vat, user_id, curr_bid["guy"], curr_bid["bid"])
@@ -372,7 +427,9 @@ def flipper_deal(flipper, vat, cat, bid_id, now):
 
     curr_bid = flipper["bids"][bid_id]
 
-    assert curr_bid["tic"] != 0 and (curr_bid["tic"] < now or curr_bid["end"] < now)
+    assert curr_bid["tic"] != 0 and (
+        curr_bid["tic"] < now or curr_bid["end"] < now
+    ), "Flipper/not-finished"
 
     cat_claw(cat, curr_bid["tab"])
     vat_flux(vat, flipper["ilk"], "flipper", curr_bid["guy"], curr_bid["lot"])
