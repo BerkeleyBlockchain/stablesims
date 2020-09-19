@@ -6,24 +6,32 @@ inherit from/reference.
 
 from cadCAD.configuration.utils import config_sim
 
-dummy_sim_config = {
+base_sim_config = {
     "T": range(1),
     "N": 1,
     "M": {
-        "SUMP": [0],  # Fixed DAI bid for Flopper auctions
-        "DUMP": [0],  # Initial MKR lot for Flopper auctions
-        "BUMP": [0],  # Fixed DAI lot for Flapper auctions
-        "HUMP": [0],  # Surplus DAI threshold that enables Flapper auctions
-        "FLIP_BEG": [0],  # Minimum DAI bid increase
-        "FLIP_TAU": [0],  # Auction duration
-        "FLOP_BEG": [0],  # Minimum ETH lot decrease
-        "FLOP_TAU": [0],  # Auction duration
-        "FLAP_BEG": [0],  # Minimum MKR bid increase
-        "FLAP_TAU": [0],  # Auction duration
-        "ETH_LINE": [0],  # ETH debt ceiling
-        "ETH_DUST": [0],  # ETH debt floor
-        "DSR": [0],  # Dai savings rate
-        "WARM_TAU": [0],  # Vault-joining warmup duration
+        "CAT_ETH_CHOP": [1.13],
+        "FLAPPER_BEG": [1.05],
+        "FLAPPER_TTL": [180],
+        "FLAPPER_TAU": [2880],
+        "FLIPPER_ETH_BEG": [1.05],
+        "FLIPPER_ETH_TTL": [180],
+        "FLIPPER_ETH_TAU": [2880],
+        "FLOPPER_BEG": [1.05],
+        "FLOPPER_PAD": [1.5],
+        "FLOPPER_TTL": [180],
+        "FLOPPER_TAU": [2880],
+        "SPOTTER_PAR": [1],
+        "SPOTTER_ETH_MAT": [1.5],
+        "VAT_LINE": [948000000],
+        "VAT_ILK_ETH_RATE": [1],
+        "VAT_ILK_ETH_LINE": [540000000],
+        "VAT_ILK_ETH_DUST": [100],
+        "VOW_DUMP": [250],
+        "VOW_SUMP": [50000],
+        "VOW_BUMP": [10000],
+        "VOW_HUMP": [20000],
+        "WARM_TAU": [1, 1],  # Vault-joining warmup duration
     },
 }
 
@@ -34,52 +42,6 @@ dummy_sim_config = {
 
 # This is likely a cadCAD bug
 
-join_bite_sim_config = config_sim(
-    {
-        **dummy_sim_config,
-        **{
-            "M": {
-                "SUMP": [0],
-                "DUMP": [0],
-                "BUMP": [0],
-                "HUMP": [0],
-                "FLIP_BEG": [0],
-                "FLIP_TAU": [0],
-                "FLOP_BEG": [0],
-                "FLOP_TAU": [0],
-                "FLAP_BEG": [0],
-                "FLAP_TAU": [0],
-                "ETH_LINE": [0, 160000],
-                "ETH_DUST": [0],
-                "DSR": [0],
-                "WARM_TAU": [1, 1],
-            }
-        },
-    }
-)
-
-
-read_dai_price_sim_config = config_sim(
-    {
-        **dummy_sim_config,
-        **{
-            "T": range(2),
-            "M": {
-                "SUMP": [0],
-                "DUMP": [0],
-                "BUMP": [0],
-                "HUMP": [0],
-                "FLIP_BEG": [0],
-                "FLIP_TAU": [0],
-                "FLOP_BEG": [0],
-                "FLOP_TAU": [0],
-                "FLAP_BEG": [0],
-                "FLAP_TAU": [0],
-                "ETH_LINE": [0, 160000],
-                "ETH_DUST": [0],
-                "DSR": [0],
-                "WARM_TAU": [1, 1],
-            },
-        },
-    }
+open_eth_vault_sim_config = config_sim(
+    {**base_sim_config, **{"M": {**base_sim_config["M"], "VAT_ILK_ETH_RATE": [1.05]}}}
 )

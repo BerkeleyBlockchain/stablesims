@@ -7,51 +7,59 @@ policies).
 """
 
 initial_state = {
-    "vat": {
-        "dummy_vault": {
-            "vault_id": "",  # Vault ID
-            "eth": 0,  # Vault collateralization (ETH)
-            "dai": 0,  # Vault debt (DAI)
-            "bitten": False,  # Whether or not the vault has been bitten
-        }
+    "cat": {
+        "litter": 0,  # Amount of DAI up for liquidation
+        "ilks": {"eth": {"chop": 1.13}},
     },
-    "vow": {
-        "debt_dai": 0,  # System debt (DAI)
-        "surplus_dai": 0,  # System surplus (DAI)
+    "flapper": {
+        "beg": 1.05,  # Minimum bid increase
+        "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
+        "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
+        "bids": {
+            "dummy_bid": {
+                "bid": 0,  # Current bid (MKR)
+                "lot": 0,  # Current lot (DAI)
+                "guy": "",  # Current highest bidder
+                "tic": 0,  # Current bid expiry timestep
+                "end": 0,  # Auction expiry timestep
+            }
+        },
     },
-    "flipper": {  # Tend -> dent
-        "dummy_flip": {
-            "flip_id": "",  # Auction ID
-            "phase": "",  # Auction phase ("tend" or "dent")
-            "debt_to_flip": 0,  # Desired amount of DAI to be raised from auction
-            "vault": "",  # Vault to send remaining ETH to after dent
-            "lot_eth": 0,  # Current lot (ETH)
-            "bid_dai": 0,  # Current bid (DAI)
-            "bidder": "",  # Current highest bidder
-            "expiry": 0,  # Auction expiration timestep
-        }
-    },
-    "flapper": {  # Tend
-        "dummy_flap": {
-            "flap_id": "",  # Auction ID
-            "lot_dai": 0,  # Current lot (DAI)
-            "bid_mkr": 0,  # Current bid (MKR)
-            "bidder": "",  # Current highest bidder
-            "expiry": 0,  # Auction expiration timestep
-        }
+    "flipper_eth": {
+        "ilk": "eth",  # Collateral type
+        "beg": 1.05,  # Minimum bid increase
+        "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
+        "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
+        "bids": {
+            "dummy_bid": {  # Called a "bid" but really it's a Flipper auction
+                "bid": 0,  # Current bid (DAI)
+                "lot": 0,  # Current lot (COLLAT)
+                "guy": "",  # Current highest bidder
+                "tic": 0,  # Current bid expiry timestep
+                "end": 0,  # Auction expiry timestep
+                "usr": "",  # ID of urn being auctioned
+                "gal": "vow",  # Recipient of bid (vow) (TOREMOVE?)
+                "tab": 0,  # Desired amount of DAI to be raised
+            }
+        },
     },
     "flopper": {  # Dent
-        "dummy_flop": {
-            "flop_id": "",  # Auction ID
-            "lot_mkr": 0,  # Current lot (MKR)
-            "bid_dai": 0,  # Current bid (DAI)
-            "bidder": "",  # Current highest bidder
-            "expiry": 0,  # Auction expiration timestep
-        }
+        "beg": 1.05,  # Minimum bid increase
+        "pad": 1.5,  # Lot increase per timestep
+        "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
+        "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
+        "bids": {
+            "dummy_bid": {
+                "bid": 0,  # Current bid (DAI)
+                "lot": 0,  # Current lot (MKR)
+                "guy": "",  # Current highest bidder
+                "tic": 0,  # Current bid expiry timestep
+                "end": 0,  # Auction expiry timestep
+            }
+        },
     },
-    "keepers": {
+    "keepers": {  # (TOREMOVE?)
         "dummy_keeper": {
-            "keeper_id": "",  # Keeper ID
             "dai": 0,  # DAI balance
             "eth": 0,  # ETH balance
             "mkr": 0,  # MKR balance
@@ -60,14 +68,103 @@ initial_state = {
             "flap_tolerance": 0,  # (TODO)
         }
     },
-    "eth_ilk": {
-        "debt_dai": 0,  # Total amount of DAI collateralized by ETH
-        "spot_rate": 2 / 3,  # Conversion rate (max amount of DAI per ETH)
-        "stability_rate": 1,  # Stability fee rate
+    "spotter": {
+        "par": 1,  # Target price of DAI (USD/DAI)
+        "ilks": {
+            "eth": {
+                "pip": "price_feeds/eth.json",  # Price feed file
+                "val": 0,  # Current USD price (cached for efficiency) (CUSTOM)
+                "mat": 1.5,  # Liquidation ratio
+            },
+            "dai": {  # DAI isn't an ilk but it makes the most sense to store price here
+                "pip": "price_feeds/dai.json",
+                "val": 1,
+                "mat": 1,
+            },
+        },
     },
-    "eth_price_usd": 0,
-    "dai_price_usd": 0,
+    "vat": {
+        "sin": {"vow": 0,},  # Unbacked DAI (system debt)
+        "dai": {"daijoin": 0, "vow": 0,},  # Debt ledger
+        "gem": {"eth": {"cat": 0, "flipper_eth": 0,}},  # Collateral ledger
+        "debt": 0,  # Total DAI issued
+        "vice": 0,  # Total unbacked DAI
+        "Line": 0,  # Total debt ceiling
+        "urns": {  # Vaults
+            "eth": {
+                "dummy_urn": {
+                    "ink": 0,  # Vault collateral balance
+                    "art": 0,  # Vault debt (DAI)
+                }
+            }
+        },
+        "ilks": {
+            "eth": {
+                "Art": 0,  # Total debt (DAI)
+                "rate": 1,  # Accumulated stability fee rates
+                "spot": 0,  # Collateral price w/ safety margin (max DAI per unit of collateral)
+                "line": 0,  # Debt ceiling for ilk
+                "dust": 0,  # Debt floor for ilk
+            }
+        },
+    },
+    "vow": {
+        "Sin": 0,  # Amount of debt queued
+        "Ash": 0,  # Amount of debt on auction
+        "dump": 0,  # Flop initial lot size
+        "sump": 0,  # Flop fixed bid size
+        "bump": 0,  # Flap fixed lot size
+        "hump": 0,  # Surplus buffer
+    },
 }
+
+
+def update_cat(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `cat` state variable.
+    """
+
+    new_cat = policy_signals.get("cat", state["cat"])
+    return ("cat", new_cat)
+
+
+def update_flapper(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `flapper` state variable.
+    """
+
+    new_flapper = policy_signals.get("flapper", state["flapper"])
+    return ("flapper", new_flapper)
+
+
+def update_flipper_eth(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `flipper_eth` state variable.
+    """
+
+    new_flipper_eth = policy_signals.get("flipper_eth", state["flipper_eth"])
+    return ("flipper_eth", new_flipper_eth)
+
+
+def update_flopper(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `flopper` state variable.
+    """
+
+    new_flopper = policy_signals.get("flopper", state["flopper"])
+    return ("flopper", new_flopper)
+
+
+def update_keepers(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `keepers` state variable.
+    """
+
+    new_keepers = policy_signals.get("keepers", state["keepers"])
+    return ("keepers", new_keepers)
+
+
+def update_spotter(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `spotter` state variable.
+    """
+
+    new_spotter = policy_signals.get("spotter", state["spotter"])
+    return ("spotter", new_spotter)
 
 
 def update_vat(_params, _substep, _state_hist, state, policy_signals):
@@ -84,59 +181,3 @@ def update_vow(_params, _substep, _state_hist, state, policy_signals):
 
     new_vow = policy_signals.get("vow", state["vow"])
     return ("vow", new_vow)
-
-
-def update_flipper(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `flipper` state variable.
-    """
-
-    new_flipper = policy_signals.get("flipper", state["flipper"])
-    return ("flipper", new_flipper)
-
-
-def update_flopper(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `flopper` state variable.
-    """
-
-    new_flopper = policy_signals.get("flopper", state["flopper"])
-    return ("flopper", new_flopper)
-
-
-def update_flapper(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `flapper` state variable.
-    """
-
-    new_flapper = policy_signals.get("flapper", state["flapper"])
-    return ("flapper", new_flapper)
-
-
-def update_keepers(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `keepers` state variable.
-    """
-
-    new_keepers = policy_signals.get("keepers", state["keepers"])
-    return ("keepers", new_keepers)
-
-
-def update_eth_ilk(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `eth_ilk` state variable.
-    """
-
-    new_eth_ilk = policy_signals.get("eth_ilk", state["eth_ilk"])
-    return ("eth_ilk", new_eth_ilk)
-
-
-def update_eth_price_usd(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `eth_price_usd` state variable.
-    """
-
-    new_eth_price_usd = policy_signals.get("eth_price_usd", state["eth_price_usd"])
-    return ("eth_price_usd", new_eth_price_usd)
-
-
-def update_dai_price_usd(_params, _substep, _state_hist, state, policy_signals):
-    """ Updates `dai_price_usd` state variable.
-    """
-
-    new_dai_price_usd = policy_signals.get("dai_price_usd", state["dai_price_usd"])
-    return ("dai_price_usd", new_dai_price_usd)
