@@ -45,3 +45,10 @@ base_sim_config = {
 open_eth_vault_sim_config = config_sim(
     {**base_sim_config, **{"M": {**base_sim_config["M"], "VAT_ILK_ETH_RATE": [1.05]}}}
 )
+
+cat_bite_sim_config = config_sim(
+    {
+        **base_sim_config,
+        **{"T": range(8), "M": {**base_sim_config["M"], "SPOTTER_ETH_MAT": [1.75]}},
+    }
+)

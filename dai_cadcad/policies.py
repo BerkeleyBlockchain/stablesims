@@ -29,14 +29,13 @@ def tick(params, _substep, _state_hist, state):
     now = state["timestep"]
     new_vat = deepcopy(state["vat"])
     new_spotter = deepcopy(state["spotter"])
+    new_cat = deepcopy(state["cat"])
+    new_flapper = deepcopy(state["flapper"])
+    new_flipper_eth = deepcopy(state["flipper_eth"])
+    new_flopper = deepcopy(state["flopper"])
+    new_vow = deepcopy(state["vow"])
 
     if now == 0:
-        new_cat = deepcopy(state["cat"])
-        new_flapper = deepcopy(state["flapper"])
-        new_flipper_eth = deepcopy(state["flipper_eth"])
-        new_flopper = deepcopy(state["flopper"])
-        new_vow = deepcopy(state["vow"])
-
         new_cat["ilks"]["eth"]["chop"] = params["CAT_ETH_CHOP"]
         new_flapper["beg"] = params["FLAPPER_BEG"]
         new_flapper["ttl"] = params["FLAPPER_TTL"]
@@ -67,7 +66,15 @@ def tick(params, _substep, _state_hist, state):
     spotter_poke(new_spotter, new_vat, "dai", now)
     spotter_poke(new_spotter, new_vat, "eth", now)
 
-    return {"vat": new_vat, "spotter": new_spotter}
+    return {
+        "vat": new_vat,
+        "spotter": new_spotter,
+        "cat": new_cat or state["cat"],
+        "flapper": new_flapper or state["flapper"],
+        "flipper_eth": new_flipper_eth or state["flipper_eth"],
+        "flopper": new_flopper or state["flopper"],
+        "vow": new_vow or state["vow"],
+    }
 
 
 def open_eth_vault(vat, eth, dai):
