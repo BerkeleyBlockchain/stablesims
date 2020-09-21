@@ -44,7 +44,6 @@ exp.append_configs(
     sim_configs=sim_configs.cat_bite_sim_config,
     initial_state=state.initial_state,
     partial_state_update_blocks=partial_state_update_blocks,
-    # policy_ops=[policies.policy_reduce],
 )
 
 exec_mode = ExecutionMode()
@@ -57,8 +56,8 @@ def run_test():
     """
     raw_result, _tensor, _sessions = executor.execute()
     result = pd.DataFrame(raw_result)
-    # cond_1 = result["run"] == 1
-    # cond_2 = result["substep"] != 0
-    # run = result[cond_1 & cond_2]
+    cond_1 = result["run"] == 1
+    cond_2 = result["substep"] != 0
+    run = result[cond_1 & cond_2]
 
-    return result
+    return run

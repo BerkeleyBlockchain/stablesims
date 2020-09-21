@@ -17,6 +17,8 @@ from copy import deepcopy
 import json
 import random
 
+from dai_cadcad import util
+
 
 # ---
 
@@ -25,6 +27,9 @@ import random
 def tick(params, _substep, _state_hist, state):
     """ Performs all expected system upkeep at the start of each non-warmup timestep.
     """
+
+    # TODO: Setting rates
+    # TODO: Timekeeping bids
 
     now = state["timestep"]
     new_vat = deepcopy(state["vat"])
@@ -36,7 +41,9 @@ def tick(params, _substep, _state_hist, state):
     new_vow = deepcopy(state["vow"])
 
     if now == 0:
+        new_cat["box"] = params["CAT_BOX"]
         new_cat["ilks"]["eth"]["chop"] = params["CAT_ETH_CHOP"]
+        new_cat["ilks"]["eth"]["dunk"] = params["CAT_ETH_DUNK"]
         new_flapper["beg"] = params["FLAPPER_BEG"]
         new_flapper["ttl"] = params["FLAPPER_TTL"]
         new_flapper["tau"] = params["FLAPPER_TAU"]
@@ -69,11 +76,11 @@ def tick(params, _substep, _state_hist, state):
     return {
         "vat": new_vat,
         "spotter": new_spotter,
-        "cat": new_cat or state["cat"],
-        "flapper": new_flapper or state["flapper"],
-        "flipper_eth": new_flipper_eth or state["flipper_eth"],
-        "flopper": new_flopper or state["flopper"],
-        "vow": new_vow or state["vow"],
+        "cat": new_cat,
+        "flapper": new_flapper,
+        "flipper_eth": new_flipper_eth,
+        "flopper": new_flopper,
+        "vow": new_vow,
     }
 
 
@@ -81,6 +88,8 @@ def open_eth_vault(vat, eth, dai):
     """ Opens a new vault with unjoined ETH collateral.
     """
 
+    eth = util.float_to_wad(eth)
+    dai = util.float_to_wad(dai)
     user_id = uuid4().hex
     gemjoin_join(vat, "eth", user_id, eth)
     vat_frob(vat, "eth", user_id, eth, dai)
@@ -91,20 +100,20 @@ def open_eth_vault_generator(params, _substep, _state_hist, state):
     """
 
     new_vat = deepcopy(state["vat"])
-    dai_val = state["spotter"]["ilks"]["dai"]["val"]
-    eth_val = state["spotter"]["ilks"]["eth"]["val"]
+    dai_val = util.wad_to_float(state["spotter"]["ilks"]["dai"]["val"])
+    spot = util.ray_to_float(state["vat"]["ilks"]["eth"]["spot"])
 
     if state["timestep"] <= params["WARM_TAU"]:
         for _ in range(1000):
             # Open a vault w/ 1 ETH @ 175% collateralization
             # TODO: Associate this with an "Ideal" or "Basic" user behavior
-            open_eth_vault(new_vat, 1, eth_val * 4 / 7)
+            open_eth_vault(new_vat, 1, spot * 0.9)
         return {"vat": new_vat}
     if dai_val > 1:
         ddai_val = dai_val - 1
         prob = 5 * ddai_val + 0.05
         if random.random() <= prob:
-            open_eth_vault(new_vat, 1, eth_val * 4 / 7)
+            open_eth_vault(new_vat, 1, spot * 0.9)
             return {"vat": new_vat}
 
     return {}
@@ -128,6 +137,7 @@ def gemjoin_exit(vat, ilk_id, user_id, wad):
     """ Records a collateral withdrawal in the Vat.
     """
 
+    assert wad <= 2 ** 255, "GemJoin/overflow"
     vat_slip(vat, ilk_id, user_id, -wad)
 
 
@@ -156,7 +166,7 @@ def spotter_peek(pip, timestep):
     """
 
     with open(pip) as price_feed_json:
-        return json.load(price_feed_json)[timestep]["price_close"]
+        return util.float_to_wad(json.load(price_feed_json)[timestep]["price_close"])
 
 
 def spotter_poke(spotter, vat, ilk_id, now):
@@ -168,7 +178,9 @@ def spotter_poke(spotter, vat, ilk_id, now):
     ilk["val"] = val
 
     if ilk_id != "dai":
-        spot = val / spotter["par"] / ilk["mat"]
+        spot = util.float_to_ray(
+            util.float_to_ray(val * 10 ** 9 / spotter["par"]) / ilk["mat"]
+        )
         vat_file(vat, ilk_id, "spot", spot)
 
 
@@ -288,22 +300,30 @@ def cat_bite(vat, vow, cat, flipper, ilk_id, user_id, now):
     """ Liquidates an undercollateralized vault and puts its collateral up for a Flipper auction.
     """
 
-    ilk = vat["ilks"][ilk_id]
-
-    rate = ilk["rate"]
-    spot = ilk["spot"]
+    rate = vat["ilks"][ilk_id]["rate"]
+    spot = vat["ilks"][ilk_id]["spot"]
+    dust = vat["ilks"][ilk_id]["dust"]
 
     ink = vat["urns"][ilk_id][user_id]["ink"]
     art = vat["urns"][ilk_id][user_id]["art"]
 
     assert spot > 0 and ink * spot < art * rate, "Cat/not-unsafe"
-    assert art > 0 and ink > 0, "Cat/null-auction"
-
-    vat_grab(vat, ilk_id, user_id, -ink, -art)
-    vow_fess(vow, art * rate)
 
     milk = cat["ilks"][ilk_id]
-    tab = art * rate * milk["chop"]
+    room = cat["box"] - cat["litter"]
+
+    assert cat["litter"] < cat["box"] and room >= dust, "Cat/liquidation-limit-hit"
+
+    dart = min(art, util.float_to_wad(min(milk["dunk"], room)) / rate / milk["chop"])
+    dink = min(ink, ink * dart / art)
+
+    assert dart > 0 and dink > 0, "Cat/null-auction"
+    assert dart <= 2 ** 255 and dink <= 2 ** 255, "Cat/overflow"
+
+    vat_grab(vat, ilk_id, user_id, -dink, -dart)
+    vow_fess(vow, dart * rate)
+
+    tab = util.wad_to_float(dart * rate * milk["chop"])
     cat["litter"] += tab
 
     flipper_kick(flipper, vat, user_id, "vow", tab, ink, 0, now + flipper["tau"])
@@ -364,7 +384,10 @@ def flipper_kick(flipper, vat, user_id, gal, tab, lot, bid, end):
     """ Kicks off a new Flip auction.
     """
 
-    flipper["bids"][uuid4().hex] = {
+    flipper["kicks"] += 1
+    bid_id = flipper["kicks"]
+
+    flipper["bids"][bid_id] = {
         "bid": bid,
         "lot": lot,
         "guy": "cat",
@@ -444,15 +467,3 @@ def flipper_deal(flipper, vat, cat, bid_id, now):
 
 
 # ---
-
-
-# Utility
-
-
-def policy_reduce(policy_signal_dict_a, policy_signal_dict_b):
-    """ Reduces policy signals by merging them into one dict.
-
-        If there is an overlap in keys, the value of `policy_signal_dict_b` is taken.
-    """
-
-    return {**policy_signal_dict_a, **policy_signal_dict_b}
