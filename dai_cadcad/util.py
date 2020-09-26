@@ -2,13 +2,17 @@
 
 Convenience functions like those for conversions between number representations and units.
 """
+import math
 
 
 def float_to_wad(val):
     """ Converts a float to a wad.
     """
 
-    return int(val * 10 ** 18)
+    order = int(math.floor(math.log10(val)))
+    max_precision_offset = max(16 - order, 0)
+    max_precision_int = int(val * 10 ** max_precision_offset)
+    return int(max_precision_int * 10 ** (18 - max_precision_offset))
 
 
 def wad_to_float(wad):
@@ -22,7 +26,10 @@ def float_to_ray(val):
     """ Converts a float to a ray.
     """
 
-    return int(val * 10 ** 27)
+    order = int(math.floor(math.log10(val)))
+    max_precision_offset = max(16 - order, 0)
+    max_precision_int = int(val * 10 ** max_precision_offset)
+    return int(max_precision_int * 10 ** (27 - max_precision_offset))
 
 
 def ray_to_float(ray):
@@ -36,7 +43,10 @@ def float_to_rad(val):
     """ Converts a float to a rad.
     """
 
-    return int(val * 10 ** 45)
+    order = int(math.floor(math.log10(val)))
+    max_precision_offset = max(16 - order, 0)
+    max_precision_int = int(val * 10 ** max_precision_offset)
+    return int(max_precision_int * 10 ** (45 - max_precision_offset))
 
 
 def rad_to_float(rad):

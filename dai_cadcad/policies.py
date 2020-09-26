@@ -56,6 +56,8 @@ def tick(params, _substep, _state_hist, state):
         new_flopper["tau"] = params["FLOPPER_TAU"]
         new_spotter["par"] = params["SPOTTER_PAR"]
         new_spotter["ilks"]["eth"]["mat"] = params["SPOTTER_ETH_MAT"]
+        new_spotter["ilks"]["eth"]["pip"] = params["SPOTTER_ETH_PIP"]
+        new_spotter["ilks"]["dai"]["pip"] = params["SPOTTER_DAI_PIP"]
         new_vat["Line"] = params["VAT_LINE"]
         new_vat["ilks"]["eth"]["rate"] = params["VAT_ILK_ETH_RATE"]
         new_vat["ilks"]["eth"]["line"] = params["VAT_ILK_ETH_LINE"]
@@ -105,7 +107,7 @@ def open_eth_vault_generator(params, _substep, _state_hist, state):
 
     if state["timestep"] <= params["WARM_TAU"]:
         for _ in range(1000):
-            # Open a vault w/ 1 ETH @ 175% collateralization
+            # Open a vault w/ 1 ETH @ 166.66% collateralization
             # TODO: Associate this with an "Ideal" or "Basic" user behavior
             open_eth_vault(new_vat, 1, spot * 0.9)
         return {"vat": new_vat}
@@ -326,7 +328,7 @@ def cat_bite(vat, vow, cat, flipper, ilk_id, user_id, now):
     tab = util.wad_to_float(dart * rate * milk["chop"])
     cat["litter"] += tab
 
-    flipper_kick(flipper, vat, user_id, "vow", tab, ink, 0, now + flipper["tau"])
+    flipper_kick(flipper, vat, user_id, "vow", tab, dink, 0, now + flipper["tau"])
 
 
 def cat_bite_generator(_params, _substep, _state_hist, state):

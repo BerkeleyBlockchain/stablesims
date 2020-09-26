@@ -27,6 +27,8 @@ base_sim_config = {
         "FLOPPER_TAU": [2880],
         "SPOTTER_PAR": [util.float_to_ray(1)],
         "SPOTTER_ETH_MAT": [util.float_to_ray(1.5)],
+        "SPOTTER_ETH_PIP": ["price_feeds/eth.json"],
+        "SPOTTER_DAI_PIP": ["price_feeds/dai.json"],
         "VAT_LINE": [util.float_to_rad(1000000000)],
         "VAT_ILK_ETH_RATE": [util.float_to_ray(1)],
         "VAT_ILK_ETH_LINE": [util.float_to_rad(540000000)],
@@ -57,8 +59,12 @@ cat_bite_sim_config = config_sim(
     {
         **base_sim_config,
         **{
-            "T": range(8),
-            "M": {**base_sim_config["M"], "SPOTTER_ETH_MAT": [util.float_to_ray(1.75)]},
+            "T": range(2),
+            "M": {
+                **base_sim_config["M"],
+                "SPOTTER_ETH_PIP": ["price_feeds/tests/eth_drop_half.json"],
+                "SPOTTER_DAI_PIP": ["price_feeds/tests/perfect_dai_10.json"],
+            },
         },
     }
 )
