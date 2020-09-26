@@ -16,6 +16,7 @@ from uuid import uuid4
 from copy import deepcopy
 import json
 import random
+import models
 
 
 # ---
@@ -434,6 +435,41 @@ def flipper_deal(flipper, vat, cat, bid_id, now):
     cat_claw(cat, curr_bid["tab"])
     vat_flux(vat, flipper["ilk"], "flipper", curr_bid["guy"], curr_bid["lot"])
     del flipper["bids"][bid_id]
+
+
+# ---
+
+
+# Keeper
+
+
+def keeper_bid(user_id, model, flipper, vat):
+    """ Executes a `keeper_bid`.
+    """
+    bid_id = uuid4().hex
+
+    std_input = {"bid": 0}
+    model = models.choose[model]
+    bid = model(std_input)
+    flipper_tend(flipper, vat, bid_id, user_id, flipper.lot, bid, flipper.now)
+    return {}
+
+
+def keeper_bid_generator(_params, _substep, _state_hist, state):
+    """ Executes all `keeper_bid` policies for a timestep.
+    """
+
+    bid_buffer = state["flipper_eth"]["bids"]
+    # assuming state is {1: "simple", 2, "medium", 3: "complex"}
+    keepers = state["keepers"]
+    vat = state["vat"]
+    for auction in bid_buffer:
+        flipper = state["flipper_eth"][auction]
+        for keeper in keepers:
+            user_id = keeper
+            model = state["keepers"][keeper]
+            keeper_bid(user_id, model, flipper, vat)
+    return {}
 
 
 # ---
