@@ -3,11 +3,11 @@
 
 
 from cadCAD.engine import ExecutionContext, ExecutionMode, Executor
-from cadCAD.configuration import append_configs
+from cadCAD.configuration import Experiment
 from cadCAD import configs
 import pandas as pd
 
-from dai_cadcad import policies, state, sim_configs
+from dai_cadcad import policies, state, sim_configs, util
 
 
 partial_state_update_blocks = [
@@ -29,11 +29,12 @@ partial_state_update_blocks = [
     },
 ]
 
-append_configs(
+exp = Experiment()
+
+exp.append_configs(
     sim_configs=sim_configs.open_eth_vault_sim_config,
     initial_state=state.initial_state,
     partial_state_update_blocks=partial_state_update_blocks,
-    policy_ops=[policies.policy_reduce],
 )
 
 exec_mode = ExecutionMode()
@@ -53,9 +54,11 @@ def run_test():
 
     assert len(vat["urns"]["eth"]) == 1000, "Incorrect # of urns created"
     sample_urn = vat["urns"]["eth"][list(vat["urns"]["eth"].keys())[0]]
-    assert sample_urn["ink"] == 1, "Incorrect ink amount"
-    eth_price = run["spotter"][2]["ilks"]["eth"]["val"]
-    assert sample_urn["art"] == eth_price * 4 / 7, "Incorrect art amount"
+    assert sample_urn["ink"] == util.float_to_wad(1), "Incorrect ink amount"
+    spot = run["vat"][2]["ilks"]["eth"]["spot"]
+    assert round(util.wad_to_float(sample_urn["art"]), 8) == round(
+        util.ray_to_float(spot * 0.9), 8
+    ), "Incorrect art amount"
 
     assert len(vat["gem"]["eth"]) == 1002, "Incorrect # of gem records"
     sample_gem = vat["gem"]["eth"][list(vat["gem"]["eth"].keys())[2]]
@@ -63,12 +66,18 @@ def run_test():
 
     assert len(vat["dai"]) == 1002, "Incorrect # of DAI records"
     sample_dai = vat["dai"][list(vat["dai"].keys())[2]]
-    assert sample_dai == eth_price * 4 / 7 * vat["ilks"]["eth"]["rate"], "Incorrect DAI"
+    assert round(util.rad_to_float(sample_dai), 8) == round(
+        util.rad_to_float(
+            util.float_to_wad(util.ray_to_float(spot * 0.9))
+            * vat["ilks"]["eth"]["rate"]
+        ),
+        8,
+    ), "Incorrect DAI amount"
 
-    assert round(vat["ilks"]["eth"]["Art"], 6) == round(
-        1000 * sample_urn["art"], 6
+    assert (
+        vat["ilks"]["eth"]["Art"] == 1000 * sample_urn["art"]
     ), "Incorrect total DAI from ETH"
 
-    assert round(vat["debt"], 6) == round(1000 * sample_dai, 6), "Incorrect total DAI"
+    assert vat["debt"] == 1000 * sample_dai, "Incorrect total DAI"
 
     return run

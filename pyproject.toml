@@ -6,7 +6,7 @@ authors = ["Andrew Kirillov <kirillov.edu@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-cadcad = "^0.4.17"
+cadcad = "^0.4.22"
 numpy = "^1.19.0"
 pandas = "^1.0.5"
 matplotlib = "^3.3.0"

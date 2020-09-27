@@ -135,7 +135,7 @@ description = "cadCAD: a differential games based simulation software package fo
 name = "cadcad"
 optional = false
 python-versions = ">=3.6"
-version = "0.4.17"
+version = "0.4.22"
 
 [package.dependencies]
 fn = "*"
@@ -1039,7 +1039,7 @@ python-versions = "*"
 version = "1.12.1"
 
 [metadata]
-content-hash = "9b00e62dde6902a43560ddcb547260f841fe914f79afacae1dcf3261a977d4bf"
+content-hash = "052c27974bc8e1b445fa454624abe5b3924cf38d243c9b1918c084e30f8b11be"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -1088,8 +1088,8 @@ bleach = [
     {file = "bleach-3.1.5.tar.gz", hash = "sha256:3c4c520fdb9db59ef139915a5db79f8b51bc2a7257ea0389f30c846883430a4b"},
 ]
 cadcad = [
-    {file = "cadCAD-0.4.17-py3-none-any.whl", hash = "sha256:29729c13b9966f590c64f07d95f0d7680cfc77b2718bbc4429f1b56692a4f996"},
-    {file = "cadCAD-0.4.17.tar.gz", hash = "sha256:fa1ae8e3645e7ed43dee61cef9c468f61ff9c99d8cde146c4ef9e050d572b336"},
+    {file = "cadCAD-0.4.22-py3-none-any.whl", hash = "sha256:dd8162963adba1c9b26508c55e346e460cf69e778e68cdb1ef2c55ced149fbf7"},
+    {file = "cadCAD-0.4.22.tar.gz", hash = "sha256:8c844cea15c120fb98c8b722580ee3641c2d247f94c18c96abc292009fe06fa7"},
 ]
 click = [
     {file = "click-7.1.2-py2.py3-none-any.whl", hash = "sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc"},

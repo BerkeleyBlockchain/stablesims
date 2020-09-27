@@ -9,12 +9,14 @@ policies).
 initial_state = {
     "cat": {
         "litter": 0,  # Amount of DAI up for liquidation
-        "ilks": {"eth": {"chop": 1.13}},
+        "box": 0,  # Max DAI up for liquidation
+        "ilks": {"eth": {"chop": 1.13, "dunk": 0}},
     },
     "flapper": {
         "beg": 1.05,  # Minimum bid increase
         "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
         "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
+        "kicks": 0,  # Number of auctions kicked off
         "bids": {
             "dummy_bid": {
                 "bid": 0,  # Current bid (MKR)
@@ -30,6 +32,7 @@ initial_state = {
         "beg": 1.05,  # Minimum bid increase
         "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
         "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
+        "kicks": 0,  # Number of auctions kicked off
         "bids": {
             "dummy_bid": {  # Called a "bid" but really it's a Flipper auction
                 "bid": 0,  # Current bid (DAI)
@@ -48,6 +51,7 @@ initial_state = {
         "pad": 1.5,  # Lot increase per timestep
         "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
         "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
+        "kicks": 0,  # Number of auctions kicked off
         "bids": {
             "dummy_bid": {
                 "bid": 0,  # Current bid (DAI)
