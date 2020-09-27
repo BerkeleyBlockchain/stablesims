@@ -6,15 +6,15 @@ inherit from/reference.
 
 from cadCAD.configuration.utils import config_sim
 
-from dai_cadcad import util
+from dai_cadcad.pymaker.numeric import Wad, Ray, Rad
 
 base_sim_config = {
     "T": range(1),
     "N": 1,
     "M": {
-        "CAT_BOX": [util.float_to_rad(15000000)],
-        "CAT_ETH_CHOP": [util.float_to_wad(1.13)],
-        "CAT_ETH_DUNK": [util.float_to_rad(50000)],
+        "CAT_BOX": [Rad.from_number(15000000)],
+        "CAT_ETH_CHOP": [Wad.from_number(1.13)],
+        "CAT_ETH_DUNK": [Rad.from_number(50000)],
         "FLAPPER_BEG": [1.05],
         "FLAPPER_TTL": [180],
         "FLAPPER_TAU": [2880],
@@ -25,18 +25,18 @@ base_sim_config = {
         "FLOPPER_PAD": [1.5],
         "FLOPPER_TTL": [180],
         "FLOPPER_TAU": [2880],
-        "SPOTTER_PAR": [util.float_to_ray(1)],
-        "SPOTTER_ETH_MAT": [util.float_to_ray(1.5)],
+        "SPOTTER_PAR": [Ray.from_number(1)],
+        "SPOTTER_ETH_MAT": [Ray.from_number(1.5)],
         "SPOTTER_ETH_PIP": ["price_feeds/eth.json"],
         "SPOTTER_DAI_PIP": ["price_feeds/dai.json"],
-        "VAT_LINE": [util.float_to_rad(1000000000)],
-        "VAT_ILK_ETH_RATE": [util.float_to_ray(1)],
-        "VAT_ILK_ETH_LINE": [util.float_to_rad(540000000)],
-        "VAT_ILK_ETH_DUST": [util.float_to_rad(100)],
-        "VOW_DUMP": [util.float_to_wad(250)],
-        "VOW_SUMP": [util.float_to_rad(50000)],
-        "VOW_BUMP": [util.float_to_rad(10000)],
-        "VOW_HUMP": [util.float_to_rad(20000)],
+        "VAT_LINE": [Rad.from_number(1000000000)],
+        "VAT_ILK_ETH_RATE": [Ray.from_number(1)],
+        "VAT_ILK_ETH_LINE": [Rad.from_number(540000000)],
+        "VAT_ILK_ETH_DUST": [Rad.from_number(100)],
+        "VOW_DUMP": [Wad.from_number(250)],
+        "VOW_SUMP": [Rad.from_number(50000)],
+        "VOW_BUMP": [Rad.from_number(10000)],
+        "VOW_HUMP": [Rad.from_number(20000)],
         "WARM_TAU": [1, 1],  # Vault-joining warmup duration
     },
 }
@@ -51,7 +51,7 @@ base_sim_config = {
 open_eth_vault_sim_config = config_sim(
     {
         **base_sim_config,
-        #  **{"M": {**base_sim_config["M"], "VAT_ILK_ETH_RATE": [util.float_to_ray(1.05)]}}
+        #  **{"M": {**base_sim_config["M"], "VAT_ILK_ETH_RATE": [Ray.from_number(1.05)]}}
     }
 )
 

@@ -6,21 +6,24 @@ Additionally, it contains primitive state update functions (all the real logic i
 policies).
 """
 
+from dai_cadcad.pymaker.numeric import Wad, Ray, Rad
+
+
 initial_state = {
     "cat": {
-        "litter": 0,  # Amount of DAI up for liquidation
-        "box": 0,  # Max DAI up for liquidation
-        "ilks": {"eth": {"chop": 1.13, "dunk": 0}},
+        "litter": Rad(0),  # Amount of DAI up for liquidation
+        "box": Rad(0),  # Max DAI up for liquidation
+        "ilks": {"eth": {"chop": Wad.from_number(1.13), "dunk": Rad(0)}},
     },
     "flapper": {
-        "beg": 1.05,  # Minimum bid increase
+        "beg": Wad.from_number(1.05),  # Minimum bid increase
         "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
         "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
         "kicks": 0,  # Number of auctions kicked off
         "bids": {
             "dummy_bid": {
-                "bid": 0,  # Current bid (MKR)
-                "lot": 0,  # Current lot (DAI)
+                "bid": Wad(0),  # Current bid (MKR)
+                "lot": Rad(0),  # Current lot (DAI)
                 "guy": "",  # Current highest bidder
                 "tic": 0,  # Current bid expiry timestep
                 "end": 0,  # Auction expiry timestep
@@ -29,33 +32,33 @@ initial_state = {
     },
     "flipper_eth": {
         "ilk": "eth",  # Collateral type
-        "beg": 1.05,  # Minimum bid increase
+        "beg": Wad.from_number(1.05),  # Minimum bid increase
         "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
         "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
         "kicks": 0,  # Number of auctions kicked off
         "bids": {
             "dummy_bid": {  # Called a "bid" but really it's a Flipper auction
-                "bid": 0,  # Current bid (DAI)
-                "lot": 0,  # Current lot (COLLAT)
+                "bid": Rad(0),  # Current bid (DAI)
+                "lot": Wad(0),  # Current lot (COLLAT)
                 "guy": "",  # Current highest bidder
                 "tic": 0,  # Current bid expiry timestep
                 "end": 0,  # Auction expiry timestep
                 "usr": "",  # ID of urn being auctioned
                 "gal": "vow",  # Recipient of bid (vow) (TOREMOVE?)
-                "tab": 0,  # Desired amount of DAI to be raised
+                "tab": Rad(0),  # Desired amount of DAI to be raised
             }
         },
     },
     "flopper": {  # Dent
-        "beg": 1.05,  # Minimum bid increase
+        "beg": Wad.from_number(1.05),  # Minimum bid increase
         "pad": 1.5,  # Lot increase per timestep
         "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
         "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
         "kicks": 0,  # Number of auctions kicked off
         "bids": {
             "dummy_bid": {
-                "bid": 0,  # Current bid (DAI)
-                "lot": 0,  # Current lot (MKR)
+                "bid": Rad(0),  # Current bid (DAI)
+                "lot": Wad(0),  # Current lot (MKR)
                 "guy": "",  # Current highest bidder
                 "tic": 0,  # Current bid expiry timestep
                 "end": 0,  # Auction expiry timestep
@@ -77,48 +80,50 @@ initial_state = {
         "ilks": {
             "eth": {
                 "pip": "price_feeds/eth.json",  # Price feed file
-                "val": 0,  # Current USD price (cached for efficiency) (CUSTOM)
-                "mat": 1.5,  # Liquidation ratio
+                "val": Wad(0),  # Current USD price (cached for efficiency) (CUSTOM)
+                "mat": Ray.from_number(1.5),  # Liquidation ratio
             },
             "dai": {  # DAI isn't an ilk but it makes the most sense to store price here
                 "pip": "price_feeds/dai.json",
-                "val": 1,
-                "mat": 1,
+                "val": Wad(1),
+                "mat": Ray.from_number(1),
             },
         },
     },
     "vat": {
-        "sin": {"vow": 0,},  # Unbacked DAI (system debt)
-        "dai": {"daijoin": 0, "vow": 0,},  # Debt ledger
-        "gem": {"eth": {"cat": 0, "flipper_eth": 0,}},  # Collateral ledger
-        "debt": 0,  # Total DAI issued
-        "vice": 0,  # Total unbacked DAI
-        "Line": 0,  # Total debt ceiling
+        "sin": {"vow": Rad(0),},  # Unbacked DAI (system debt)
+        "dai": {"daijoin": Rad(0), "vow": Rad(0),},  # Debt ledger
+        "gem": {"eth": {"cat": Wad(0), "flipper_eth": Wad(0),}},  # Collateral ledger
+        "debt": Rad(0),  # Total DAI issued
+        "vice": Rad(0),  # Total unbacked DAI
+        "Line": Rad(0),  # Total debt ceiling
         "urns": {  # Vaults
             "eth": {
                 "dummy_urn": {
-                    "ink": 0,  # Vault collateral balance
-                    "art": 0,  # Vault debt (DAI)
+                    "ink": Wad(0),  # Vault collateral balance
+                    "art": Wad(0),  # Vault debt (DAI)
                 }
             }
         },
         "ilks": {
             "eth": {
-                "Art": 0,  # Total debt (DAI)
-                "rate": 1,  # Accumulated stability fee rates
-                "spot": 0,  # Collateral price w/ safety margin (max DAI per unit of collateral)
-                "line": 0,  # Debt ceiling for ilk
-                "dust": 0,  # Debt floor for ilk
+                "Art": Wad(0),  # Total debt (DAI)
+                "rate": Ray(1),  # Accumulated stability fee rates
+                "spot": Ray(
+                    0
+                ),  # Collateral price w/ safety margin (max DAI per unit of collateral)
+                "line": Rad(0),  # Debt ceiling for ilk
+                "dust": Rad(0),  # Debt floor for ilk
             }
         },
     },
     "vow": {
-        "Sin": 0,  # Amount of debt queued
-        "Ash": 0,  # Amount of debt on auction
-        "dump": 0,  # Flop initial lot size
-        "sump": 0,  # Flop fixed bid size
-        "bump": 0,  # Flap fixed lot size
-        "hump": 0,  # Surplus buffer
+        "Sin": Rad(0),  # Amount of debt queued
+        "Ash": Rad(0),  # Amount of debt on auction
+        "dump": Wad(0),  # Flop initial lot size
+        "sump": Rad(0),  # Flop fixed bid size
+        "bump": Rad(0),  # Flap fixed lot size
+        "hump": Rad(0),  # Surplus buffer
     },
 }
 
