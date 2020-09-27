@@ -16,8 +16,8 @@ from uuid import uuid4
 from copy import deepcopy
 import json
 import random
-import models
 
+import models
 from dai_cadcad.pymaker.numeric import Wad, Ray, Rad
 
 
@@ -317,8 +317,8 @@ def cat_bite(vat, vow, cat, flipper, ilk_id, user_id, now):
 
     assert cat["litter"] < cat["box"] and room >= dust, "Cat/liquidation-limit-hit"
 
-    dart = min(art, Wad(min(milk["dunk"], room)) / Wad(rate) / milk["chop"])
-    dink = min(ink, ink * dart / art)
+    dart = Wad.min(art, Wad(Rad.min(milk["dunk"], room)) / Wad(rate) / milk["chop"])
+    dink = Wad.min(ink, ink * dart / art)
 
     assert dart > Wad.from_number(0) and dink > Wad(0), "Cat/null-auction"
     assert dart <= Wad.from_number(2 ** 255) and dink <= Wad.from_number(
@@ -474,35 +474,51 @@ def flipper_deal(flipper, vat, cat, bid_id, now):
 # ---
 
 
-# Keeper
+# Keepers
 
 
-def keeper_bid(user_id, model, flipper, vat):
+def keeper_bid_flipper_eth(keepers, flipper, vat, spotter, bid_id, user_id, now):
     """ Executes a `keeper_bid`.
     """
-    bid_id = uuid4().hex
 
-    std_input = {"bid": 0}
-    model = models.choose[model]
-    bid = model(std_input)
-    flipper_tend(flipper, vat, bid_id, user_id, flipper.lot, bid, flipper.now)
-    return {}
+    bid = flipper["bids"][bid_id]
+    status = {
+        "id": bid_id,
+        "flipper": "flipper_eth",
+        "bid": bid["bid"],
+        "lot": bid["lot"],
+        "tab": bid["tab"],
+        "beg": flipper["beg"],
+        "guy": bid["guy"],
+        "era": now,
+        "tic": bid["tic"],
+        "end": bid["end"],
+        "price": Wad(bid["bid"] / Rad(bid["lot"])) if bid["lot"] != Wad(0) else None,
+    }
+
+    model_type = keepers[user_id]["flipper_eth_model"]
+    bidding_model = models.choose["flipper_eth"][model_type]
+
+    stance = bidding_model(status, user_id, spotter)
+    our_bid = Rad.min(Rad(bid["lot"]) * stance["price"], bid["tab"])
+
+    flipper_tend(flipper, vat, bid_id, user_id, bid["lot"], our_bid, now)
 
 
-def keeper_bid_generator(_params, _substep, _state_hist, state):
+def keeper_bid_flipper_eth_generator(_params, _substep, _state_hist, state):
     """ Executes all `keeper_bid` policies for a timestep.
     """
 
-    bid_buffer = state["flipper_eth"]["bids"]
-    # assuming state is {1: "simple", 2, "medium", 3: "complex"}
+    vat = deepcopy(state["vat"])
+    spotter = deepcopy(state["spotter"])
     keepers = state["keepers"]
-    vat = state["vat"]
-    for auction in bid_buffer:
-        flipper = state["flipper_eth"][auction]
-        for keeper in keepers:
-            user_id = keeper
-            model = state["keepers"][keeper]
-            keeper_bid(user_id, model, flipper, vat)
+    flipper = deepcopy(state["flipper_eth"])
+    bids = state["flipper_eth"]["bids"]
+    now = state["timestep"]
+
+    for bid_id in bids:
+        for user_id in keepers:
+            keeper_bid_flipper_eth(keepers, flipper, vat, spotter, bid_id, user_id, now)
     return {}
 
 

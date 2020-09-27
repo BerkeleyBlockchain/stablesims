@@ -16,9 +16,9 @@ initial_state = {
         "ilks": {"eth": {"chop": Wad.from_number(1.13), "dunk": Rad(0)}},
     },
     "flapper": {
-        "beg": Wad.from_number(1.05),  # Minimum bid increase
-        "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
-        "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
+        "beg": 0,  # Minimum bid increase
+        "ttl": 0,  # Bid duration
+        "tau": 0,  # Auction duration
         "kicks": 0,  # Number of auctions kicked off
         "bids": {
             "dummy_bid": {
@@ -32,9 +32,9 @@ initial_state = {
     },
     "flipper_eth": {
         "ilk": "eth",  # Collateral type
-        "beg": Wad.from_number(1.05),  # Minimum bid increase
-        "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
-        "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
+        "beg": 0,  # Minimum bid increase
+        "ttl": 0,  # Bid duration
+        "tau": 0,  # Auction duration
         "kicks": 0,  # Number of auctions kicked off
         "bids": {
             "dummy_bid": {  # Called a "bid" but really it's a Flipper auction
@@ -50,10 +50,10 @@ initial_state = {
         },
     },
     "flopper": {  # Dent
-        "beg": Wad.from_number(1.05),  # Minimum bid increase
-        "pad": 1.5,  # Lot increase per timestep
-        "ttl": 180,  # Bid duration (3 hours @ minutely timesteps)
-        "tau": 2880,  # Auction duration (2 days @ minutely timesteps)
+        "beg": 0,  # Minimum bid increase
+        "pad": 0,  # Lot increase per timestep
+        "ttl": 0,  # Bid duration
+        "tau": 0,  # Auction duration
         "kicks": 0,  # Number of auctions kicked off
         "bids": {
             "dummy_bid": {
@@ -67,12 +67,9 @@ initial_state = {
     },
     "keepers": {  # (TOREMOVE?)
         "dummy_keeper": {
-            "dai": 0,  # DAI balance
-            "eth": 0,  # ETH balance
-            "mkr": 0,  # MKR balance
-            "flip_tolerance": 0,  # (TODO)
-            "flop_tolerance": 0,  # (TODO)
-            "flap_tolerance": 0,  # (TODO)
+            "flipper_eth_model": "basic",
+            "flapper_model": "basic",
+            "flopper_model": "basic",
         }
     },
     "spotter": {
@@ -81,7 +78,7 @@ initial_state = {
             "eth": {
                 "pip": "price_feeds/eth.json",  # Price feed file
                 "val": Wad(0),  # Current USD price (cached for efficiency) (CUSTOM)
-                "mat": Ray.from_number(1.5),  # Liquidation ratio
+                "mat": Ray(0),  # Liquidation ratio
             },
             "dai": {  # DAI isn't an ilk but it makes the most sense to store price here
                 "pip": "price_feeds/dai.json",
