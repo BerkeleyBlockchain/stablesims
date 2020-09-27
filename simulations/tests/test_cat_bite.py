@@ -7,7 +7,8 @@ from cadCAD.configuration import Experiment
 from cadCAD import configs
 import pandas as pd
 
-from dai_cadcad import policies, state, sim_configs, util
+from dai_cadcad import policies, state, sim_configs
+from dai_cadcad.pymaker.numeric import Wad, Rad
 
 
 partial_state_update_blocks = [
@@ -82,25 +83,23 @@ def run_test():
     tau = flipper["tau"]
     now = run["timestep"][6]
 
-    assert vat["vice"] == 1000 * rate * old_urn_art
-    assert vat["ilks"]["eth"]["Art"] == 0
+    assert vat["vice"] == Rad.from_number(1000) * Rad(rate * old_urn_art)
+    assert vat["ilks"]["eth"]["Art"] == Wad(0)
 
-    assert urn_ink == urn_art == 0
+    assert urn_ink == urn_art == Wad(0)
 
-    assert round(util.rad_to_float(cat["litter"]), 8) == round(
-        util.rad_to_float(1000 * util.wad_to_float(old_urn_art * rate * chop)), 8
-    )
+    assert cat["litter"] == Rad.from_number(1000) * Rad(old_urn_art * rate * chop)
 
-    assert vat["sin"]["vow"] == 1000 * rate * old_urn_art
-    assert vow["Sin"] == 1000 * rate * old_urn_art
-    assert vow["Sin"] == 1000 * rate * old_urn_art
+    assert vat["sin"]["vow"] == Rad.from_number(1000) * Rad(rate * old_urn_art)
+    assert vow["Sin"] == Rad.from_number(1000) * Rad(rate * old_urn_art)
+    assert vow["Sin"] == Rad.from_number(1000) * Rad(rate * old_urn_art)
 
     assert flipper["kicks"] == 1000
-    assert vat["gem"]["eth"]["flipper_eth"] == 1000 * old_urn_ink
+    assert vat["gem"]["eth"]["flipper_eth"] == Wad.from_number(1000) * old_urn_ink
 
-    assert sample_bid["bid"] == 0
+    assert sample_bid["bid"] == Rad(0)
     assert sample_bid["lot"] == old_urn_ink
-    assert sample_bid["tab"] == util.wad_to_float(old_urn_art * rate * chop)
+    assert sample_bid["tab"] == Rad(old_urn_art * rate * chop)
     assert sample_bid["guy"] == "cat"
     assert sample_bid["gal"] == "vow"
     assert sample_bid["usr"] == urn_id

@@ -7,7 +7,8 @@ from cadCAD.configuration import Experiment
 from cadCAD import configs
 import pandas as pd
 
-from dai_cadcad import policies, state, sim_configs, util
+from dai_cadcad import policies, state, sim_configs
+from dai_cadcad.pymaker.numeric import Wad, Rad
 
 
 partial_state_update_blocks = [
@@ -54,30 +55,26 @@ def run_test():
 
     assert len(vat["urns"]["eth"]) == 1000, "Incorrect # of urns created"
     sample_urn = vat["urns"]["eth"][list(vat["urns"]["eth"].keys())[0]]
-    assert sample_urn["ink"] == util.float_to_wad(1), "Incorrect ink amount"
+    assert sample_urn["ink"] == Wad.from_number(1), "Incorrect ink amount"
     spot = run["vat"][2]["ilks"]["eth"]["spot"]
-    assert round(util.wad_to_float(sample_urn["art"]), 8) == round(
-        util.ray_to_float(spot * 0.9), 8
+    assert sample_urn["art"] == Wad.from_number(
+        float(spot) * 0.9
     ), "Incorrect art amount"
 
     assert len(vat["gem"]["eth"]) == 1002, "Incorrect # of gem records"
     sample_gem = vat["gem"]["eth"][list(vat["gem"]["eth"].keys())[2]]
-    assert sample_gem == 0, "Incorrect gem"
+    assert sample_gem == Wad(0), "Incorrect gem"
 
     assert len(vat["dai"]) == 1002, "Incorrect # of DAI records"
     sample_dai = vat["dai"][list(vat["dai"].keys())[2]]
-    assert round(util.rad_to_float(sample_dai), 8) == round(
-        util.rad_to_float(
-            util.float_to_wad(util.ray_to_float(spot * 0.9))
-            * vat["ilks"]["eth"]["rate"]
-        ),
-        8,
+    assert sample_dai == Rad(
+        Wad.from_number(float(spot) * 0.9) * vat["ilks"]["eth"]["rate"]
     ), "Incorrect DAI amount"
 
     assert (
-        vat["ilks"]["eth"]["Art"] == 1000 * sample_urn["art"]
+        vat["ilks"]["eth"]["Art"] == Wad.from_number(1000) * sample_urn["art"]
     ), "Incorrect total DAI from ETH"
 
-    assert vat["debt"] == 1000 * sample_dai, "Incorrect total DAI"
+    assert vat["debt"] == Rad.from_number(1000) * sample_dai, "Incorrect total DAI"
 
     return run
