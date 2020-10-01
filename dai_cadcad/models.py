@@ -35,7 +35,10 @@ def flipper_eth_model_basic(status, user_id, spotter, discount=0.15):
 
     oracle = spotter["ilks"]["eth"]["val"]
 
-    return {"price": oracle * Wad.from_number(1 - discount)}
+    return {
+        "price": oracle * Wad.from_number(1 - discount),
+        "gas_price": Wad.from_number(15000000000),
+    }
 
 
 choose = {"flipper_eth": {"basic": flipper_eth_model_basic}}

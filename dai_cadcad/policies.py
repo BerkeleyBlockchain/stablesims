@@ -73,8 +73,9 @@ def tick(params, _substep, _state_hist, state):
         del new_flopper["bids"]["dummy_bid"]
         del new_vat["urns"]["eth"]["dummy_urn"]
 
-    spotter_poke(new_spotter, new_vat, "dai", now)
     spotter_poke(new_spotter, new_vat, "eth", now)
+    spotter_poke(new_spotter, new_vat, "dai", now)
+    spotter_poke(new_spotter, new_vat, "gas", now)
 
     return {
         "vat": new_vat,
@@ -180,7 +181,7 @@ def spotter_poke(spotter, vat, ilk_id, now):
     val = spotter_peek(ilk["pip"], now)
     ilk["val"] = val
 
-    if ilk_id != "dai":
+    if ilk_id not in ["dai", "gas"]:
         spot = Ray(val) / spotter["par"] / ilk["mat"]
         vat_file(vat, ilk_id, "spot", spot)
 
@@ -500,26 +501,42 @@ def keeper_bid_flipper_eth(keepers, flipper, vat, spotter, bid_id, user_id, now)
     bidding_model = models.choose["flipper_eth"][model_type]
 
     stance = bidding_model(status, user_id, spotter)
-    our_bid = Rad.min(Rad(bid["lot"]) * stance["price"], bid["tab"])
+    price = stance["price"]
 
-    flipper_tend(flipper, vat, bid_id, user_id, bid["lot"], our_bid, now)
+    if spotter["ilks"]["gas"]["val"] <= stance["gas_price"]:
+        if bid["bid"] == bid["tab"]:
+            # Dent phase
+            our_lot = Wad(bid["bid"] / Rad(price))
+            if our_lot * flipper["beg"] <= bid["lot"] and our_lot < bid["lot"]:
+                flipper_dent(flipper, vat, bid_id, user_id, our_lot, bid["bid"], now)
+
+        else:
+            # Tend phase
+            our_bid = Rad.min(Rad(bid["lot"]) * price, bid["tab"])
+            if (
+                our_bid >= bid["bid"] * flipper["beg"] or our_bid == bid["tab"]
+            ) and our_bid > bid["bid"]:
+                flipper_tend(flipper, vat, bid_id, user_id, bid["lot"], our_bid, now)
 
 
 def keeper_bid_flipper_eth_generator(_params, _substep, _state_hist, state):
     """ Executes all `keeper_bid` policies for a timestep.
     """
 
-    vat = deepcopy(state["vat"])
-    spotter = deepcopy(state["spotter"])
+    new_vat = deepcopy(state["vat"])
+    spotter = state["spotter"]
     keepers = state["keepers"]
-    flipper = deepcopy(state["flipper_eth"])
-    bids = state["flipper_eth"]["bids"]
+    new_flipper_eth = deepcopy(state["flipper_eth"])
+    bids = new_flipper_eth["bids"]
     now = state["timestep"]
 
     for bid_id in bids:
         for user_id in keepers:
-            keeper_bid_flipper_eth(keepers, flipper, vat, spotter, bid_id, user_id, now)
-    return {}
+            keeper_bid_flipper_eth(
+                keepers, new_flipper_eth, new_vat, spotter, bid_id, user_id, now
+            )
+
+    return {"vat": new_vat, "flipper_eth": new_flipper_eth}
 
 
 # ---

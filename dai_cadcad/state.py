@@ -13,7 +13,7 @@ initial_state = {
     "cat": {
         "litter": Rad(0),  # Amount of DAI up for liquidation
         "box": Rad(0),  # Max DAI up for liquidation
-        "ilks": {"eth": {"chop": Wad.from_number(1.13), "dunk": Rad(0)}},
+        "ilks": {"eth": {"chop": Wad.from_number(0), "dunk": Rad(0)}},
     },
     "flapper": {
         "beg": 0,  # Minimum bid increase
@@ -82,8 +82,11 @@ initial_state = {
             },
             "dai": {  # DAI isn't an ilk but it makes the most sense to store price here
                 "pip": "price_feeds/dai.json",
-                "val": Wad(1),
-                "mat": Ray.from_number(1),
+                "val": Wad(0),
+            },
+            "gas": {  # Neither is gas price lol
+                "pip": "price_feeds/gas.json",
+                "val": Wad(0),
             },
         },
     },
@@ -105,7 +108,7 @@ initial_state = {
         "ilks": {
             "eth": {
                 "Art": Wad(0),  # Total debt (DAI)
-                "rate": Ray(1),  # Accumulated stability fee rates
+                "rate": Ray(0),  # Accumulated stability fee rates
                 "spot": Ray(
                     0
                 ),  # Collateral price w/ safety margin (max DAI per unit of collateral)
