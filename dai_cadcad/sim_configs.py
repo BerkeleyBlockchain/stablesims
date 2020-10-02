@@ -37,7 +37,7 @@ base_sim_config = {
         "VOW_SUMP": [Rad.from_number(50000)],
         "VOW_BUMP": [Rad.from_number(10000)],
         "VOW_HUMP": [Rad.from_number(20000)],
-        "WARM_TAU": [1, 1],  # Vault-joining warmup duration
+        "dummy": [0, 0],  # See note below
     },
 }
 
@@ -56,6 +56,20 @@ open_eth_vault_sim_config = config_sim(
 )
 
 cat_bite_sim_config = config_sim(
+    {
+        **base_sim_config,
+        **{
+            "T": range(2),
+            "M": {
+                **base_sim_config["M"],
+                "SPOTTER_ETH_PIP": ["price_feeds/tests/eth_drop_half.json"],
+                "SPOTTER_DAI_PIP": ["price_feeds/tests/perfect_dai_10.json"],
+            },
+        },
+    }
+)
+
+flip_tend_sim_config = config_sim(
     {
         **base_sim_config,
         **{

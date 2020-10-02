@@ -13,16 +13,21 @@ from dai_cadcad.pymaker.numeric import Wad, Rad
 
 partial_state_update_blocks = [
     {
-        "policies": {"tick": policies.tick},
+        "policies": {"init": policies.init},
         "variables": {
-            "vat": state.update_vat,
-            "spotter": state.update_spotter,
             "cat": state.update_cat,
             "flapper": state.update_flapper,
             "flipper_eth": state.update_flipper_eth,
             "flopper": state.update_flopper,
+            "spotter": state.update_spotter,
+            "vat": state.update_vat,
             "vow": state.update_vow,
+            "keepers": state.update_keepers,
         },
+    },
+    {
+        "policies": {"tick": policies.tick},
+        "variables": {"vat": state.update_vat, "spotter": state.update_spotter,},
     },
     {
         "policies": {"open_eth_vault_generator": policies.open_eth_vault_generator},

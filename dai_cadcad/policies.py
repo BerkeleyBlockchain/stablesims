@@ -24,108 +24,6 @@ from dai_cadcad.pymaker.numeric import Wad, Ray, Rad
 # ---
 
 
-# Behaviors
-def tick(params, _substep, _state_hist, state):
-    """ Performs all expected system upkeep at the start of each non-warmup timestep.
-    """
-
-    # TODO: Setting rates
-    # TODO: Timekeeping bids
-
-    now = state["timestep"]
-    new_vat = deepcopy(state["vat"])
-    new_spotter = deepcopy(state["spotter"])
-    new_cat = deepcopy(state["cat"])
-    new_flapper = deepcopy(state["flapper"])
-    new_flipper_eth = deepcopy(state["flipper_eth"])
-    new_flopper = deepcopy(state["flopper"])
-    new_vow = deepcopy(state["vow"])
-
-    if now == 0:
-        new_cat["box"] = params["CAT_BOX"]
-        new_cat["ilks"]["eth"]["chop"] = params["CAT_ETH_CHOP"]
-        new_cat["ilks"]["eth"]["dunk"] = params["CAT_ETH_DUNK"]
-        new_flapper["beg"] = params["FLAPPER_BEG"]
-        new_flapper["ttl"] = params["FLAPPER_TTL"]
-        new_flapper["tau"] = params["FLAPPER_TAU"]
-        new_flipper_eth["beg"] = params["FLIPPER_ETH_BEG"]
-        new_flipper_eth["ttl"] = params["FLIPPER_ETH_TTL"]
-        new_flipper_eth["tau"] = params["FLIPPER_ETH_TAU"]
-        new_flopper["beg"] = params["FLOPPER_BEG"]
-        new_flopper["pad"] = params["FLOPPER_PAD"]
-        new_flopper["ttl"] = params["FLOPPER_TTL"]
-        new_flopper["tau"] = params["FLOPPER_TAU"]
-        new_spotter["par"] = params["SPOTTER_PAR"]
-        new_spotter["ilks"]["eth"]["mat"] = params["SPOTTER_ETH_MAT"]
-        new_spotter["ilks"]["eth"]["pip"] = params["SPOTTER_ETH_PIP"]
-        new_spotter["ilks"]["dai"]["pip"] = params["SPOTTER_DAI_PIP"]
-        new_vat["Line"] = params["VAT_LINE"]
-        new_vat["ilks"]["eth"]["rate"] = params["VAT_ILK_ETH_RATE"]
-        new_vat["ilks"]["eth"]["line"] = params["VAT_ILK_ETH_LINE"]
-        new_vat["ilks"]["eth"]["dust"] = params["VAT_ILK_ETH_DUST"]
-        new_vow["dump"] = params["VOW_DUMP"]
-        new_vow["sump"] = params["VOW_SUMP"]
-        new_vow["bump"] = params["VOW_BUMP"]
-        new_vow["hump"] = params["VOW_HUMP"]
-
-        del new_flapper["bids"]["dummy_bid"]
-        del new_flipper_eth["bids"]["dummy_bid"]
-        del new_flopper["bids"]["dummy_bid"]
-        del new_vat["urns"]["eth"]["dummy_urn"]
-
-    spotter_poke(new_spotter, new_vat, "eth", now)
-    spotter_poke(new_spotter, new_vat, "dai", now)
-    spotter_poke(new_spotter, new_vat, "gas", now)
-
-    return {
-        "vat": new_vat,
-        "spotter": new_spotter,
-        "cat": new_cat,
-        "flapper": new_flapper,
-        "flipper_eth": new_flipper_eth,
-        "flopper": new_flopper,
-        "vow": new_vow,
-    }
-
-
-def open_eth_vault(vat, eth, dai):
-    """ Opens a new vault with unjoined ETH collateral.
-    """
-
-    eth = Wad.from_number(eth)
-    dai = Wad.from_number(dai)
-    user_id = uuid4().hex
-    gemjoin_join(vat, "eth", user_id, eth)
-    vat_frob(vat, "eth", user_id, eth, dai)
-
-
-def open_eth_vault_generator(params, _substep, _state_hist, state):
-    """ Executes all `open_eth_vault` policies for a timestep.
-    """
-
-    new_vat = deepcopy(state["vat"])
-    dai_val = float(state["spotter"]["ilks"]["dai"]["val"])
-    spot = float(state["vat"]["ilks"]["eth"]["spot"])
-
-    if state["timestep"] <= params["WARM_TAU"]:
-        for _ in range(1000):
-            # Open a vault w/ 1 ETH @ 166.66% collateralization
-            # TODO: Associate this with an "Ideal" or "Basic" user behavior
-            open_eth_vault(new_vat, 1, spot * 0.9)
-        return {"vat": new_vat}
-    if dai_val > 1:
-        ddai_val = dai_val - 1
-        prob = 5 * ddai_val + 0.05
-        if random.random() <= prob:
-            open_eth_vault(new_vat, 1, spot * 0.9)
-            return {"vat": new_vat}
-
-    return {}
-
-
-# ---
-
-
 # Join
 
 
@@ -335,44 +233,6 @@ def cat_bite(vat, vow, cat, flipper, ilk_id, user_id, now):
     flipper_kick(flipper, vat, user_id, "vow", tab, dink, Rad(0), now + flipper["tau"])
 
 
-def cat_bite_generator(_params, _substep, _state_hist, state):
-    """ Executes all `bite` operations for a timestep.
-    """
-
-    new_vat = deepcopy(state["vat"])
-    new_vow = deepcopy(state["vow"])
-    new_cat = deepcopy(state["cat"])
-    new_flipper_eth = deepcopy(state["flipper_eth"])
-
-    for user_id in new_vat["urns"]["eth"]:
-
-        urn = new_vat["urns"]["eth"][user_id]
-        ink = urn["ink"]
-        art = urn["art"]
-
-        ilk = new_vat["ilks"]["eth"]
-        rate = ilk["rate"]
-        spot = ilk["spot"]
-
-        if Rad(ink * spot) < Rad(art * rate):
-            cat_bite(
-                new_vat,
-                new_vow,
-                new_cat,
-                new_flipper_eth,
-                "eth",
-                user_id,
-                state["timestep"],
-            )
-
-    return {
-        "cat": new_cat,
-        "flipper_eth": new_flipper_eth,
-        "vat": new_vat,
-        "vow": new_vow,
-    }
-
-
 def cat_claw(cat, rad):
     """ Subtracts from the measure of Dai up for liquidation.
     """
@@ -451,7 +311,7 @@ def flipper_dent(flipper, vat, bid_id, user_id, lot, bid, now):
     if user_id != curr_bid["guy"]:
         vat_move(vat, user_id, curr_bid["guy"], curr_bid["bid"])
         curr_bid["guy"] = user_id
-    vat_flux(vat, flipper["ilk"], "flipper", curr_bid["usr"], curr_bid["lot"] - lot)
+    vat_flux(vat, flipper["ilk"], "flipper_eth", curr_bid["usr"], curr_bid["lot"] - lot)
 
     curr_bid["lot"] = lot
     curr_bid["tic"] = now + flipper["ttl"]
@@ -468,14 +328,14 @@ def flipper_deal(flipper, vat, cat, bid_id, now):
     ), "Flipper/not-finished"
 
     cat_claw(cat, curr_bid["tab"])
-    vat_flux(vat, flipper["ilk"], "flipper", curr_bid["guy"], curr_bid["lot"])
+    vat_flux(vat, flipper["ilk"], "flipper_eth", curr_bid["guy"], curr_bid["lot"])
     del flipper["bids"][bid_id]
 
 
 # ---
 
 
-# Keepers
+# Keepers / Users
 
 
 def keeper_bid_flipper_eth(keepers, flipper, vat, spotter, bid_id, user_id, now):
@@ -507,16 +367,201 @@ def keeper_bid_flipper_eth(keepers, flipper, vat, spotter, bid_id, user_id, now)
         if bid["bid"] == bid["tab"]:
             # Dent phase
             our_lot = Wad(bid["bid"] / Rad(price))
-            if our_lot * flipper["beg"] <= bid["lot"] and our_lot < bid["lot"]:
+            if (
+                our_lot * flipper["beg"] <= bid["lot"]
+                and our_lot < bid["lot"]
+                and vat["dai"][user_id] >= bid["bid"]
+            ):
                 flipper_dent(flipper, vat, bid_id, user_id, our_lot, bid["bid"], now)
 
         else:
             # Tend phase
             our_bid = Rad.min(Rad(bid["lot"]) * price, bid["tab"])
             if (
-                our_bid >= bid["bid"] * flipper["beg"] or our_bid == bid["tab"]
-            ) and our_bid > bid["bid"]:
+                (our_bid >= bid["bid"] * flipper["beg"] or our_bid == bid["tab"])
+                and our_bid > bid["bid"]
+                and vat["dai"][user_id]
+                >= (our_bid if user_id != bid["guy"] else our_bid - bid["bid"])
+            ):
                 flipper_tend(flipper, vat, bid_id, user_id, bid["lot"], our_bid, now)
+
+
+def open_eth_vault(vat, eth, dai):
+    """ Opens a new vault with unjoined ETH collateral.
+    """
+
+    eth = Wad.from_number(eth)
+    dai = Wad.from_number(dai)
+    user_id = uuid4().hex
+    gemjoin_join(vat, "eth", user_id, eth)
+    vat_frob(vat, "eth", user_id, eth, dai)
+
+
+# ---
+
+
+# Generators / Top-Level Policies
+
+
+def init(params, _substep, _state_hist, state):
+    """ Injects simulation parameters into state, joins users into the system, and selectes a
+        subset of them to be keepers.
+    """
+
+    now = state["timestep"]
+
+    if now == 0:
+
+        # Inject parameters into state
+
+        new_cat = deepcopy(state["cat"])
+        new_flapper = deepcopy(state["flapper"])
+        new_flipper_eth = deepcopy(state["flipper_eth"])
+        new_flopper = deepcopy(state["flopper"])
+        new_spotter = deepcopy(state["spotter"])
+        new_vat = deepcopy(state["vat"])
+        new_vow = deepcopy(state["vow"])
+
+        new_cat["box"] = params["CAT_BOX"]
+        new_cat["ilks"]["eth"]["chop"] = params["CAT_ETH_CHOP"]
+        new_cat["ilks"]["eth"]["dunk"] = params["CAT_ETH_DUNK"]
+        new_flapper["beg"] = params["FLAPPER_BEG"]
+        new_flapper["ttl"] = params["FLAPPER_TTL"]
+        new_flapper["tau"] = params["FLAPPER_TAU"]
+        new_flipper_eth["beg"] = params["FLIPPER_ETH_BEG"]
+        new_flipper_eth["ttl"] = params["FLIPPER_ETH_TTL"]
+        new_flipper_eth["tau"] = params["FLIPPER_ETH_TAU"]
+        new_flopper["beg"] = params["FLOPPER_BEG"]
+        new_flopper["pad"] = params["FLOPPER_PAD"]
+        new_flopper["ttl"] = params["FLOPPER_TTL"]
+        new_flopper["tau"] = params["FLOPPER_TAU"]
+        new_spotter["par"] = params["SPOTTER_PAR"]
+        new_spotter["ilks"]["eth"]["mat"] = params["SPOTTER_ETH_MAT"]
+        new_spotter["ilks"]["eth"]["pip"] = params["SPOTTER_ETH_PIP"]
+        new_spotter["ilks"]["dai"]["pip"] = params["SPOTTER_DAI_PIP"]
+        new_vat["Line"] = params["VAT_LINE"]
+        new_vat["ilks"]["eth"]["rate"] = params["VAT_ILK_ETH_RATE"]
+        new_vat["ilks"]["eth"]["line"] = params["VAT_ILK_ETH_LINE"]
+        new_vat["ilks"]["eth"]["dust"] = params["VAT_ILK_ETH_DUST"]
+        new_vow["dump"] = params["VOW_DUMP"]
+        new_vow["sump"] = params["VOW_SUMP"]
+        new_vow["bump"] = params["VOW_BUMP"]
+        new_vow["hump"] = params["VOW_HUMP"]
+
+        # Remove dummy state objects
+
+        new_keepers = deepcopy(state["keepers"])
+
+        del new_flapper["bids"]["dummy_bid"]
+        del new_flipper_eth["bids"]["dummy_bid"]
+        del new_flopper["bids"]["dummy_bid"]
+        del new_vat["urns"]["eth"]["dummy_urn"]
+        del new_keepers["dummy_keeper"]
+
+        # Join users into system
+
+        spot = float(new_vat["ilks"]["eth"]["spot"])
+
+        for _ in range(1000):
+            # Open a vault w/ 1 ETH @ 166.66% collateralization
+            # TODO: Associate this with an "Ideal" or "Basic" user behavior
+            open_eth_vault(new_vat, 1, spot * 0.9)
+
+        # Select half at random to be basic auction keepers
+
+        for user_id in random.choices(new_vat["urns"].keys(), k=500):
+            new_keepers[user_id] = {
+                "flipper_eth_model": "basic",
+                "flapper_model": "basic",
+                "flopper_model": "basic",
+            }
+
+        return {
+            "vat": new_vat,
+            "spotter": new_spotter,
+            "cat": new_cat,
+            "flapper": new_flapper,
+            "flipper_eth": new_flipper_eth,
+            "flopper": new_flopper,
+            "vow": new_vow,
+            "keepers": new_keepers,
+        }
+
+    return {}
+
+
+def tick(_params, _substep, _state_hist, state):
+    """ Performs all expected, user-triggered system upkeep at the start of each timestep.
+    """
+
+    # TODO: Setting rates
+
+    now = state["timestep"]
+
+    new_vat = deepcopy(state["vat"])
+    new_spotter = deepcopy(state["spotter"])
+
+    spotter_poke(new_spotter, new_vat, "eth", now)
+    spotter_poke(new_spotter, new_vat, "dai", now)
+    spotter_poke(new_spotter, new_vat, "gas", now)
+
+    return {"vat": new_vat, "spotter": new_spotter}
+
+
+def open_eth_vault_generator(_params, _substep, _state_hist, state):
+    """ Executes all `open_eth_vault` policies for a timestep.
+    """
+
+    new_vat = deepcopy(state["vat"])
+    dai_val = float(state["spotter"]["ilks"]["dai"]["val"])
+    spot = float(new_vat["ilks"]["eth"]["spot"])
+
+    if dai_val > 1:
+        ddai_val = dai_val - 1
+        prob = 5 * ddai_val + 0.05
+        if random.random() <= prob:
+            open_eth_vault(new_vat, 1, spot * 0.9)
+            return {"vat": new_vat}
+
+    return {}
+
+
+def cat_bite_generator(_params, _substep, _state_hist, state):
+    """ Executes all `bite` operations for a timestep.
+    """
+
+    new_vat = deepcopy(state["vat"])
+    new_vow = deepcopy(state["vow"])
+    new_cat = deepcopy(state["cat"])
+    new_flipper_eth = deepcopy(state["flipper_eth"])
+
+    for user_id in new_vat["urns"]["eth"]:
+
+        urn = new_vat["urns"]["eth"][user_id]
+        ink = urn["ink"]
+        art = urn["art"]
+
+        ilk = new_vat["ilks"]["eth"]
+        rate = ilk["rate"]
+        spot = ilk["spot"]
+
+        if Rad(ink * spot) < Rad(art * rate):
+            cat_bite(
+                new_vat,
+                new_vow,
+                new_cat,
+                new_flipper_eth,
+                "eth",
+                user_id,
+                state["timestep"],
+            )
+
+    return {
+        "cat": new_cat,
+        "flipper_eth": new_flipper_eth,
+        "vat": new_vat,
+        "vow": new_vow,
+    }
 
 
 def keeper_bid_flipper_eth_generator(_params, _substep, _state_hist, state):

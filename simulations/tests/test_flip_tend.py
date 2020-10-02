@@ -8,7 +8,8 @@ from cadCAD import configs
 import pandas as pd
 
 from dai_cadcad import policies, state, sim_configs
-from dai_cadcad.pymaker.numeric import Wad, Rad
+
+# from dai_cadcad.pymaker.numeric import Wad, Rad
 
 
 partial_state_update_blocks = [
@@ -47,7 +48,7 @@ partial_state_update_blocks = [
 exp = Experiment()
 
 exp.append_configs(
-    sim_configs=sim_configs.cat_bite_sim_config,
+    sim_configs=sim_configs.flip_tend_sim_config,
     initial_state=state.initial_state,
     partial_state_update_blocks=partial_state_update_blocks,
 )
@@ -65,50 +66,5 @@ def run_test():
     cond_1 = result["run"] == 1
     cond_2 = result["substep"] != 0
     run = result[cond_1 & cond_2]
-
-    vat = run["vat"][6]
-    old_vat = run["vat"][3]
-    urn_id = list(vat["urns"]["eth"].keys())[0]
-    old_urn = old_vat["urns"]["eth"][urn_id]
-    old_urn_art = old_urn["art"]
-    old_urn_ink = old_urn["ink"]
-    urn = vat["urns"]["eth"][urn_id]
-    urn_art = urn["art"]
-    urn_ink = urn["ink"]
-    rate = vat["ilks"]["eth"]["rate"]
-
-    cat = run["cat"][6]
-    chop = cat["ilks"]["eth"]["chop"]
-
-    vow = run["vow"][6]
-
-    flipper = run["flipper_eth"][6]
-    bid_id = list(flipper["bids"].keys())[0]
-    sample_bid = flipper["bids"][bid_id]
-    tau = flipper["tau"]
-    now = run["timestep"][6]
-
-    assert vat["vice"] == Rad.from_number(1000) * Rad(rate * old_urn_art)
-    assert vat["ilks"]["eth"]["Art"] == Wad(0)
-
-    assert urn_ink == urn_art == Wad(0)
-
-    assert cat["litter"] == Rad.from_number(1000) * Rad(old_urn_art * rate * chop)
-
-    assert vat["sin"]["vow"] == Rad.from_number(1000) * Rad(rate * old_urn_art)
-    assert vow["Sin"] == Rad.from_number(1000) * Rad(rate * old_urn_art)
-    assert vow["Sin"] == Rad.from_number(1000) * Rad(rate * old_urn_art)
-
-    assert flipper["kicks"] == 1000
-    assert vat["gem"]["eth"]["flipper_eth"] == Wad.from_number(1000) * old_urn_ink
-
-    assert sample_bid["bid"] == Rad(0)
-    assert sample_bid["lot"] == old_urn_ink
-    assert sample_bid["tab"] == Rad(old_urn_art * rate * chop)
-    assert sample_bid["guy"] == "cat"
-    assert sample_bid["gal"] == "vow"
-    assert sample_bid["usr"] == urn_id
-    assert sample_bid["tic"] == 0
-    assert sample_bid["end"] == now + tau
 
     return run
