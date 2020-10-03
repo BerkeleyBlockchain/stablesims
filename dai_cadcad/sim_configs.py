@@ -37,6 +37,7 @@ base_sim_config = {
         "VOW_SUMP": [Rad.from_number(50000)],
         "VOW_BUMP": [Rad.from_number(10000)],
         "VOW_HUMP": [Rad.from_number(20000)],
+        "NUM_INIT_VAULTS": [1000],
         "dummy": [0, 0],  # See note below
     },
 }
@@ -73,11 +74,14 @@ flip_tend_sim_config = config_sim(
     {
         **base_sim_config,
         **{
-            "T": range(2),
+            "T": range(4),
             "M": {
                 **base_sim_config["M"],
                 "SPOTTER_ETH_PIP": ["price_feeds/tests/eth_drop_half.json"],
                 "SPOTTER_DAI_PIP": ["price_feeds/tests/perfect_dai_10.json"],
+                "FLIPPER_ETH_TTL": [1],
+                "FLIPPER_ETH_TAU": [2],
+                "NUM_INIT_VAULTS": [2],
             },
         },
     }

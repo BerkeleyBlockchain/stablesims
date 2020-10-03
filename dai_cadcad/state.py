@@ -92,7 +92,7 @@ initial_state = {
     },
     "vat": {
         "sin": {"vow": Rad(0),},  # Unbacked DAI (system debt)
-        "dai": {"daijoin": Rad(0), "vow": Rad(0),},  # Debt ledger
+        "dai": {"daijoin": Rad(0), "vow": Rad(0), "cat": Rad(0)},  # Debt ledger
         "gem": {"eth": {"cat": Wad(0), "flipper_eth": Wad(0),}},  # Collateral ledger
         "debt": Rad(0),  # Total DAI issued
         "vice": Rad(0),  # Total unbacked DAI
@@ -109,9 +109,7 @@ initial_state = {
             "eth": {
                 "Art": Wad(0),  # Total debt (DAI)
                 "rate": Ray(0),  # Accumulated stability fee rates
-                "spot": Ray(
-                    0
-                ),  # Collateral price w/ safety margin (max DAI per unit of collateral)
+                "spot": Ray(0),  # Collateral price w/ safety margin
                 "line": Rad(0),  # Debt ceiling for ilk
                 "dust": Rad(0),  # Debt floor for ilk
             }

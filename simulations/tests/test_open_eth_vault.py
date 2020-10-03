@@ -56,12 +56,12 @@ def run_test():
     cond_1 = result["run"] == 1
     cond_2 = result["substep"] != 0
     run = result[cond_1 & cond_2]
-    vat = run["vat"][2]
+    vat = run["vat"][1]
 
     assert len(vat["urns"]["eth"]) == 1000, "Incorrect # of urns created"
     sample_urn = vat["urns"]["eth"][list(vat["urns"]["eth"].keys())[0]]
     assert sample_urn["ink"] == Wad.from_number(1), "Incorrect ink amount"
-    spot = run["vat"][2]["ilks"]["eth"]["spot"]
+    spot = vat["ilks"]["eth"]["spot"]
     assert sample_urn["art"] == Wad.from_number(
         float(spot) * 0.9
     ), "Incorrect art amount"

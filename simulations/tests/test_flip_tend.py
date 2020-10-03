@@ -43,6 +43,23 @@ partial_state_update_blocks = [
             "flipper_eth": state.update_flipper_eth,
         },
     },
+    {
+        "policies": {
+            "keeper_bid_flipper_eth_generator": policies.keeper_bid_flipper_eth_generator
+        },
+        "variables": {
+            "vat": state.update_vat,
+            "flipper_eth": state.update_flipper_eth,
+        },
+    },
+    {
+        "policies": {"flipper_eth_deal_generator": policies.flipper_eth_deal_generator},
+        "variables": {
+            "vat": state.update_vat,
+            "cat": state.update_cat,
+            "flipper_eth": state.update_flipper_eth,
+        },
+    },
 ]
 
 exp = Experiment()

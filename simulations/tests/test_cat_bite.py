@@ -66,8 +66,8 @@ def run_test():
     cond_2 = result["substep"] != 0
     run = result[cond_1 & cond_2]
 
-    vat = run["vat"][6]
-    old_vat = run["vat"][3]
+    vat = run["vat"][8]
+    old_vat = run["vat"][4]
     urn_id = list(vat["urns"]["eth"].keys())[0]
     old_urn = old_vat["urns"]["eth"][urn_id]
     old_urn_art = old_urn["art"]
@@ -77,16 +77,16 @@ def run_test():
     urn_ink = urn["ink"]
     rate = vat["ilks"]["eth"]["rate"]
 
-    cat = run["cat"][6]
+    cat = run["cat"][8]
     chop = cat["ilks"]["eth"]["chop"]
 
-    vow = run["vow"][6]
+    vow = run["vow"][8]
 
-    flipper = run["flipper_eth"][6]
+    flipper = run["flipper_eth"][8]
     bid_id = list(flipper["bids"].keys())[0]
     sample_bid = flipper["bids"][bid_id]
     tau = flipper["tau"]
-    now = run["timestep"][6]
+    now = run["timestep"][8]
 
     assert vat["vice"] == Rad.from_number(1000) * Rad(rate * old_urn_art)
     assert vat["ilks"]["eth"]["Art"] == Wad(0)

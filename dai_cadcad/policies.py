@@ -17,7 +17,7 @@ from copy import deepcopy
 import json
 import random
 
-import models
+from dai_cadcad import models
 from dai_cadcad.pymaker.numeric import Wad, Ray, Rad
 
 
@@ -361,9 +361,10 @@ def keeper_bid_flipper_eth(keepers, flipper, vat, spotter, bid_id, user_id, now)
     bidding_model = models.choose["flipper_eth"][model_type]
 
     stance = bidding_model(status, user_id, spotter)
-    price = stance["price"]
 
-    if spotter["ilks"]["gas"]["val"] <= stance["gas_price"]:
+    if stance and spotter["ilks"]["gas"]["val"] <= stance["gas_price"]:
+        price = stance["price"]
+
         if bid["bid"] == bid["tab"]:
             # Dent phase
             our_lot = Wad(bid["bid"] / Rad(price))
@@ -459,17 +460,25 @@ def init(params, _substep, _state_hist, state):
         del new_keepers["dummy_keeper"]
 
         # Join users into system
+        # Warm-start the spotter for this
+
+        spotter_poke(new_spotter, new_vat, "eth", now)
+        spotter_poke(new_spotter, new_vat, "dai", now)
+        spotter_poke(new_spotter, new_vat, "gas", now)
 
         spot = float(new_vat["ilks"]["eth"]["spot"])
 
-        for _ in range(1000):
+        for _ in range(params["NUM_INIT_VAULTS"]):
             # Open a vault w/ 1 ETH @ 166.66% collateralization
             # TODO: Associate this with an "Ideal" or "Basic" user behavior
-            open_eth_vault(new_vat, 1, spot * 0.9)
+            open_eth_vault(new_vat, 100, spot * 90)
 
-        # Select half at random to be basic auction keepers
+        # Select 10% at random to be basic auction keepers
 
-        for user_id in random.choices(new_vat["urns"].keys(), k=500):
+        for user_id in random.choices(
+            list(new_vat["urns"]["eth"].keys()),
+            k=max(params["NUM_INIT_VAULTS"] // 10, 1),
+        ):
             new_keepers[user_id] = {
                 "flipper_eth_model": "basic",
                 "flapper_model": "basic",
@@ -582,6 +591,35 @@ def keeper_bid_flipper_eth_generator(_params, _substep, _state_hist, state):
             )
 
     return {"vat": new_vat, "flipper_eth": new_flipper_eth}
+
+
+def flipper_eth_deal_generator(_params, _substep, _state_hist, state):
+    """ Scans for expired auctions and deals them out to the highest bidder.
+    """
+
+    new_vat = deepcopy(state["vat"])
+    new_cat = deepcopy(state["cat"])
+    new_flipper_eth = deepcopy(state["flipper_eth"])
+
+    bids = new_flipper_eth["bids"]
+    now = state["timestep"]
+
+    bids_to_deal = []
+
+    for bid_id in bids:
+        if bids[bid_id]["tic"] != 0 and (
+            bids[bid_id]["tic"] < now or bids[bid_id]["end"] < now
+        ):
+            bids_to_deal.append(bid_id)
+
+    for bid_id in bids_to_deal:
+        flipper_deal(new_flipper_eth, new_vat, new_cat, bid_id, now)
+
+    return {
+        "vat": new_vat,
+        "cat": new_cat,
+        "flipper_eth": new_flipper_eth,
+    }
 
 
 # ---
