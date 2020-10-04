@@ -338,29 +338,11 @@ def flipper_deal(flipper, vat, cat, bid_id, now):
 # Keepers / Users
 
 
-def keeper_bid_flipper_eth(keepers, flipper, vat, spotter, bid_id, user_id, now):
+def keeper_bid_flipper_eth(flipper, vat, spotter, stance, bid_id, user_id, now):
     """ Executes a `keeper_bid`.
     """
 
     bid = flipper["bids"][bid_id]
-    status = {
-        "id": bid_id,
-        "flipper": "flipper_eth",
-        "bid": bid["bid"],
-        "lot": bid["lot"],
-        "tab": bid["tab"],
-        "beg": flipper["beg"],
-        "guy": bid["guy"],
-        "era": now,
-        "tic": bid["tic"],
-        "end": bid["end"],
-        "price": Wad(bid["bid"] / Rad(bid["lot"])) if bid["lot"] != Wad(0) else None,
-    }
-
-    model_type = keepers[user_id]["flipper_eth_model"]
-    bidding_model = models.choose["flipper_eth"][model_type]
-
-    stance = bidding_model(status, user_id, spotter)
 
     if stance and spotter["ilks"]["gas"]["val"] <= stance["gas_price"]:
         price = stance["price"]
@@ -480,9 +462,9 @@ def init(params, _substep, _state_hist, state):
             k=max(params["NUM_INIT_VAULTS"] // 10, 1),
         ):
             new_keepers[user_id] = {
-                "flipper_eth_model": "basic",
-                "flapper_model": "basic",
-                "flopper_model": "basic",
+                "flipper_eth_model": {"type": "basic", "extra": {"discount": 0.15}},
+                "flapper_model": {"type": "basic", "extra": {}},
+                "flopper_model": {"type": "basic", "extra": {}},
             }
 
         return {
@@ -585,9 +567,32 @@ def keeper_bid_flipper_eth_generator(_params, _substep, _state_hist, state):
     now = state["timestep"]
 
     for bid_id in bids:
+        bid = new_flipper_eth["bids"][bid_id]
+        status = {
+            "id": bid_id,
+            "flipper": "flipper_eth",
+            "bid": bid["bid"],
+            "lot": bid["lot"],
+            "tab": bid["tab"],
+            "beg": new_flipper_eth["beg"],
+            "guy": bid["guy"],
+            "era": now,
+            "tic": bid["tic"],
+            "end": bid["end"],
+            "price": Wad(bid["bid"] / Rad(bid["lot"]))
+            if bid["lot"] != Wad(0)
+            else None,
+        }
+
         for user_id in keepers:
+            model_type = keepers[user_id]["flipper_eth_model"]["type"]
+            model_extra = keepers[user_id]["flipper_eth_model"]["extra"]
+            bidding_model = models.choose["flipper_eth"][model_type]
+
+            stance = bidding_model(status, user_id, state, model_extra)
+
             keeper_bid_flipper_eth(
-                keepers, new_flipper_eth, new_vat, spotter, bid_id, user_id, now
+                new_flipper_eth, new_vat, spotter, stance, bid_id, user_id, now
             )
 
     return {"vat": new_vat, "flipper_eth": new_flipper_eth}

@@ -67,9 +67,9 @@ initial_state = {
     },
     "keepers": {  # (TOREMOVE?)
         "dummy_keeper": {
-            "flipper_eth_model": "basic",
-            "flapper_model": "basic",
-            "flopper_model": "basic",
+            "flipper_eth_model": {"type": "basic", "extra": {"discount": 0.15}},
+            "flapper_model": {"type": "basic", "extra": {}},
+            "flopper_model": {"type": "basic", "extra": {}},
         }
     },
     "spotter": {

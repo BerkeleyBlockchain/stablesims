@@ -27,16 +27,33 @@ from dai_cadcad.pymaker.numeric import Wad
 # }
 
 
-def flipper_eth_model_basic(status, user_id, spotter, discount=0.15):
+def flipper_eth_model_basic(status, user_id, state, extra):
     """ Simple Bidding Model
     """
-    if status["guy"] == user_id:
+
+    spotter = state["spotter"]
+    discount = extra.get("discount")
+
+    if status["guy"] == user_id or not status["price"] or not discount:
         return None
 
     oracle = spotter["ilks"]["eth"]["val"]
 
     return {
         "price": oracle * Wad.from_number(1 - discount),
+        "gas_price": Wad.from_number(15000000000),
+    }
+
+
+def flipper_eth_model_inchworm(status, user_id, _state, _extra):
+    """ Makes the smallest valid bid.
+    """
+
+    if status["guy"] == user_id or not status["price"]:
+        return None
+
+    return {
+        "price": status["price"] * status["beg"],
         "gas_price": Wad.from_number(15000000000),
     }
 
