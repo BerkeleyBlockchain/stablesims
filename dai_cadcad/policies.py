@@ -584,7 +584,9 @@ def keeper_bid_flipper_eth_generator(_params, _substep, _state_hist, state):
             else None,
         }
 
-        for user_id in keepers:
+        user_ids = list(keepers.keys())
+        random.shuffle(user_ids)
+        for user_id in user_ids:
             model_type = keepers[user_id]["flipper_eth_model"]["type"]
             model_extra = keepers[user_id]["flipper_eth_model"]["extra"]
             bidding_model = models.choose["flipper_eth"][model_type]

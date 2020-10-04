@@ -70,7 +70,7 @@ cat_bite_sim_config = config_sim(
     }
 )
 
-flip_tend_sim_config = config_sim(
+flip_tend_deal_sim_config = config_sim(
     {
         **base_sim_config,
         **{
