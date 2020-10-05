@@ -444,9 +444,11 @@ def init(params, _substep, _state_hist, state):
         # Join users into system
         # Warm-start the spotter for this
 
-        spotter_poke(new_spotter, new_vat, "eth", now)
-        spotter_poke(new_spotter, new_vat, "dai", now)
-        spotter_poke(new_spotter, new_vat, "gas", now)
+        poke_timestep = now + params["INIT_TIMESTEP"]
+
+        spotter_poke(new_spotter, new_vat, "eth", poke_timestep)
+        spotter_poke(new_spotter, new_vat, "dai", poke_timestep)
+        spotter_poke(new_spotter, new_vat, "gas", poke_timestep)
 
         spot = float(new_vat["ilks"]["eth"]["spot"])
 
@@ -481,20 +483,20 @@ def init(params, _substep, _state_hist, state):
     return {}
 
 
-def tick(_params, _substep, _state_hist, state):
+def tick(params, _substep, _state_hist, state):
     """ Performs all expected, user-triggered system upkeep at the start of each timestep.
     """
 
     # TODO: Setting rates
 
-    now = state["timestep"]
-
     new_vat = deepcopy(state["vat"])
     new_spotter = deepcopy(state["spotter"])
 
-    spotter_poke(new_spotter, new_vat, "eth", now)
-    spotter_poke(new_spotter, new_vat, "dai", now)
-    spotter_poke(new_spotter, new_vat, "gas", now)
+    poke_timestep = state["timestep"] + params["INIT_TIMESTEP"]
+
+    spotter_poke(new_spotter, new_vat, "eth", poke_timestep)
+    spotter_poke(new_spotter, new_vat, "dai", poke_timestep)
+    spotter_poke(new_spotter, new_vat, "gas", poke_timestep)
 
     return {"vat": new_vat, "spotter": new_spotter}
 
@@ -511,7 +513,7 @@ def open_eth_vault_generator(_params, _substep, _state_hist, state):
         ddai_val = dai_val - 1
         prob = 5 * ddai_val + 0.05
         if random.random() <= prob:
-            open_eth_vault(new_vat, 1, spot * 0.9)
+            open_eth_vault(new_vat, 100, spot * 90)
             return {"vat": new_vat}
 
     return {}

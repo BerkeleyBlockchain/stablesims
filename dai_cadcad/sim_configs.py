@@ -32,11 +32,14 @@ base_sim_config = {
         "VAT_LINE": [Rad.from_number(1000000000)],
         "VAT_ILK_ETH_RATE": [Ray.from_number(1)],
         "VAT_ILK_ETH_LINE": [Rad.from_number(540000000)],
-        "VAT_ILK_ETH_DUST": [Rad.from_number(100)],
+        "VAT_ILK_ETH_DUST": [
+            Rad.from_number(100)
+        ],  # TODO: 100 ETH is minimum collateral?
         "VOW_DUMP": [Wad.from_number(250)],
         "VOW_SUMP": [Rad.from_number(50000)],
         "VOW_BUMP": [Rad.from_number(10000)],
         "VOW_HUMP": [Rad.from_number(20000)],
+        "INIT_TIMESTEP": [0],
         "NUM_INIT_VAULTS": [1000],
         "dummy": [0, 0],  # See note below
     },
@@ -48,6 +51,13 @@ base_sim_config = {
 # functions
 
 # This is likely a cadCAD bug
+
+black_thursday_sim_config = config_sim(
+    {
+        **base_sim_config,
+        **{"T": range(1440), "M": {**base_sim_config["M"], "INIT_TIMESTEP": [50400]}},
+    }
+)
 
 open_eth_vault_sim_config = config_sim(
     {

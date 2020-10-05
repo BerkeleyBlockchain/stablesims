@@ -1,4 +1,4 @@
-""" Test for the `flipper_tend` and `flipper_deal` functions.
+""" Simulates the entirety of March 12th, 2020 (Black Thursday).
 """
 
 
@@ -8,8 +8,6 @@ from cadCAD import configs
 import pandas as pd
 
 from dai_cadcad import policies, state, sim_configs
-
-from dai_cadcad.pymaker.numeric import Wad, Rad
 
 
 partial_state_update_blocks = [
@@ -65,7 +63,7 @@ partial_state_update_blocks = [
 exp = Experiment()
 
 exp.append_configs(
-    sim_configs=sim_configs.flip_tend_deal_sim_config,
+    sim_configs=sim_configs.black_thursday_sim_config,
     initial_state=state.initial_state,
     partial_state_update_blocks=partial_state_update_blocks,
 )
@@ -75,7 +73,7 @@ exec_context = ExecutionContext(context=exec_mode.single_mode)
 executor = Executor(exec_context=exec_context, configs=configs)
 
 
-def run_test():
+def run_sim():
     """ Runs the simulation & checks the appropriate assertions.
     """
     raw_result, _tensor, _sessions = executor.execute()
@@ -83,39 +81,5 @@ def run_test():
     cond_1 = result["run"] == 1
     cond_2 = result["substep"] != 0
     run = result[cond_1 & cond_2]
-
-    post_bid_flipper = run["flipper_eth"][12]
-    post_bid_spotter = run["spotter"][12]
-    pre_bid_vat = run["vat"][6]
-    post_bid_vat = run["vat"][12]
-    post_deal_vat = run["vat"][24]
-    pre_bid_cat = run["cat"][6]
-
-    assert len(post_bid_flipper["bids"]) == 2
-
-    placed_bid = post_bid_flipper["bids"][1]
-    keeper = post_bid_flipper["bids"][1]["guy"]
-    val = post_bid_spotter["ilks"]["eth"]["val"]
-    spot = pre_bid_vat["ilks"]["eth"]["spot"]
-    chop = pre_bid_cat["ilks"]["eth"]["chop"]
-
-    assert placed_bid["bid"] == Rad(val) * Rad.from_number(85)
-    assert placed_bid["lot"] == Wad.from_number(100)
-    assert placed_bid["tab"] == Rad(Wad.from_number(float(spot) * 90) * chop)
-    assert placed_bid["tic"] == 3
-    assert placed_bid["end"] == 4
-    assert placed_bid["usr"] == next(
-        filter(lambda user: user != keeper, pre_bid_vat["urns"]["eth"].keys())
-    )
-    assert placed_bid["gal"] == "vow"
-
-    assert post_bid_vat["dai"][keeper] == pre_bid_vat["dai"][keeper] - placed_bid["bid"]
-    assert post_bid_vat["dai"]["vow"] == placed_bid["bid"]
-
-    assert post_deal_vat["gem"]["eth"][keeper] == placed_bid["lot"]
-    assert (
-        post_deal_vat["gem"]["eth"]["flipper_eth"]
-        == post_bid_vat["gem"]["eth"]["flipper_eth"] - placed_bid["lot"]
-    )
 
     return run
