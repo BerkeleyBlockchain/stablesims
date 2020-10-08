@@ -63,20 +63,22 @@ def daijoin_exit(vat, user_id, wad):
 # Spotter
 
 
-def spotter_peek(pip, timestep):
+def spotter_peek(pip, timestep, init_timestep):
     """ Read in the price value at time `timestep` from feed `pip`.
     """
 
     with open(pip) as price_feed_json:
-        return Wad.from_number(json.load(price_feed_json)[timestep]["price_close"])
+        return Wad.from_number(
+            json.load(price_feed_json)[init_timestep + timestep]["price_close"]
+        )
 
 
-def spotter_poke(spotter, vat, ilk_id, now):
+def spotter_poke(spotter, vat, ilk_id, now, init_timestep):
     """ Gets the current `spot` value of the given Ilk.
     """
 
     ilk = spotter["ilks"][ilk_id]
-    val = spotter_peek(ilk["pip"], now)
+    val = spotter_peek(ilk["pip"], now, init_timestep)
     ilk["val"] = val
 
     if ilk_id not in ["dai", "gas"]:
@@ -324,7 +326,7 @@ def flipper_deal(flipper, vat, cat, bid_id, now):
     curr_bid = flipper["bids"][bid_id]
 
     assert curr_bid["tic"] != 0 and (
-        curr_bid["tic"] < now or curr_bid["end"] < now
+        curr_bid["tic"] <= now or curr_bid["end"] <= now
     ), "Flipper/not-finished"
 
     cat_claw(cat, curr_bid["tab"])
@@ -338,13 +340,16 @@ def flipper_deal(flipper, vat, cat, bid_id, now):
 # Keepers / Users
 
 
-def keeper_bid_flipper_eth(flipper, vat, spotter, stance, bid_id, user_id, now):
+def keeper_bid_flipper_eth(flipper, vat, spotter, stance, bid_id, user_id, now, stats):
     """ Executes a `keeper_bid`.
     """
 
     bid = flipper["bids"][bid_id]
 
-    if stance and spotter["ilks"]["gas"]["val"] <= stance["gas_price"]:
+    if stance and (
+        "gas_price" not in stance
+        or spotter["ilks"]["gas"]["val"] <= stance["gas_price"]
+    ):
         price = stance["price"]
 
         if bid["bid"] == bid["tab"]:
@@ -356,6 +361,7 @@ def keeper_bid_flipper_eth(flipper, vat, spotter, stance, bid_id, user_id, now):
                 and vat["dai"][user_id] >= bid["bid"]
             ):
                 flipper_dent(flipper, vat, bid_id, user_id, our_lot, bid["bid"], now)
+                stats["num_bids"] += 1
 
         else:
             # Tend phase
@@ -367,6 +373,7 @@ def keeper_bid_flipper_eth(flipper, vat, spotter, stance, bid_id, user_id, now):
                 >= (our_bid if user_id != bid["guy"] else our_bid - bid["bid"])
             ):
                 flipper_tend(flipper, vat, bid_id, user_id, bid["lot"], our_bid, now)
+                stats["num_bids"] += 1
 
 
 def open_eth_vault(vat, eth, dai):
@@ -378,6 +385,7 @@ def open_eth_vault(vat, eth, dai):
     user_id = uuid4().hex
     gemjoin_join(vat, "eth", user_id, eth)
     vat_frob(vat, "eth", user_id, eth, dai)
+    return user_id
 
 
 # ---
@@ -422,6 +430,7 @@ def init(params, _substep, _state_hist, state):
         new_spotter["ilks"]["eth"]["mat"] = params["SPOTTER_ETH_MAT"]
         new_spotter["ilks"]["eth"]["pip"] = params["SPOTTER_ETH_PIP"]
         new_spotter["ilks"]["dai"]["pip"] = params["SPOTTER_DAI_PIP"]
+        new_spotter["ilks"]["gas"]["pip"] = params["SPOTTER_GAS_PIP"]
         new_vat["Line"] = params["VAT_LINE"]
         new_vat["ilks"]["eth"]["rate"] = params["VAT_ILK_ETH_RATE"]
         new_vat["ilks"]["eth"]["line"] = params["VAT_ILK_ETH_LINE"]
@@ -444,30 +453,52 @@ def init(params, _substep, _state_hist, state):
         # Join users into system
         # Warm-start the spotter for this
 
-        poke_timestep = now + params["INIT_TIMESTEP"]
+        init_timestep = params["INIT_TIMESTEP"]
 
-        spotter_poke(new_spotter, new_vat, "eth", poke_timestep)
-        spotter_poke(new_spotter, new_vat, "dai", poke_timestep)
-        spotter_poke(new_spotter, new_vat, "gas", poke_timestep)
+        spotter_poke(new_spotter, new_vat, "eth", now, init_timestep)
+        spotter_poke(new_spotter, new_vat, "dai", now, init_timestep)
+        spotter_poke(new_spotter, new_vat, "gas", now, init_timestep)
 
         spot = float(new_vat["ilks"]["eth"]["spot"])
+        rate = float(new_vat["ilks"]["eth"]["rate"])
+        dust = float(new_vat["ilks"]["eth"]["dust"])
 
-        for _ in range(params["NUM_INIT_VAULTS"]):
-            # Open a vault w/ 1 ETH @ 166.66% collateralization
-            # TODO: Associate this with an "Ideal" or "Basic" user behavior
-            open_eth_vault(new_vat, 100, spot * 90)
+        for i in range(params["NUM_INIT_VAULTS"]):
+            if i == 0:
+                eth = 1000000
+                dai = eth * spot * 0.9
+                clever_boi = open_eth_vault(new_vat, eth, dai)
+            else:
+                eth = random.uniform(1, 1000)
+                dai = eth * spot * random.uniform(0.8, 1)
+                if dai * rate > dust:
+                    open_eth_vault(new_vat, eth, dai)
 
         # Select 10% at random to be basic auction keepers
 
-        for user_id in random.choices(
+        new_keepers[clever_boi] = {
+            "flipper_eth_model": {"type": "clever_boi", "extra": {"discount": 0.15}},
+            "flapper_model": {"type": "basic", "extra": {}},
+            "flopper_model": {"type": "basic", "extra": {}},
+        }
+        for user_id in random.sample(
             list(new_vat["urns"]["eth"].keys()),
             k=max(params["NUM_INIT_VAULTS"] // 10, 1),
         ):
-            new_keepers[user_id] = {
-                "flipper_eth_model": {"type": "basic", "extra": {"discount": 0.15}},
-                "flapper_model": {"type": "basic", "extra": {}},
-                "flopper_model": {"type": "basic", "extra": {}},
-            }
+            if user_id != clever_boi:
+                new_keepers[user_id] = {
+                    "flipper_eth_model": {
+                        "type": "basic",
+                        "extra": {
+                            "gas_price": Wad.from_number(
+                                random.uniform(15000000000, 50000000000)
+                            ),
+                            "discount": 0.15,
+                        },
+                    },
+                    "flapper_model": {"type": "basic", "extra": {}},
+                    "flopper_model": {"type": "basic", "extra": {}},
+                }
 
         return {
             "vat": new_vat,
@@ -491,14 +522,19 @@ def tick(params, _substep, _state_hist, state):
 
     new_vat = deepcopy(state["vat"])
     new_spotter = deepcopy(state["spotter"])
+    new_stats = deepcopy(state["stats"])
 
-    poke_timestep = state["timestep"] + params["INIT_TIMESTEP"]
+    now = state["timestep"]
+    init_timestep = params["INIT_TIMESTEP"]
 
-    spotter_poke(new_spotter, new_vat, "eth", poke_timestep)
-    spotter_poke(new_spotter, new_vat, "dai", poke_timestep)
-    spotter_poke(new_spotter, new_vat, "gas", poke_timestep)
+    spotter_poke(new_spotter, new_vat, "eth", now, init_timestep)
+    spotter_poke(new_spotter, new_vat, "dai", now, init_timestep)
+    spotter_poke(new_spotter, new_vat, "gas", now, init_timestep)
 
-    return {"vat": new_vat, "spotter": new_spotter}
+    new_stats["num_bids"] = 0
+    new_stats["num_bites"] = 0
+
+    return {"vat": new_vat, "spotter": new_spotter, "stats": new_stats}
 
 
 def open_eth_vault_generator(_params, _substep, _state_hist, state):
@@ -508,13 +544,18 @@ def open_eth_vault_generator(_params, _substep, _state_hist, state):
     new_vat = deepcopy(state["vat"])
     dai_val = float(state["spotter"]["ilks"]["dai"]["val"])
     spot = float(new_vat["ilks"]["eth"]["spot"])
+    rate = float(new_vat["ilks"]["eth"]["rate"])
+    dust = float(new_vat["ilks"]["eth"]["dust"])
 
     if dai_val > 1:
         ddai_val = dai_val - 1
         prob = 5 * ddai_val + 0.05
         if random.random() <= prob:
-            open_eth_vault(new_vat, 100, spot * 90)
-            return {"vat": new_vat}
+            eth = random.uniform(1, 1000)
+            dai = eth * spot * random.uniform(0.8, 1)
+            if dai * rate > dust:
+                open_eth_vault(new_vat, eth, dai)
+                return {"vat": new_vat}
 
     return {}
 
@@ -527,6 +568,7 @@ def cat_bite_generator(_params, _substep, _state_hist, state):
     new_vow = deepcopy(state["vow"])
     new_cat = deepcopy(state["cat"])
     new_flipper_eth = deepcopy(state["flipper_eth"])
+    new_stats = deepcopy(state["stats"])
 
     for user_id in new_vat["urns"]["eth"]:
 
@@ -548,12 +590,14 @@ def cat_bite_generator(_params, _substep, _state_hist, state):
                 user_id,
                 state["timestep"],
             )
+            new_stats["num_bites"] += 1
 
     return {
         "cat": new_cat,
         "flipper_eth": new_flipper_eth,
         "vat": new_vat,
         "vow": new_vow,
+        "stats": new_stats,
     }
 
 
@@ -563,6 +607,7 @@ def keeper_bid_flipper_eth_generator(_params, _substep, _state_hist, state):
 
     new_vat = deepcopy(state["vat"])
     spotter = state["spotter"]
+    new_stats = deepcopy(state["stats"])
     keepers = state["keepers"]
     new_flipper_eth = deepcopy(state["flipper_eth"])
     bids = new_flipper_eth["bids"]
@@ -596,10 +641,17 @@ def keeper_bid_flipper_eth_generator(_params, _substep, _state_hist, state):
             stance = bidding_model(status, user_id, state, model_extra)
 
             keeper_bid_flipper_eth(
-                new_flipper_eth, new_vat, spotter, stance, bid_id, user_id, now
+                new_flipper_eth,
+                new_vat,
+                spotter,
+                stance,
+                bid_id,
+                user_id,
+                now,
+                new_stats,
             )
 
-    return {"vat": new_vat, "flipper_eth": new_flipper_eth}
+    return {"vat": new_vat, "flipper_eth": new_flipper_eth, "stats": new_stats}
 
 
 def flipper_eth_deal_generator(_params, _substep, _state_hist, state):
@@ -617,7 +669,7 @@ def flipper_eth_deal_generator(_params, _substep, _state_hist, state):
 
     for bid_id in bids:
         if bids[bid_id]["tic"] != 0 and (
-            bids[bid_id]["tic"] < now or bids[bid_id]["end"] < now
+            bids[bid_id]["tic"] <= now or bids[bid_id]["end"] <= now
         ):
             bids_to_deal.append(bid_id)
 

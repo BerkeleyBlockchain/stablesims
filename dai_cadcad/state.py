@@ -90,6 +90,7 @@ initial_state = {
             },
         },
     },
+    "stats": {"num_bids": 0, "num_bites": 0,},
     "vat": {
         "sin": {"vow": Rad(0),},  # Unbacked DAI (system debt)
         "dai": {"daijoin": Rad(0), "vow": Rad(0), "cat": Rad(0)},  # Debt ledger
@@ -172,6 +173,14 @@ def update_spotter(_params, _substep, _state_hist, state, policy_signals):
 
     new_spotter = policy_signals.get("spotter", state["spotter"])
     return ("spotter", new_spotter)
+
+
+def update_stats(_params, _substep, _state_hist, state, policy_signals):
+    """ Updates `stats` state variable.
+    """
+
+    new_stats = policy_signals.get("stats", state["stats"])
+    return ("stats", new_stats)
 
 
 def update_vat(_params, _substep, _state_hist, state, policy_signals):

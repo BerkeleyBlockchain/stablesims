@@ -29,12 +29,11 @@ base_sim_config = {
         "SPOTTER_ETH_MAT": [Ray.from_number(1.5)],
         "SPOTTER_ETH_PIP": ["price_feeds/eth.json"],
         "SPOTTER_DAI_PIP": ["price_feeds/dai.json"],
+        "SPOTTER_GAS_PIP": ["price_feeds/gas.json"],
         "VAT_LINE": [Rad.from_number(1000000000)],
         "VAT_ILK_ETH_RATE": [Ray.from_number(1)],
         "VAT_ILK_ETH_LINE": [Rad.from_number(540000000)],
-        "VAT_ILK_ETH_DUST": [
-            Rad.from_number(100)
-        ],  # TODO: 100 ETH is minimum collateral?
+        "VAT_ILK_ETH_DUST": [Rad.from_number(100)],
         "VOW_DUMP": [Wad.from_number(250)],
         "VOW_SUMP": [Rad.from_number(50000)],
         "VOW_BUMP": [Rad.from_number(10000)],
@@ -55,7 +54,19 @@ base_sim_config = {
 black_thursday_sim_config = config_sim(
     {
         **base_sim_config,
-        **{"T": range(1440), "M": {**base_sim_config["M"], "INIT_TIMESTEP": [50400]}},
+        **{
+            "T": range(143),
+            "M": {
+                **base_sim_config["M"],
+                "CAT_BOX": [Rad.from_number(150000000)],
+                "FLIPPER_ETH_TTL": [18],
+                "FLIPPER_ETH_TAU": [288],
+                "SPOTTER_ETH_PIP": ["price_feeds/eth_black_thursday_10min.json"],
+                "SPOTTER_DAI_PIP": ["price_feeds/dai_black_thursday_10min.json"],
+                "SPOTTER_GAS_PIP": ["price_feeds/gas_black_thursday_10min.json"],
+                "NUM_INIT_VAULTS": [500],
+            },
+        },
     }
 )
 

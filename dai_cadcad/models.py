@@ -5,7 +5,6 @@ Models are separated by level of complexity.
 
 Access the models using the dictionary and the corresponding keys.
 """
-
 from dai_cadcad.pymaker.numeric import Wad
 
 
@@ -28,34 +27,52 @@ from dai_cadcad.pymaker.numeric import Wad
 
 
 def flipper_eth_model_basic(status, user_id, state, extra):
-    """ Simple Bidding Model
+    """ Makes the smallest valid bid.
     """
 
     spotter = state["spotter"]
-    discount = extra.get("discount")
-
-    if status["guy"] == user_id or not status["price"] or not discount:
-        return None
-
-    oracle = spotter["ilks"]["eth"]["val"]
-
-    return {
-        "price": oracle * Wad.from_number(1 - discount),
-        "gas_price": Wad.from_number(15000000000),
-    }
-
-
-def flipper_eth_model_inchworm(status, user_id, _state, _extra):
-    """ Makes the smallest valid bid.
-    """
+    discount = extra["discount"]
+    gas_price = extra["gas_price"]
 
     if status["guy"] == user_id or not status["price"]:
         return None
 
+    if status["price"] == Wad(0):
+        oracle = spotter["ilks"]["eth"]["val"]
+        price = oracle * Wad.from_number(1 - discount)
+    else:
+        price = status["price"] * status["beg"]
+
     return {
-        "price": status["price"] * status["beg"],
-        "gas_price": Wad.from_number(15000000000),
+        "price": price,
+        "gas_price": gas_price,
     }
 
 
-choose = {"flipper_eth": {"basic": flipper_eth_model_basic}}
+def flipper_eth_model_clever_boi(status, user_id, state, extra):
+    """ Makes the smallest valid bid.
+    """
+
+    spotter = state["spotter"]
+    discount = extra["discount"]
+
+    if status["guy"] == user_id or not status["price"]:
+        return None
+
+    if status["price"] == Wad(0):
+        oracle = spotter["ilks"]["eth"]["val"]
+        price = oracle * Wad.from_number(1 - discount)
+    else:
+        price = status["price"] * status["beg"]
+
+    return {
+        "price": price,
+    }
+
+
+choose = {
+    "flipper_eth": {
+        "basic": flipper_eth_model_basic,
+        "clever_boi": flipper_eth_model_clever_boi,
+    }
+}
