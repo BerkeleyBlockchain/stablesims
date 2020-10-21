@@ -1,6 +1,6 @@
 *.pyc
 .ipynb_checkpoints/
-node_modules/
+venv/
 .vscode/
 *.profraw
 .DS_Store

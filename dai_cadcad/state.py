@@ -90,7 +90,7 @@ initial_state = {
             },
         },
     },
-    "stats": {"num_bids": 0, "num_bites": 0,},
+    "stats": {},
     "vat": {
         "sin": {"vow": Rad(0),},  # Unbacked DAI (system debt)
         "dai": {"daijoin": Rad(0), "vow": Rad(0), "cat": Rad(0)},  # Debt ledger
