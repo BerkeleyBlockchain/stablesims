@@ -19,3 +19,11 @@
     ```bash
     poetry install
     ```
+
+## Helpful resources
+- [Maker Protocol 101 Slide Deck](https://drive.google.com/file/d/1bEOlNk2xUXgwy0I_UlB_8tPPZ8mH1gy9/view)
+- [Maker Protocol FAQs](https://github.com/makerdao/community/tree/master/faqs)
+- [Maker Protocol Docs](https://docs.makerdao.com/)
+    - Specifically, the [smart contracts glossary](https://docs.makerdao.com/other-documentation/system-glossary) and [general glossary](https://github.com/makerdao/community/blob/master/faqs/glossary.md)
+- [Maker Protocol Source Code](https://github.com/makerdao/dss)
+    - I suggest enabling [annotations](https://docs.makerdao.com/other-documentation/smart-contract-annotations) for this (you can just prepend https://via.hypothes.is/ to any URL in the repo, like [this](https://via.hypothes.is/https://github.com/makerdao/dss/blob/master/src/vat.sol))
