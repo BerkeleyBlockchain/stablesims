@@ -13,18 +13,21 @@
     . ./venv/bin/activate
     ```
     - You'll want to be sure that the virtual environment is activated any time you try to run some code
-2. [Install poetry](https://python-poetry.org/docs/#installation)
-    - Poetry is the package manager we use (think `yarn` or `npm` for Python)
+2. Install `poetry` (our package manager, think `yarn` or `npm` for Python):
+    ```bash
+    curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+    ```
 3. Install dependencies:
     ```bash
     poetry install
     ```
-4. Activate our pre-commit hooks (formatting & linting):
+4. Activate `autohooks`, which we use for pre-commit git hooks (formatting & linting):
     ```bash
     poetry run autohooks activate
     ```
 
 ## Helpful resources
+- [Maker DAO Black Thursday post-mortem](https://blog.makerdao.com/the-market-collapse-of-march-12-2020-how-it-impacted-makerdao/)
 - [Maker Protocol 101 slide deck](https://drive.google.com/file/d/1bEOlNk2xUXgwy0I_UlB_8tPPZ8mH1gy9/view)
 - [Maker Protocol FAQs](https://github.com/makerdao/community/tree/master/faqs)
 - [Maker Protocol docs](https://docs.makerdao.com/)
