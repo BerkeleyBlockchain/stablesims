@@ -2,7 +2,7 @@
 name = "bab-stablesims"
 version = "0.1.0"
 description = ""
-authors = ["Andrew Kirillov <kirillov.edu@gmail.com>"]
+authors = ["Andrew Kirillov <kirillov.edu@gmail.com>", "Sehyun Chung <sehyun@berkeley.edu>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -14,8 +14,6 @@ uuid = "^1.30"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
-ipykernel = "^5.3.3"
-jupyter = "^1.0.0"
 pylint = "^2.5.3"
 black = "^19.10b0"
 autohooks = "^2.1.0"
