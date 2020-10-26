@@ -1,27 +1,27 @@
 # Getting Started
 
 ## Setting up the environment
-0. If you don't have Python 3 on your machine, [install it](https://www.python.org/downloads/)
-1. Clone the repo & enter the project root:
+1. If you don't have Python 3 on your machine, [install it](https://www.python.org/downloads/)
+2. Clone the repo & enter the project root:
     ```bash
     git clone https://github.com/akirillo/bab-stablesims.git
     cd bab-stablesims
     ```
-1. Create a virtual environment (at the project root) and activate it using:
+3. Create a virtual environment (at the project root) and activate it using:
     ```bash
     python3 -m venv venv
     . ./venv/bin/activate
     ```
     - You'll want to be sure that the virtual environment is activated any time you try to run some code
-2. Install `poetry` (our package manager, think `yarn` or `npm` for Python):
+4. Install `poetry` (our package manager, think `yarn` or `npm` for Python):
     ```bash
     curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
     ```
-3. Install dependencies:
+5. Install dependencies:
     ```bash
     poetry install
     ```
-4. Activate `autohooks`, which we use for pre-commit git hooks (formatting & linting):
+6. Activate `autohooks`, which we use for pre-commit git hooks (formatting & linting):
     ```bash
     poetry run autohooks activate
     ```
