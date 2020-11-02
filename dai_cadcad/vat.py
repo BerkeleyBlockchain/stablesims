@@ -1,5 +1,6 @@
 """ Vat Module
     Class-based representation of the Vat smart contract
+    (contains only what is necessary for the simulation)
 """
 
 from dai_cadcad.pymaker.numeric import Wad, Rad, Ray
@@ -7,9 +8,6 @@ from dai_cadcad.util import require
 
 
 class Ilk:
-    """ Represents an Ilk, or collateral type, and its relevant parameters for the Vat.
-    """
-
     ilk_id = ""
     Art = Wad(0)
     rate = Ray(0)
@@ -27,17 +25,11 @@ class Ilk:
 
 
 class Urn:
-    """ Represents an urn (a.k.a vault a.k.a. CDP).
-    """
-
     ink = Wad(0)
     art = Wad(0)
 
 
 class Vat:
-    """ Represents the Vat, the Maker Protocol's 'CDP database.'
-    """
-
     ADDRESS = "vat"
 
     ilks = {}
