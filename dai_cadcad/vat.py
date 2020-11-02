@@ -17,16 +17,20 @@ class Ilk:
 
     def __init__(self, ilk_id, Art, rate, spot, line, dust):
         self.ilk_id = ilk_id
-        self.Art = Art
-        self.rate = rate
-        self.spot = spot
-        self.line = line
-        self.dust = dust
+        self.Art = Art if isinstance(Art, Wad) else Wad.from_number(Art)
+        self.rate = rate if isinstance(rate, Ray) else Ray.from_number(rate)
+        self.spot = spot if isinstance(spot, Ray) else Ray.from_number(spot)
+        self.line = line if isinstance(line, Rad) else Rad.from_number(line)
+        self.dust = dust if isinstance(dust, Rad) else Rad.from_number(dust)
 
 
 class Urn:
     ink = Wad(0)
     art = Wad(0)
+
+    def __init__(self, ink, art):
+        self.ink = ink if isinstance(ink, Wad) else Wad.from_number(ink)
+        self.art = art if isinstance(art, Wad) else Wad.from_number(art)
 
 
 class Vat:
