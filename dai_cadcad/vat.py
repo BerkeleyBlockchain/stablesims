@@ -3,6 +3,8 @@
     (contains only what is necessary for the simulation)
 """
 
+from uuid import uuid4
+
 from dai_cadcad.pymaker.numeric import Wad, Rad, Ray
 from dai_cadcad.util import require
 
@@ -25,10 +27,14 @@ class Ilk:
 
 
 class Urn:
+    ADDRESS = ""
+
     ink = Wad(0)
     art = Wad(0)
 
     def __init__(self, ink, art):
+        self.ADDRESS = uuid4().hex
+
         self.ink = ink
         self.art = art
 
