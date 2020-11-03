@@ -26,10 +26,10 @@ class Vow:
 
     def __init__(self, wait, dump, sump, bump, hump):
         self.wait = wait
-        self.dump = dump if isinstance(dump, Wad) else Wad.from_number(dump)
-        self.sump = sump if isinstance(sump, Rad) else Rad.from_number(sump)
-        self.bump = bump if isinstance(bump, Rad) else Rad.from_number(bump)
-        self.hump = hump if isinstance(hump, Rad) else Rad.from_number(hump)
+        self.dump = dump
+        self.sump = sump
+        self.bump = bump
+        self.hump = hump
 
     def fess(self, tab, now):
         # TODO: Remove `now` parameter if/when another solution for providing time / other
