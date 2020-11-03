@@ -17,11 +17,11 @@ class Ilk:
 
     def __init__(self, ilk_id, Art, rate, spot, line, dust):
         self.ilk_id = ilk_id
-        self.Art = Art if isinstance(Art, Wad) else Wad.from_number(Art)
-        self.rate = rate if isinstance(rate, Ray) else Ray.from_number(rate)
-        self.spot = spot if isinstance(spot, Ray) else Ray.from_number(spot)
-        self.line = line if isinstance(line, Rad) else Rad.from_number(line)
-        self.dust = dust if isinstance(dust, Rad) else Rad.from_number(dust)
+        self.Art = Art
+        self.rate = rate
+        self.spot = spot
+        self.line = line
+        self.dust = dust
 
 
 class Urn:
@@ -29,8 +29,8 @@ class Urn:
     art = Wad(0)
 
     def __init__(self, ink, art):
-        self.ink = ink if isinstance(ink, Wad) else Wad.from_number(ink)
-        self.art = art if isinstance(art, Wad) else Wad.from_number(art)
+        self.ink = ink
+        self.art = art
 
 
 class Vat:
@@ -52,35 +52,19 @@ class Vat:
             following form:
                 {
                     "ilk_id": str,
-                    "rate": float / int / Ray,
-                    "line": float / int / Rad,
-                    "dust": float / int / Rad
+                    "rate": Ray,
+                    "line": Rad,
+                    "dust": Rad
                 }
         """
 
-        if not isinstance(line, Rad):
-            line = Rad.from_number(line)
         self.Line = line
 
         for ilk in ilks:
             ilk_id = ilk["ilk_id"]
-            rate = (
-                ilk["rate"]
-                if isinstance(ilk["rate"], Ray)
-                else Ray.from_number(ilk["rate"])
+            self.ilks[ilk_id] = Ilk(
+                ilk_id, Wad(0), ilk["rate"], Ray(0), ilk["line"], ilk["dust"]
             )
-            line = (
-                ilk["line"]
-                if isinstance(ilk["line"], Rad)
-                else Rad.from_number(ilk["line"])
-            )
-            dust = (
-                ilk["dust"]
-                if isinstance(ilk["dust"], Rad)
-                else Rad.from_number(ilk["dust"])
-            )
-
-            self.ilks[ilk_id] = Ilk(ilk_id, Wad(0), rate, Ray(0), line, dust)
             self.urns[ilk_id] = {}
             self.gem[ilk_id] = {}
 
