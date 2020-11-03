@@ -47,8 +47,7 @@ class Vat:
     Line = Rad(0)
 
     def __init__(self, line, ilks):
-        """ `line` can be either a float/int or a Rad
-            `ilks` must be an array containing a configuration abject for each ilk type of the
+        """ `ilks` must be an array containing a configuration abject for each ilk type of the
             following form:
                 {
                     "ilk_id": str,
