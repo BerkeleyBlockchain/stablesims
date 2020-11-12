@@ -40,10 +40,10 @@
     ```bash
     curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
     ```
-9. Here, `poetry` will prompt you to configure your current shell to use it:
-   ```bash
-   source $HOME/.poetry/env
-   ```
+    - Here, `poetry` may prompt you to configure your current shell to use it:
+      ```bash
+      source $HOME/.poetry/env
+      ```
 10. Install dependencies:
     ```bash
     poetry install
