@@ -44,11 +44,11 @@
       ```bash
       source $HOME/.poetry/env
       ```
-10. Install dependencies:
+9. Install dependencies:
     ```bash
     poetry install
     ```
-11. Activate `autohooks`, which we use for pre-commit git hooks (formatting & linting):
+10. Activate `autohooks`, which we use for pre-commit git hooks (formatting & linting):
     ```bash
     poetry run autohooks activate
     ```
