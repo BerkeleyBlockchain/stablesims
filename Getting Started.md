@@ -1,27 +1,54 @@
 # Getting Started
 
+**Note: These instructions are written for Mac OS**
+
 ## Setting up the environment
-1. If you don't have Python 3 on your machine, [install it](https://www.python.org/downloads/)
-2. Clone the repo & enter the project root:
+1. If you don't already have them, install the XCode Command Line Tools and Homebrew:
+   ```bash
+   xcode-select --install
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+   ```
+2. Install these dependencies for building Python environments:
+   ```bash
+   brew install openssl readline sqlite3 xz zlib
+   ```
+3. If you don't already have it, install `pyenv`:
+   ```bash
+   brew install pyenv
+   ```
+4. Install Python 3.8.6 using `pyenv`:
+   ```bash
+   pyenv install 3.8.6
+   ```
+5. Clone the repo & enter the project root:
     ```bash
     git clone https://github.com/akirillo/bab-stablesims.git
     cd bab-stablesims
     ```
-3. Create a virtual environment (at the project root) and activate it using:
+6. Verify the current python version is 3.8.6:
+   ```bash
+   pyenv version
+   ```
+   - This is set by the `.python-version` file in the project root
+7. Create a virtual environment (at the project root) and activate it using:
     ```bash
-    python3 -m venv venv
-    . ./venv/bin/activate
+    python3 -m venv stablesims-venv
+    . ./stablesims-venv/bin/activate
     ```
-    - You'll want to be sure that the virtual environment is activated any time you try to run some code
-4. Install `poetry` (our package manager, think `yarn` or `npm` for Python):
+    - You'll want to be sure that **this** virtual environment is activated any time you try to run some code
+8. Install `poetry` (our package manager, think `yarn` or `npm` for Python):
     ```bash
     curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
     ```
-5. Install dependencies:
+9. Here, `poetry` will prompt you to configure your current shell to use it:
+   ```bash
+   source $HOME/.poetry/env
+   ```
+10. Install dependencies:
     ```bash
     poetry install
     ```
-6. Activate `autohooks`, which we use for pre-commit git hooks (formatting & linting):
+11. Activate `autohooks`, which we use for pre-commit git hooks (formatting & linting):
     ```bash
     poetry run autohooks activate
     ```
