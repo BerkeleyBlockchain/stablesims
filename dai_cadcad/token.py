@@ -18,12 +18,12 @@ class Token:
         self.name = name
         self.symbol = symbol
 
-    def mint(self, value, owner):
+    def mint(self, owner, value):
         self.balances[owner] = self.balances.get(owner, 0) + value
         self.totalSupply += value
         return True
 
-    def burn(self, value, owner):
+    def burn(self, owner, value):
         require(self.balances[owner] >= value, f"{self.symbol}/insufficient-burn")
         self.balances[owner] -= value
         self.totalSupply -= value
