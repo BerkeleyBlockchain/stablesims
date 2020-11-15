@@ -3,8 +3,6 @@
     (contains only what is necessary for the simulation)
 """
 
-from uuid import uuid4
-
 from dai_cadcad.pymaker.numeric import Wad, Rad, Ray
 from dai_cadcad.util import require
 
@@ -32,8 +30,8 @@ class Urn:
     ink = Wad(0)
     art = Wad(0)
 
-    def __init__(self, ink, art):
-        self.ADDRESS = uuid4().hex
+    def __init__(self, address, ink, art):
+        self.ADDRESS = address
 
         self.ink = ink
         self.art = art
@@ -103,7 +101,7 @@ class Vat:
         self.dai[dst] = dst_dai
 
     def frob(self, i, u, v, w, dink, dart):
-        urn = self.urns[i].get(u, Urn(Wad(0), Wad(0)))
+        urn = self.urns[i].get(u, Urn(u, Wad(0), Wad(0)))
         ilk = self.ilks[i]
 
         urn.ink += dink
