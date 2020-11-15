@@ -46,9 +46,6 @@ class Keeper:
         # Create a vault with the locked collateral
         # `vat.gem` and `vat.dai` use the Keeper's address, while `vat.urns` uses `urn_key`
         self.vat.frob(ilk_id, urn_key, self.ADDRESS, self.ADDRESS, dink, dart)
-        # TODO: Ensure that `vat.move` can create a recipient address if it doesn't exist
-        # Move in-system DAI from the urn address to the keeper address
-        self.vat.move(urn_key, self.ADDRESS)
 
     def close_vault(self, urn_key):
         ilk_id = self.urns[urn_key]
