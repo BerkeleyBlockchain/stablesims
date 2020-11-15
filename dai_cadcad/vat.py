@@ -92,11 +92,15 @@ class Vat:
 
     def flux(self, ilk, src, dst, wad):
         self.gem[ilk][src] -= wad
-        self.gem[ilk][dst] += wad
+        dst_gem = self.gem[ilk].get(dst, Wad(0))
+        dst_gem += wad
+        self.gem[ilk][dst] = dst_gem
 
     def move(self, src, dst, rad):
         self.dai[src] -= rad
-        self.dai[dst] += rad
+        dst_dai = self.dai.get(dst, Rad(0))
+        dst_dai += rad
+        self.dai[dst] = dst_dai
 
     def frob(self, i, u, v, w, dink, dart):
         urn = self.urns[i].get(u, Urn(Wad(0), Wad(0)))
