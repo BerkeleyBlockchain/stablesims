@@ -8,15 +8,15 @@ from dai_cadcad.util import require
 
 
 class Ilk:
-    ilk_id = ""
+    ilk = ""
     Art = Wad(0)
     rate = Ray(0)
     spot = Ray(0)
     line = Rad(0)
     dust = Rad(0)
 
-    def __init__(self, ilk_id, Art, rate, spot, line, dust):
-        self.ilk_id = ilk_id
+    def __init__(self, ilk, Art, rate, spot, line, dust):
+        self.ilk = ilk
         self.Art = Art
         self.rate = rate
         self.spot = spot
@@ -54,7 +54,7 @@ class Vat:
         """ `ilks` must be an array containing a configuration abject for each ilk type of the
             following form:
                 {
-                    "ilk_id": str,
+                    "ilk": str,
                     "rate": Ray,
                     "line": Rad,
                     "dust": Rad
@@ -63,13 +63,18 @@ class Vat:
 
         self.Line = line
 
-        for ilk in ilks:
-            ilk_id = ilk["ilk_id"]
-            self.ilks[ilk_id] = Ilk(
-                ilk_id, Wad(0), ilk["rate"], Ray(0), ilk["line"], ilk["dust"]
+        for ilk_conf in ilks:
+            ilk = ilk_conf["ilk"]
+            self.ilks[ilk] = Ilk(
+                ilk,
+                Wad(0),
+                ilk_conf["rate"],
+                Ray(0),
+                ilk_conf["line"],
+                ilk_conf["dust"],
             )
-            self.urns[ilk_id] = {}
-            self.gem[ilk_id] = {}
+            self.urns[ilk] = {}
+            self.gem[ilk] = {}
 
     def file(self, what, data):
         if what == "Line":
