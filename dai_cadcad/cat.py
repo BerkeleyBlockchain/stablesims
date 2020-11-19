@@ -10,13 +10,13 @@ from dai_cadcad.util import require
 
 
 class Ilk:
-    ilk_id = ""
+    id = ""
     flip = None
     chop = Wad(0)
     dunk = Rad(0)
 
     def __init__(self, ilk_id, flip, chop, dunk):
-        self.ilk_id = ilk_id
+        self.id = ilk_id
         self.flip = flip
         self.chop = chop
         self.dunk = dunk
@@ -52,15 +52,15 @@ class Cat:
                 ilk["ilk_id"], ilk["flip"], ilk["chop"], ilk["dunk"]
             )
 
-    def bite(self, ilk, urn, now):
+    def bite(self, ilk_id, urn, now):
         # TODO: Remove `now` once better timekeeping solution is implemented
 
-        rate, spot, dust = itemgetter("rate", "spot", "dust")(self.vat.ilks[ilk])
-        ink, art = itemgetter("ink", "art")(self.vat.urns[ilk][urn])
+        rate, spot, dust = itemgetter("rate", "spot", "dust")(self.vat.ilks[ilk_id])
+        ink, art = itemgetter("ink", "art")(self.vat.urns[ilk_id][urn])
 
         require(spot > Ray(0) and Rad(ink * spot) < Rad(art * rate), "Cat/not-unsafe")
 
-        milk = self.ilks[ilk]
+        milk = self.ilks[ilk_id]
 
         room = self.box - self.litter
         require(self.litter < self.box and room >= dust, "Cat/liquidation-limit-hit")
@@ -75,7 +75,7 @@ class Cat:
         )
 
         self.vat.grab(
-            ilk, urn, self.ADDRESS, self.vow.ADDRESS, Wad(0) - dink, Wad(0) - dart
+            ilk_id, urn, self.ADDRESS, self.vow.ADDRESS, Wad(0) - dink, Wad(0) - dart
         )
         self.vow.fess(Rad(dart * rate))
 
