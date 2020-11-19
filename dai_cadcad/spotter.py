@@ -9,12 +9,12 @@ from dai_cadcad.pymaker.numeric import Wad, Ray
 
 
 class Ilk:
-    ilk = ""
+    id = ""
     pip = ""
     mat = Ray(0)
 
-    def __init__(self, ilk, pip, mat):
-        self.ilk = ilk
+    def __init__(self, ilk_id, pip, mat):
+        self.id = ilk_id
         self.pip = pip
         self.mat = mat
 
@@ -45,7 +45,7 @@ class Spotter:
         """ `ilks` must be an array containing a configuration object for each ilk type of the
             following form:
             {
-                "ilk": str,
+                "ilk_id": str,
                 "pip": PipLike,
                 "mat": Ray,
             }
@@ -55,9 +55,9 @@ class Spotter:
         self.par = par
 
         for ilk in ilks:
-            self.ilks[ilk["ilk"]] = Ilk(ilk["ilk"], ilk["pip"], ilk["mat"])
+            self.ilks[ilk["ilk_id"]] = Ilk(ilk["ilk_id"], ilk["pip"], ilk["mat"])
 
-    def poke(self, ilk, now):
-        val = self.ilks[ilk]["pip"].peek(now)
-        spot = Ray(val) / self.par / self.ilks[ilk].mat
-        self.vat.file(ilk, "spot", spot)
+    def poke(self, ilk_id, now):
+        val = self.ilks[ilk_id]["pip"].peek(now)
+        spot = Ray(val) / self.par / self.ilks[ilk_id].mat
+        self.vat.file(ilk_id, "spot", spot)
