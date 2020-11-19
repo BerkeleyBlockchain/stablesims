@@ -14,14 +14,14 @@ class GemJoin:
     ilk = ""
     gem = None
 
-    def __init__(self, vat, ilk, gem):
+    def __init__(self, vat, ilk_id, gem):
         self.vat = vat
-        self.ilk = ilk
+        self.ilk_id = ilk_id
         self.gem = gem
 
     def join(self, sender, usr, wad):
         require(wad >= Wad(0), "GemJoin/overflow")
-        self.vat.slip(self.ilk, usr, wad)
+        self.vat.slip(self.ilk_id, usr, wad)
         require(
             self.gem.transferFrom(sender, self.ADDRESS, float(wad)),
             "GemJoin/failed-transfer",
@@ -29,7 +29,7 @@ class GemJoin:
 
     def exit(self, sender, usr, wad):
         require(wad <= Wad(2 ** 255), "GemJoin/overflow")
-        self.vat.slip(self.ilk, sender, Wad(0) - wad)
+        self.vat.slip(self.ilk_id, sender, Wad(0) - wad)
         require(
             self.gem.transferFrom(self.ADDRESS, usr, float(wad)),
             "GemJoin/failed-transfer",
