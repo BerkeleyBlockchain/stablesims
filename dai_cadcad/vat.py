@@ -8,15 +8,15 @@ from dai_cadcad.util import require
 
 
 class Ilk:
-    ilk = ""
+    id = ""
     Art = Wad(0)
     rate = Ray(0)
     spot = Ray(0)
     line = Rad(0)
     dust = Rad(0)
 
-    def __init__(self, ilk, Art, rate, spot, line, dust):
-        self.ilk = ilk
+    def __init__(self, ilk_id, Art, rate, spot, line, dust):
+        self.id = ilk_id
         self.Art = Art
         self.rate = rate
         self.spot = spot
@@ -54,7 +54,7 @@ class Vat:
         """ `ilks` must be an array containing a configuration abject for each ilk type of the
             following form:
                 {
-                    "ilk": str,
+                    "ilk_id": str,
                     "rate": Ray,
                     "line": Rad,
                     "dust": Rad
@@ -63,41 +63,36 @@ class Vat:
 
         self.Line = line
 
-        for ilk_conf in ilks:
-            ilk = ilk_conf["ilk"]
-            self.ilks[ilk] = Ilk(
-                ilk,
-                Wad(0),
-                ilk_conf["rate"],
-                Ray(0),
-                ilk_conf["line"],
-                ilk_conf["dust"],
+        for ilk in ilks:
+            ilk_id = ilk["ilk_id"]
+            self.ilks[ilk_id] = Ilk(
+                ilk_id, Wad(0), ilk["rate"], Ray(0), ilk["line"], ilk["dust"],
             )
-            self.urns[ilk] = {}
-            self.gem[ilk] = {}
+            self.urns[ilk_id] = {}
+            self.gem[ilk_id] = {}
 
     def file(self, what, data):
         if what == "Line":
             self.Line = data
 
-    def file_ilk(self, ilk, what, data):
+    def file_ilk(self, ilk_id, what, data):
         if what == "spot":
-            self.ilks[ilk].spot = data
+            self.ilks[ilk_id].spot = data
         elif what == "line":
-            self.ilks[ilk].line = data
+            self.ilks[ilk_id].line = data
         elif what == "dust":
-            self.ilks[ilk].dust = data
+            self.ilks[ilk_id].dust = data
 
-    def slip(self, ilk, usr, wad):
-        usr_gem = self.gem[ilk].get(usr, Wad(0))
+    def slip(self, ilk_id, usr, wad):
+        usr_gem = self.gem[ilk_id].get(usr, Wad(0))
         usr_gem += wad
-        self.gem[ilk][usr] = usr_gem
+        self.gem[ilk_id][usr] = usr_gem
 
-    def flux(self, ilk, src, dst, wad):
-        self.gem[ilk][src] -= wad
-        dst_gem = self.gem[ilk].get(dst, Wad(0))
+    def flux(self, ilk_id, src, dst, wad):
+        self.gem[ilk_id][src] -= wad
+        dst_gem = self.gem[ilk_id].get(dst, Wad(0))
         dst_gem += wad
-        self.gem[ilk][dst] = dst_gem
+        self.gem[ilk_id][dst] = dst_gem
 
     def move(self, src, dst, rad):
         self.dai[src] -= rad
