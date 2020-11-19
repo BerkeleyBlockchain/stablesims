@@ -20,6 +20,10 @@ class Keeper:
     num_urns = 0
 
     def __init__(self, vat, dai_join, ilks):
+        """ `ilks` must be an array containing a configuration object for each ilk type of the
+            following form:
+            {"gem_join": GemJoin}
+        """
 
         self.ADDRESS = f"keeper-{uuid4().hex}"
 
@@ -29,29 +33,29 @@ class Keeper:
         for ilk in ilks:
             self.gem_joins[ilk["ilk_id"]] = ilk["gem_join"]
 
-    def generate_urn_key(self):
-        urn_key = f"urn-{self.num_urns}-{self.ADDRESS}"
+    def generate_urn_id(self):
+        urn_id = f"urn-{self.num_urns}-{self.ADDRESS}"
         self.num_urns += 1
-        return urn_key
+        return urn_id
 
     def open_vault(self, ilk_id, dink, dart):
-        urn_key = self.generate_urn_key()
-        self.urns[urn_key] = ilk_id
+        urn_id = self.generate_urn_id()
+        self.urns[urn_id] = ilk_id
         # Lock collateral into the system
         self.gem_joins[ilk_id].join(self.ADDRESS, self.ADDRESS, dink)
         # Create a vault with the locked collateral
-        # `vat.gem` and `vat.dai` use the Keeper's address, while `vat.urns` uses `urn_key`
-        self.vat.frob(ilk_id, urn_key, self.ADDRESS, self.ADDRESS, dink, dart)
+        # `vat.gem` and `vat.dai` use the Keeper's address, while `vat.urns` uses `urn_id`
+        self.vat.frob(ilk_id, urn_id, self.ADDRESS, self.ADDRESS, dink, dart)
 
-    def close_vault(self, urn_key):
-        ilk_id = self.urns[urn_key]
-        dink = Wad(0) - self.vat.urns[ilk_id][urn_key]["ink"]
-        dart = Wad(0) - self.vat.urns[ilk_id][urn_key]["art"]
+    def close_vault(self, urn_id):
+        ilk_id = self.urns[urn_id]
+        dink = Wad(0) - self.vat.urns[ilk_id][urn_id]["ink"]
+        dart = Wad(0) - self.vat.urns[ilk_id][urn_id]["art"]
         # Zero out the vault, freeing collateral
-        self.vat.frob(ilk_id, urn_key, self.ADDRESS, self.ADDRESS, dink, dart)
+        self.vat.frob(ilk_id, urn_id, self.ADDRESS, self.ADDRESS, dink, dart)
         # Withdraw freed collateral
         self.gem_joins[ilk_id].exit(self.ADDRESS, self.ADDRESS, Wad(0) - dink)
-        del self.urns[urn_key]
+        del self.urns[urn_id]
 
 
 class AuctionKeeper(Keeper):
@@ -70,6 +74,10 @@ class FlipperKeeper(AuctionKeeper):
     flippers = {}
 
     def __init__(self, vat, dai_join, ilks):
+        """ Here, each ilk object in `ilks` must also contain a "flipper" field with a Flipper
+            object.
+        """
+
         for ilk in ilks:
             self.flippers[ilk["ilk_id"]] = ilk["flipper"]
 
