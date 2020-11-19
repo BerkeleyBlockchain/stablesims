@@ -6,9 +6,7 @@
 
 from uuid import uuid4
 
-from dai_cadcad.pymaker.numeric import Wad  # , Rad, Ray
-
-# from dai_cadcad.util import require
+from dai_cadcad.pymaker.numeric import Wad, Rad
 
 
 class Keeper:
@@ -17,7 +15,6 @@ class Keeper:
     vat = None
     dai_join = None
     gem_joins = {}
-    flippers = {}
 
     urns = {}
     num_urns = 0
@@ -31,7 +28,6 @@ class Keeper:
 
         for ilk in ilks:
             self.gem_joins[ilk["ilk_id"]] = ilk["gem_join"]
-            self.flippers[ilk["ilk_id"]] = ilk["flipper"]
 
     def generate_urn_key(self):
         urn_key = f"urn-{self.num_urns}-{self.ADDRESS}"
@@ -57,42 +53,71 @@ class Keeper:
         self.gem_joins[ilk_id].exit(self.ADDRESS, self.ADDRESS, Wad(0) - dink)
         del self.urns[urn_key]
 
-    # def keeper_bid_flipper_eth(
-    #     self, flipper, vat, spotter, stance, bid_id, user_id, now, stats
-    # ):
-    #     # TODO: Reference flipper_dent, flipper_tend, maybe as instance variables or import
 
-    #     bid = flipper["bids"][bid_id]
+class AuctionKeeper(Keeper):
+    def find_bids(self, **kwargs):
+        raise NotImplementedError
 
-    #     if stance and (
-    #         "gas_price" not in stance
-    #         or spotter["ilks"]["gas"]["val"] <= stance["gas_price"]
-    #     ):
-    #         price = stance["price"]
+    def run_bidding_model(self, bid, **kwargs):
+        raise NotImplementedError
 
-    #         if bid["bid"] == bid["tab"]:
-    #             # Dent phase
-    #             our_lot = Wad(bid["bid"] / Rad(price))
-    #             if (
-    #                 our_lot * flipper["beg"] <= bid["lot"]
-    #                 and our_lot < bid["lot"]
-    #                 and vat["dai"][user_id] >= bid["bid"]
-    #             ):
-    #                 flipper_dent(
-    #                     flipper, vat, bid_id, user_id, our_lot, bid["bid"], now
-    #                 )
-    #                 stats["num_bids"] += 1
+    def place_bid(self, bid_id, price, now, **kwargs):
+        raise NotImplementedError
 
-    #         else:
-    #             # Tend phase
-    #             our_bid = Rad.min(Rad(bid["lot"]) * price, bid["tab"])
-    #             if (
-    #                 (our_bid >= bid["bid"] * flipper["beg"] or our_bid == bid["tab"])
-    #                 and our_bid > bid["bid"]
-    #                 and vat["dai"][user_id]
-    #                 >= (our_bid if user_id != bid["guy"] else our_bid - bid["bid"])
-    #             ):
-    #                 flipper_tend(
-    #                     flipper, vat, bid_id, user_id, bid["lot"], our_bid, now
-    #                 )
-    #                 stats["num_bids"] += 1
+
+class FlipperKeeper(AuctionKeeper):
+
+    flippers = {}
+
+    def __init__(self, vat, dai_join, ilks):
+        for ilk in ilks:
+            self.flippers[ilk["ilk_id"]] = ilk["flipper"]
+
+        super().__init__(vat, dai_join, ilks)
+
+    def find_bids(self, **kwargs):
+        raise NotImplementedError
+
+    def run_bidding_model(self, bid, **kwargs):
+        raise NotImplementedError
+
+    def place_bid(self, bid_id, price, now, ilk_id=""):
+        # TODO: Make sure this aligns with the Flipper class
+
+        flipper = self.flippers[ilk_id]
+        bid = flipper.bids[bid_id]
+
+        if bid.bid == bid.tab:
+            # Dent phase
+            our_lot = Wad(bid.bid / Rad(price))
+            if (
+                our_lot * flipper.beg <= bid.lot
+                and our_lot < bid.lot
+                and self.vat.dai[self.ADDRESS] >= bid.bid
+            ):
+                flipper.dent(bid_id, self.ADDRESS, our_lot, bid.bid, now)
+
+        else:
+            # Tend phase
+            our_bid = Rad.min(Rad(bid.lot) * price, bid.tab)
+            if (
+                (our_bid >= bid.bid * flipper.beg or our_bid == bid.tab)
+                and our_bid > bid.bid
+                and self.vat.dai[self.ADDRESS]
+                >= (our_bid if self.ADDRESS != bid.guy else our_bid - bid.bid)
+            ):
+                flipper.tend(bid_id, self.ADDRESS, bid.lot, our_bid, now)
+
+
+class NaiveFlipperKeeper(FlipperKeeper):
+    def find_bids(self, ilk_id=""):
+        return self.flippers[ilk_id].bids
+
+    def run_bidding_model(self, bid, ilk_id=""):
+        if bid.guy == self.ADDRESS or not bid.lot:
+            return {"price": Wad(0)}
+
+        if bid.bid == Rad(0):
+            return {"price": Wad(1)}
+
+        return {"price": self.flippers[ilk_id].beg * Wad(bid.bid / Rad(bid.lot))}
