@@ -39,7 +39,7 @@ class Flipper:
             "guy": "cat",
             "tic": 0,
             "end": end,
-            "usr": user_id,
+            "usr": usr,
             "gal": gal,
             "tab": tab,
         }
@@ -63,10 +63,10 @@ class Flipper:
             bid >= curr_bid["bid"] * flipper["beg"] or bid == curr_bid["tab"]
         ), "Flipper/insufficient-increase"
 
-        if user_id != curr_bid["guy"]:
-            vat_move(vat, user_id, curr_bid["guy"], curr_bid["bid"])
-            curr_bid["guy"] = user_id
-        vat_move(vat, user_id, curr_bid["gal"], bid - curr_bid["bid"])
+        if usr != curr_bid["guy"]:
+            vat_move(vat, usr, curr_bid["guy"], curr_bid["bid"])
+            curr_bid["guy"] = usr
+        vat_move(vat, usr, curr_bid["gal"], bid - curr_bid["bid"])
 
         curr_bid["bid"] = bid
         curr_bid["tic"] = now + flipper["ttl"]
@@ -86,9 +86,9 @@ class Flipper:
         assert lot < curr_bid["lot"], "Flipper/lot-not-lower"
         assert lot * flipper["beg"] <= curr_bid["lot"], "Flipper/insufficient-decrease"
 
-        if user_id != curr_bid["guy"]:
-            vat_move(vat, user_id, curr_bid["guy"], curr_bid["bid"])
-            curr_bid["guy"] = user_id
+        if usr != curr_bid["guy"]:
+            vat_move(vat, usr, curr_bid["guy"], curr_bid["bid"])
+            curr_bid["guy"] = usr
         vat_flux(
             vat, flipper["ilk"], "flipper_eth", curr_bid["usr"], curr_bid["lot"] - lot
         )
