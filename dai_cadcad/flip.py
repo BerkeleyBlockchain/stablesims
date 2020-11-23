@@ -27,7 +27,7 @@ class Flipper:
         self.kicks = kicks
         self.bids = bids
 
-    def flipper_kick(flipper, vat, user_id, gal, tab, lot, bid, end):
+    def kick(flipper, vat, usr, gal, tab, lot, bid, end):
         """Kicks off a new Flip auction."""
 
         flipper["kicks"] += 1
@@ -46,7 +46,7 @@ class Flipper:
 
         vat_flux(vat, flipper["ilk"], "cat", "flipper_eth", lot)
 
-    def flipper_tend(flipper, vat, bid_id, user_id, lot, bid, now):
+    def tend(flipper, vat, bid_id, usr, lot, bid, now):
         """Places a tend bid on a Flipper auction."""
 
         curr_bid = flipper["bids"][bid_id]
@@ -71,7 +71,7 @@ class Flipper:
         curr_bid["bid"] = bid
         curr_bid["tic"] = now + flipper["ttl"]
 
-    def flipper_dent(flipper, vat, bid_id, user_id, lot, bid, now):
+    def dent(flipper, vat, bid_id, usr, lot, bid, now):
         """Places a dent bid on a Flipper auction."""
 
         curr_bid = flipper["bids"][bid_id]
@@ -96,7 +96,7 @@ class Flipper:
         curr_bid["lot"] = lot
         curr_bid["tic"] = now + flipper["ttl"]
 
-    def flipper_deal(flipper, vat, cat, bid_id, now):
+    def deal(flipper, vat, cat, bid_id, now):
         """Deals out a Flipper auction."""
 
         curr_bid = flipper["bids"][bid_id]
