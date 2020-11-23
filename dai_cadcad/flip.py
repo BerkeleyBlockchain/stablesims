@@ -4,8 +4,8 @@
 """
 
 
-class Flip:
-    ADDRESS = "flip"
+class Flipper:
+    ADDRESS = ""
 
     vat = None
     beg = None
@@ -14,8 +14,10 @@ class Flip:
     kicks = None
     bids = {}
 
-    def __init__(self, vat, beg, ttl, tau, kicks, bids):
+    def __init__(self, vat, beg, ttl, tau, kicks, bids, ilk):
         """"""
+
+        self.ADDRESS = f"flipper_{ilk}"
 
         self.vat = vat
 
