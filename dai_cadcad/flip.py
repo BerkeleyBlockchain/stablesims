@@ -29,13 +29,13 @@ class Flipper:
         self.bids = bids
         self.ilk = ilk
 
-    def kick(flipper, vat, usr, gal, tab, lot, bid, end):
+    def kick(self, vat, usr, gal, tab, lot, bid, end):
         """Kicks off a new Flip auction."""
 
-        flipper["kicks"] += 1
-        bid_id = flipper["kicks"]
+        self.kicks += 1
+        bid_id = self.kicks
 
-        flipper["bids"][bid_id] = {
+        self.bids[bid_id] = {
             "bid": bid,
             "lot": lot,
             "guy": "cat",
@@ -46,7 +46,7 @@ class Flipper:
             "tab": tab,
         }
 
-        vat_flux(vat, flipper["ilk"], "cat", "flipper_eth", lot)
+        vat_flux(vat, self.ilk, "cat", "flipper_eth", lot)
 
     def tend(self, vat, bid_id, usr, lot, bid, now):
         """Places a tend bid on a Flipper auction."""
