@@ -3,6 +3,8 @@
     (contains only what is necessary for the simulation)
 """
 
+from dai_cadcad.util import require
+
 
 class Flipper:
     ADDRESS = ""
@@ -29,7 +31,9 @@ class Flipper:
         self.bids = bids
         self.ilk = ilk
 
-    def kick(self, usr, gal, tab, lot, bid, end):
+    def kick(
+        self, usr, gal, tab, lot, bid, end
+    ):  # TODO: should these be instance attribute?
         """Kicks off a new Flip auction."""
 
         self.kicks += 1
@@ -53,15 +57,16 @@ class Flipper:
 
         curr_bid = self.bids[bid_id]
 
-        assert (
-            curr_bid["tic"] > now or curr_bid["tic"] == 0
-        ), "Flipper/already-finishied-tic"
-        assert curr_bid["end"] > now, "Flipper/already-finishied-end"
+        require(
+            curr_bid["tic"] > now or curr_bid["tic"] == 0,
+            "Flipper/already-finishied-tic",
+        )
+        require(curr_bid["end"] > now, "Flipper/already-finishied-end")
 
-        assert lot == curr_bid["lot"], "Flipper/lot-not-matching"
-        assert bid <= curr_bid["tab"], "Flipper/higher-than-tab"
-        assert bid > curr_bid["bid"], "Flipper/bid-not-higher"
-        assert (
+        require(lot == curr_bid["lot"], "Flipper/lot-not-matching")
+        require(bid <= curr_bid["tab"], "Flipper/higher-than-tab")
+        require(bid > curr_bid["bid"], "Flipper/bid-not-higher")
+        require(
             bid >= curr_bid["bid"] * self.beg or bid == curr_bid["tab"]
         ), "Flipper/insufficient-increase"
 
@@ -78,15 +83,15 @@ class Flipper:
 
         curr_bid = self.bids[bid_id]
 
-        assert (
+        require(
             curr_bid["tic"] > now or curr_bid["tic"] == 0
         ), "Flipper/already-finished-tic"
-        assert curr_bid["end"] > now, "Flipper/already-finished-end"
+        require(curr_bid["end"] > now, "Flipper/already-finished-end")
 
-        assert bid == curr_bid["bid"], "Flipper/not-matching-bid"
-        assert bid == curr_bid["tab"], "Flipper/tend-not-finished"
-        assert lot < curr_bid["lot"], "Flipper/lot-not-lower"
-        assert lot * self.beg <= curr_bid["lot"], "Flipper/insufficient-decrease"
+        require(bid == curr_bid["bid"], "Flipper/not-matching-bid")
+        require(bid == curr_bid["tab"], "Flipper/tend-not-finished")
+        require(lot < curr_bid["lot"], "Flipper/lot-not-lower")
+        require(lot * self.beg <= curr_bid["lot"], "Flipper/insufficient-decrease")
 
         if usr != curr_bid["guy"]:
             self.vat.move(usr, curr_bid["guy"], curr_bid["bid"])
@@ -101,9 +106,10 @@ class Flipper:
 
         curr_bid = self.bids[bid_id]
 
-        assert curr_bid["tic"] != 0 and (
-            curr_bid["tic"] <= now or curr_bid["end"] <= now
-        ), "Flipper/not-finished"
+        require(
+            curr_bid["tic"] != 0 and (curr_bid["tic"] <= now or curr_bid["end"] <= now),
+            "Flipper/not-finished",
+        )
 
         self.cat.claw(curr_bid["tab"])
         self.vat.flux(self.ilk, "flipper_eth", curr_bid["guy"], curr_bid["lot"])
