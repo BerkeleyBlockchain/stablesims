@@ -29,7 +29,7 @@ class Flipper:
         self.bids = bids
         self.ilk = ilk
 
-    def kick(self, vat, usr, gal, tab, lot, bid, end):
+    def kick(self, usr, gal, tab, lot, bid, end):
         """Kicks off a new Flip auction."""
 
         self.kicks += 1
@@ -46,9 +46,9 @@ class Flipper:
             "tab": tab,
         }
 
-        vat_flux(vat, self.ilk, "cat", "flipper_eth", lot)
+        self.vat.flux(self.ilk, "cat", "flipper_eth", lot)
 
-    def tend(self, vat, bid_id, usr, lot, bid, now):
+    def tend(self, bid_id, usr, lot, bid, now):
         """Places a tend bid on a Flipper auction."""
 
         curr_bid = self.bids[bid_id]
@@ -66,14 +66,14 @@ class Flipper:
         ), "Flipper/insufficient-increase"
 
         if usr != curr_bid["guy"]:
-            vat_move(vat, usr, curr_bid["guy"], curr_bid["bid"])
+            self.vat.move(usr, curr_bid["guy"], curr_bid["bid"])
             curr_bid["guy"] = usr
-        vat_move(vat, usr, curr_bid["gal"], bid - curr_bid["bid"])
+        self.vat.move(usr, curr_bid["gal"], bid - curr_bid["bid"])
 
         curr_bid["bid"] = bid
         curr_bid["tic"] = now + self.ttl
 
-    def dent(self, vat, bid_id, usr, lot, bid, now):
+    def dent(self, bid_id, usr, lot, bid, now):
         """Places a dent bid on a Flipper auction."""
 
         curr_bid = self.bids[bid_id]
@@ -89,14 +89,14 @@ class Flipper:
         assert lot * self.beg <= curr_bid["lot"], "Flipper/insufficient-decrease"
 
         if usr != curr_bid["guy"]:
-            vat_move(vat, usr, curr_bid["guy"], curr_bid["bid"])
+            self.vat.move(usr, curr_bid["guy"], curr_bid["bid"])
             curr_bid["guy"] = usr
-        vat_flux(vat, self.ilk, "flipper_eth", curr_bid["usr"], curr_bid["lot"] - lot)
+        self.vat.flux(self.ilk, "flipper_eth", curr_bid["usr"], curr_bid["lot"] - lot)
 
         curr_bid["lot"] = lot
         curr_bid["tic"] = now + self.ttl
 
-    def deal(self, vat, cat, bid_id, now):
+    def deal(self, bid_id, now):
         """Deals out a Flipper auction."""
 
         curr_bid = self.bids[bid_id]
@@ -105,6 +105,6 @@ class Flipper:
             curr_bid["tic"] <= now or curr_bid["end"] <= now
         ), "Flipper/not-finished"
 
-        cat_claw(cat, curr_bid["tab"])
-        vat_flux(vat, self.ilk, "flipper_eth", curr_bid["guy"], curr_bid["lot"])
+        self.cat.claw(curr_bid["tab"])
+        self.vat.flux(self.ilk, "flipper_eth", curr_bid["guy"], curr_bid["lot"])
         del self.bids[bid_id]
