@@ -96,15 +96,15 @@ class Flipper:
         curr_bid["lot"] = lot
         curr_bid["tic"] = now + self.ttl
 
-    def deal(flipper, vat, cat, bid_id, now):
+    def deal(self, vat, cat, bid_id, now):
         """Deals out a Flipper auction."""
 
-        curr_bid = flipper["bids"][bid_id]
+        curr_bid = self.bids[bid_id]
 
         assert curr_bid["tic"] != 0 and (
             curr_bid["tic"] <= now or curr_bid["end"] <= now
         ), "Flipper/not-finished"
 
         cat_claw(cat, curr_bid["tab"])
-        vat_flux(vat, flipper["ilk"], "flipper_eth", curr_bid["guy"], curr_bid["lot"])
-        del flipper["bids"][bid_id]
+        vat_flux(vat, self.ilk, "flipper_eth", curr_bid["guy"], curr_bid["lot"])
+        del self.bids[bid_id]
