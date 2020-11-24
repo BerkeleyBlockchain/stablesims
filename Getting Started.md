@@ -20,23 +20,28 @@
    ```bash
    pyenv install 3.8.6
    ```
-5. Clone the repo & enter the project root:
+5. Make sure you add the following to your `~/.zshrc` or `~/.bash_profile` afterwards:
+   ```bash
+   export PATH="$HOME/.pyenv/bin:$PATH"
+   eval "$(pyenv init -)"
+   ```
+6. Clone the repo & enter the project root:
     ```bash
     git clone https://github.com/akirillo/bab-stablesims.git
     cd bab-stablesims
     ```
-6. Verify the current python version is 3.8.6:
+7. Verify the current python version is 3.8.6:
    ```bash
    pyenv version
    ```
    - This is set by the `.python-version` file in the project root
-7. Create a virtual environment (at the project root) and activate it using:
+8. Create a virtual environment (at the project root) and activate it using:
     ```bash
     python3 -m venv stablesims-venv
     . ./stablesims-venv/bin/activate
     ```
     - You'll want to be sure that **this** virtual environment is activated any time you try to run some code
-8. Install `poetry` (our package manager, think `yarn` or `npm` for Python):
+9. Install `poetry` (our package manager, think `yarn` or `npm` for Python):
     ```bash
     curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
     ```
@@ -44,11 +49,11 @@
       ```bash
       source $HOME/.poetry/env
       ```
-9. Install dependencies:
+10. Install dependencies:
     ```bash
     poetry install
     ```
-10. Activate `autohooks`, which we use for pre-commit git hooks (formatting & linting):
+11. Activate `autohooks`, which we use for pre-commit git hooks (formatting & linting):
     ```bash
     poetry run autohooks activate
     ```
