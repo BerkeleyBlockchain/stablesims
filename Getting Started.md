@@ -27,24 +27,29 @@
    ```
    and then run:
    ```bash
-   source PATH_TO_SHELL_PROFILE
+   source PATH_TO_SHELL_PROFILE # ~/.zshrc, ~/.bash_profile, or whatever else you have set up
    ```
 6. Clone the repo & enter the project root:
     ```bash
     git clone https://github.com/akirillo/bab-stablesims.git
     cd bab-stablesims
     ```
-7. Verify the current python version is 3.8.6:
+7. Verify the current Python version is 3.8.6, and that the `pyenv` interpreter being used:
    ```bash
-   pyenv version
+   python3 --version
+   # Python 3.8.6
+   which python3
+   # $HOME/.pyenv/shims/python3
    ```
-   - This is set by the `.python-version` file in the project root
+   - **If not**, make sure that you have all other virtual environments deactivated & that `$HOME/.pyenv/bin` takes precedence in your `$PATH` over other Python installations.
+      - E.g. if you see `(base)` at the beginning of your terminal prompt, you likely have a conda base environment active, so run a `conda deactivate`
+   - The version is set by the `.python-version` file in the project root
 8. Create a virtual environment (at the project root) and activate it using:
     ```bash
     python3 -m venv stablesims-venv
     . ./stablesims-venv/bin/activate
     ```
-    - You'll want to be sure that **this** virtual environment is activated any time you try to run some code
+    - You'll want to be sure that **this and only this** virtual environment is activated any time you try to run some code
 9. Install `poetry` (our package manager, think `yarn` or `npm` for Python):
     ```bash
     curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
