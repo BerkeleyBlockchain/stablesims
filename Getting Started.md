@@ -25,6 +25,10 @@
    export PATH="$HOME/.pyenv/bin:$PATH"
    eval "$(pyenv init -)"
    ```
+   and then run:
+   ```bash
+   source PATH_TO_SHELL_PROFILE
+   ```
 6. Clone the repo & enter the project root:
     ```bash
     git clone https://github.com/akirillo/bab-stablesims.git
