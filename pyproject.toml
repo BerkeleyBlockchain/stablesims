@@ -21,10 +21,6 @@ autohooks-plugin-pylint = "^1.2.0"
 autohooks-plugin-black = "^1.2.0"
 jedi = "^0.17.2"
 
-[tool.autohooks]
-mode = "poetry"
-pre-commit = ["autohooks.plugins.black", "autohooks.plugins.pylint"]
-
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
