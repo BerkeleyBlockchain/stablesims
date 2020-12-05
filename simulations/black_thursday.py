@@ -5,10 +5,14 @@
 from cadCAD.engine import ExecutionContext, ExecutionMode, Executor
 from cadCAD.configuration import Experiment
 from cadCAD import configs
-import pandas as pd
-import matplotlib.pyplot as plt
 
 from dai_cadcad import policies, state, sim_configs
+from demo_backend import socketio
+
+
+def stream_state(_params, _substep, _state_hist, state):
+    socketio.emit('stream', state)
+    return {}
 
 
 partial_state_update_blocks = [
@@ -65,6 +69,12 @@ partial_state_update_blocks = [
             "stats": state.update_stats,
         },
     },
+    {
+        "policies": {
+            "stream_state": stream_state
+        },
+        "variables": {}
+    }
 ]
 
 exp = Experiment()
@@ -80,40 +90,8 @@ exec_context = ExecutionContext(context=exec_mode.single_mode)
 executor = Executor(exec_context=exec_context, configs=configs)
 
 
+@socketio.on("run")
 def run_sim():
     """ Runs the simulation & checks the appropriate assertions.
     """
     raw_result, _tensor, _sessions = executor.execute()
-    result = pd.DataFrame(raw_result)
-    cond_1 = result["subset"] == 0
-    cond_2 = result["substep"] != 0
-    run = result[cond_1 & cond_2]
-
-    time = run["timestep"][::6]
-    eth_usd_feed = [
-        float(spotter["ilks"]["eth"]["val"]) for spotter in run["spotter"][5::6]
-    ]
-    # gas_wei_feed = [float(spotter["ilks"]["gas"]["val"]) for spotter in run["spotter"][5::6]]
-    num_bites_feed = [stats["num_bites"] for stats in run["stats"][5::6]]
-    num_bids_feed = [stats["num_bids"] for stats in run["stats"][5::6]]
-
-    _, ax_1_1 = plt.subplots()
-
-    color_1 = "tab:red"
-    ax_1_1.set_title("System Progression")
-    ax_1_1.set_xlabel("time (10m)")
-    ax_1_1.set_ylabel("ETH/USD", color=color_1)
-    ax_1_1.plot(time, eth_usd_feed, color=color_1, label="ETH price")
-    ax_1_1.tick_params(axis="y", labelcolor=color_1)
-
-    ax_1_2 = ax_1_1.twinx()
-
-    color_2 = "tab:blue"
-    color_3 = "tab:green"
-    ax_1_2.plot(time, num_bites_feed, color=color_2, label="# liquidations")
-    ax_1_2.plot(time, num_bids_feed, color=color_3, label="# bids")
-    ax_1_2.legend()
-
-    plt.show()
-
-    return run

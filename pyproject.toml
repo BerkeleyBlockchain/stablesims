@@ -11,6 +11,9 @@ numpy = "^1.19.0"
 pandas = "^1.0.5"
 matplotlib = "^3.3.0"
 uuid = "^1.30"
+Flask = "^1.1.2"
+Flask-SocketIO = "^4.3.2"
+eventlet = "^0.29.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
