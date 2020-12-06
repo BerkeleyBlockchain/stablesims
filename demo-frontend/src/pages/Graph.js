@@ -1,8 +1,8 @@
-import { Heading } from '@chakra-ui/react';
+import { Box, Container, Heading } from '@chakra-ui/react';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { VictoryBar, VictoryChart } from 'victory';
-import { Box, Container } from '@chakra-ui/react';
+import { Slider, SliderTrack, SliderFilledTrack, SliderThumb } from '@chakra-ui/react';
 
 const data = [
   { quarter: 1, earnings: 13000 },
@@ -16,7 +16,7 @@ export default function Experiments() {
   return (
     <Container maxW="xl" centerContent>
       <Heading>{type} Graph</Heading>
-      <Box bg="white">
+      <Box bg="white" mb={6}>
         <VictoryChart domainPadding={20}>
           <VictoryBar
             data={data}
@@ -27,6 +27,12 @@ export default function Experiments() {
           />
         </VictoryChart>
       </Box>
+      <Slider defaultValue={30}>
+        <SliderTrack>
+          <SliderFilledTrack />
+        </SliderTrack>
+        <SliderThumb />
+      </Slider>
     </Container>
   );
 }
