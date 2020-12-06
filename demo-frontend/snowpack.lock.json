@@ -1,6 +1,0 @@
-{
-  "imports": {
-    "react": "https://cdn.skypack.dev/react@v16.13.1-zjOHmKoBShdi3wIQWY2z",
-    "react/": "https://cdn.skypack.dev/react@v16.13.1-zjOHmKoBShdi3wIQWY2z/"
-  }
-}
