@@ -1,29 +1,59 @@
-import { Box, Container, Heading } from '@chakra-ui/react';
-import React from 'react';
+import {
+  Box,
+  Container,
+  Heading,
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
+  Button,
+} from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { VictoryBar, VictoryChart } from 'victory';
-import { Slider, SliderTrack, SliderFilledTrack, SliderThumb } from '@chakra-ui/react';
+import { VictoryChart, VictoryAxis, VictoryLine, VictoryTheme } from 'victory';
+import io from 'socket.io-client';
 
-const data = [
-  { quarter: 1, earnings: 13000 },
-  { quarter: 2, earnings: 16500 },
-  { quarter: 3, earnings: 14250 },
-  { quarter: 4, earnings: 19000 },
-];
+const socket = io('http://localhost:5000');
 
 export default function Experiments() {
   const { type } = useParams();
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    socket.on('stream', (stats) => {
+      setData((d) => [...d, stats]);
+    });
+  }, []);
+
   return (
     <Container maxW="xl" centerContent>
       <Heading>{type} Graph</Heading>
+      <Button onClick={() => socket.emit('run')}>Run</Button>
       <Box bg="white" mb={6}>
-        <VictoryChart domainPadding={20}>
-          <VictoryBar
-            data={data}
-            // data accessor for x values
-            x="quarter"
-            // data accessor for y values
-            y="earnings"
+        <VictoryChart theme={VictoryTheme.material} domainPadding={20} width={500} height={500}>
+          <VictoryAxis
+            domain={{ x: [0, 144], y: [0, 10] }}
+          />
+          <VictoryAxis
+            dependentAxis
+          />
+          <VictoryLine
+            style={{
+              data: { stroke: 'red' },
+            }}
+            data={data.map((t) => t.eth_price)}
+          />
+          <VictoryLine
+            style={{
+              data: { stroke: 'green' },
+            }}
+            data={data.map((t) => t.num_bids)}
+          />
+          <VictoryLine
+            style={{
+              data: { stroke: 'blue' },
+            }}
+            data={data.map((t) => t.num_bites)}
           />
         </VictoryChart>
       </Box>

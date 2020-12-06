@@ -40,7 +40,7 @@ base_sim_config = {
         "VOW_HUMP": [Rad.from_number(20000)],
         "INIT_TIMESTEP": [0],
         "NUM_INIT_VAULTS": [1000],
-        "dummy": [0, 0],  # See note below
+        "dummy": [0],  # See note below
     },
 }
 

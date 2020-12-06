@@ -399,6 +399,7 @@ def init(params, _substep, _state_hist, state):
         subset of them to be keepers.
     """
 
+    params = params[0]
     now = state["timestep"]
 
     if now == 0:
@@ -518,6 +519,8 @@ def tick(params, _substep, _state_hist, state):
     """ Performs all expected, user-triggered system upkeep at the start of each timestep.
     """
 
+    params = params[0]
+
     # TODO: Setting rates
 
     new_vat = deepcopy(state["vat"])
@@ -533,6 +536,7 @@ def tick(params, _substep, _state_hist, state):
 
     new_stats["num_bids"] = 0
     new_stats["num_bites"] = 0
+    new_stats["eth_price"] = new_spotter['ilks']['eth']['val']
 
     return {"vat": new_vat, "spotter": new_spotter, "stats": new_stats}
 

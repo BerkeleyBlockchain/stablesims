@@ -12,10 +12,10 @@ app.host = "localhost"
 
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-@socketio.on("stream")
-def stream(state):
-    """Forward broadcasted 'stream' events from sim to client"""
-    send(state, json=True)
+@socketio.on("run")
+def run():
+    from simulations.black_thursday import run_sim
+    run_sim(socketio)
 
 if __name__ == "__main__":
     socketio.run(app)
