@@ -8,6 +8,9 @@ export default function Experiments() {
       <Link to="/graphs/blackthursday">
         <Button>Black Thursday</Button>
       </Link>
+      <Link to="/graphs/keepers">
+        <Button>B@bies Keeper Competition</Button>
+      </Link>
     </>
   );
 }
