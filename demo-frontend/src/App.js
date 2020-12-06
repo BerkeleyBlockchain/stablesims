@@ -1,16 +1,16 @@
-import {ChakraProvider, extendTheme} from '@chakra-ui/react'
-import React from 'react'
-import Experiments from './pages/Experiments'
-import Graph from './pages/Graph'
-import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
+import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import Experiments from './pages/Experiments';
+import Graph from './pages/Graph';
 
 function App() {
   const config = {
     useSystemColorMode: false,
     initialColorMode: 'dark',
-  }
+  };
 
-  const customTheme = extendTheme({config})
+  const customTheme = extendTheme({ config });
   return (
     <ChakraProvider resetCSS theme={customTheme}>
       <Router>
@@ -24,7 +24,7 @@ function App() {
         </Switch>
       </Router>
     </ChakraProvider>
-  )
+  );
 }
 
-export default App
+export default App;

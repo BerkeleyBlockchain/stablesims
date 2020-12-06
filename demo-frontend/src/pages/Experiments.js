@@ -1,6 +1,6 @@
-import {Button} from '@chakra-ui/react'
-import React from 'react'
-import {Link} from 'react-router-dom'
+import { Button } from '@chakra-ui/react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Experiments() {
   return (
@@ -9,5 +9,5 @@ export default function Experiments() {
         <Button>Black Thursday</Button>
       </Link>
     </>
-  )
+  );
 }
