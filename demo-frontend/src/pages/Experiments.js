@@ -1,4 +1,4 @@
-import { Box, Text, Button, Heading, VStack } from '@chakra-ui/react';
+import { Center, Box, Button, Flex, Heading, Text } from '@chakra-ui/react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -25,14 +25,16 @@ export default function Experiments() {
       <Text maxW="560px" mx="auto" opacity={0.7} fontSize="xl" mt="6">
         Brought to you by CK Labs
       </Text>
-      <VStack spacing="3" mt="6">
-        <Link to="/graphs/blackthursday">
-          <Button>Black Thursday</Button>
-        </Link>
-        <Link to="/graphs/keepers">
-          <Button>B@bies Keeper Competition</Button>
-        </Link>
-      </VStack>
+      <Center pt={6}>
+        <Flex>
+          <Link to="/graphs/blackthursday">
+            <Button mr={6}>Black Thursday</Button>
+          </Link>
+          <Link to="/graphs/keepers">
+            <Button>B@bies Keeper Competition</Button>
+          </Link>
+        </Flex>
+      </Center>
     </Box>
   );
 }

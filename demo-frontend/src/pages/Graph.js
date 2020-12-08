@@ -1,4 +1,5 @@
 import {
+  Flex,
   Box,
   Container,
   Heading,
@@ -7,16 +8,17 @@ import {
   SliderFilledTrack,
   SliderThumb,
   Button,
+  Image,
 } from '@chakra-ui/react';
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+// import { useParams } from 'react-router-dom';
 import { VictoryChart, VictoryAxis, VictoryLine } from 'victory';
 import io from 'socket.io-client';
 
 const socket = io('http://localhost:5000');
 
 export default function Experiments() {
-  const { type } = useParams();
+  // const { type } = useParams();
   const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -26,8 +28,14 @@ export default function Experiments() {
   }, []);
 
   return (
-    <Container maxW="xl" centerContent>
-      <Heading>{type} Graph</Heading>
+    <Container maxW="xl">
+      <Box pt="4rem">
+        <Flex align="center">
+          <Image src="/maker.png" alt="maker" boxSize="100px" mr={6} />
+
+          <Heading>Black Thursday Simulation</Heading>
+        </Flex>
+      </Box>
       <Button onClick={() => socket.emit('run')}>Run</Button>
       <Box bg="white" mb={6}>
         <VictoryChart
