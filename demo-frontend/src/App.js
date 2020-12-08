@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Experiments from './pages/Experiments';
 import Graph from './pages/Graph';
+import NavBar from './components/NavBar';
 
 function App() {
   const config = {
@@ -13,6 +14,7 @@ function App() {
   const customTheme = extendTheme({ config });
   return (
     <ChakraProvider resetCSS theme={customTheme}>
+      <NavBar />
       <Router>
         <Switch>
           <Route path="/graphs/:type">
