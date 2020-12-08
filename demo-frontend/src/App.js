@@ -14,8 +14,8 @@ function App() {
   const customTheme = extendTheme({ config });
   return (
     <ChakraProvider resetCSS theme={customTheme}>
-      <NavBar />
       <Router>
+        <NavBar />
         <Switch>
           <Route path="/graphs/blackthursday">
             <BTGraph />
