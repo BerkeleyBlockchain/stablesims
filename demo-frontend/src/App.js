@@ -2,7 +2,8 @@ import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Experiments from './pages/Experiments';
-import Graph from './pages/Graph';
+import Graphs from './pages/Graphs';
+import NavBar from './components/NavBar';
 
 function App() {
   const config = {
@@ -14,9 +15,10 @@ function App() {
   return (
     <ChakraProvider resetCSS theme={customTheme}>
       <Router>
+        <NavBar />
         <Switch>
           <Route path="/graphs/:type">
-            <Graph />
+            <Graphs />
           </Route>
           <Route path="/">
             <Experiments />

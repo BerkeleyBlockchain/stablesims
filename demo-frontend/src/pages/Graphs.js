@@ -1,12 +1,17 @@
+import { ArrowForwardIcon } from '@chakra-ui/icons';
 import {
   Box,
-  Heading,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
   Button,
   HStack,
+  Flex,
+  Heading,
+  Image,
+  Slider,
+  SliderFilledTrack,
+  SliderThumb,
+  SliderTrack,
+  Spacer,
+  Tag,
 } from '@chakra-ui/react';
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
@@ -18,26 +23,34 @@ const socket = io('http://localhost:5000');
 export default function Graphs() {
   const { type } = useParams();
   const [data, setData] = useState([]);
+  const [slice, setSlice] = useState([]);
+  const [sliderPos, setSliderPos] = useState(0);
 
   useEffect(() => {
     socket.on('stream', (stats) => {
       setData((d) => [...d, stats]);
+      setSliderPos((p) => p + 1);
     });
   }, []);
+
+  useEffect(() => {
+    const slicedData = data.slice(0, sliderPos);
+    setSlice(slicedData);
+  }, [sliderPos]);
 
   const titleMap = {
     blackthursday: 'Black Thursday Simulation',
     keepers: 'B@by Keeper Competition',
   };
-  const renderCharts = (chartArgs) => {
-    const chartProps = {
+  const renderCharts = () => {
+    const makeChartProps = (y) => ({
       theme: { chart: { padding: { left: 30, right: 0, top: 30, bottom: 0 } } },
-      domain: { x: [0, 144], y: [100, 200] },
+      domain: { x: [0, 144], y },
       domainPadding: 20,
       width: 700,
       height: 225,
       style: { parent: { background: '#1a202c', marginBottom: 10 } },
-    };
+    });
     const makeLegendProps = (title, x, y) => ({
       title,
       x,
@@ -69,8 +82,26 @@ export default function Graphs() {
       data: dataArr,
     });
 
+    const chartArgs = [
+      {
+        makeChartPropsArgs: [[100, 200]],
+        makeLegendPropsArgs: ['ETH Price', 555, 0],
+        makeLinePropsArgs: [slice.map((t) => t.eth_price)],
+      },
+      {
+        makeChartPropsArgs: [[0, 120]],
+        makeLegendPropsArgs: ['Number of Liquidations', 400, 0],
+        makeLinePropsArgs: [slice.map((t) => t.num_bites)],
+      },
+      {
+        makeChartPropsArgs: [[0, 180]],
+        makeLegendPropsArgs: ['Number of Bids', 490, 0],
+        makeLinePropsArgs: [slice.map((t) => t.num_bids)],
+      },
+    ];
+
     return chartArgs.map((argsObj) => (
-      <VictoryChart {...chartProps}>
+      <VictoryChart key={argsObj.id} {...makeChartProps(...argsObj.makeChartPropsArgs)}>
         <VictoryLegend {...makeLegendProps(...argsObj.makeLegendPropsArgs)} />
         <VictoryAxis {...xAxisProps} />
         <VictoryAxis {...yAxisProps} />
@@ -81,28 +112,24 @@ export default function Graphs() {
 
   return (
     <HStack spacing={24}>
-      <Box ml={12} mt={8} maxW="xs" alignSelf="start">
-        <Heading>{titleMap[type]}</Heading>
-        <Button mt={6} background="teal.500" onClick={() => socket.emit('run')}>
-          Run
-        </Button>
+      <Box pt={6} maxW="md" alignSelf="start">
+        <Flex align="center" direction="column">
+          <Image src="/maker.png" alt="maker" boxSize="100px" mr={6} />
+          <Box maxW="18rem">
+            <Heading>{titleMap[type]}</Heading>
+          </Box>
+          <Tag variant="solid" colorScheme="yellow">
+            DAI
+          </Tag>
+          <Spacer />
+          <Button rightIcon={<ArrowForwardIcon />} onClick={() => socket.emit('run')}>
+            Run
+          </Button>
+        </Flex>
       </Box>
-      <Box pt={8}>
-        {renderCharts([
-          {
-            makeLegendPropsArgs: ['ETH Price', 555, 0],
-            makeLinePropsArgs: [data.map((t) => t.eth_price)],
-          },
-          {
-            makeLegendPropsArgs: ['Number of Liquidations', 400, 0],
-            makeLinePropsArgs: [data.map((t) => t.num_bites)],
-          },
-          {
-            makeLegendPropsArgs: ['Number of Bids', 490, 0],
-            makeLinePropsArgs: [data.map((t) => t.num_bids)],
-          },
-        ])}
-        <Slider defaultValue={30}>
+      <Box pt={6} maxH="100vh">
+        {renderCharts()}
+        <Slider onChange={(val) => setSliderPos(val)} value={sliderPos} max={144} mb="12rem">
           <SliderTrack>
             <SliderFilledTrack />
           </SliderTrack>
