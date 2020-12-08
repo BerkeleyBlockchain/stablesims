@@ -1,43 +1,59 @@
+import { ArrowForwardIcon } from '@chakra-ui/icons';
 import {
-  Flex,
   Box,
+  Button,
   Container,
+  Flex,
   Heading,
+  Image,
   Slider,
-  SliderTrack,
   SliderFilledTrack,
   SliderThumb,
-  Button,
-  Image,
+  SliderTrack,
+  Spacer,
+  Tag,
+  Text,
+  Divider,
 } from '@chakra-ui/react';
-import React, { useState, useEffect } from 'react';
-// import { useParams } from 'react-router-dom';
-import { VictoryChart, VictoryAxis, VictoryLine } from 'victory';
+import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client';
+// import { useParams } from 'react-router-dom';
+import { VictoryAxis, VictoryChart, VictoryLine } from 'victory';
+import graphData from '../constants/data';
 
 const socket = io('http://localhost:5000');
 
 export default function Experiments() {
   // const { type } = useParams();
   const [data, setData] = useState([]);
+  const [slice, setSlice] = useState(100);
 
   useEffect(() => {
-    socket.on('stream', (stats) => {
-      setData((d) => [...d, stats]);
-    });
-  }, []);
+    // socket.on('stream', (stats) => {
+    //   setData((d) => [...d, stats]);
+    // });
+    const slicedData = graphData.slice(0, slice * Math.floor(graphData.length / 100));
+    setData(slicedData);
+  }, [slice]);
 
   return (
-    <Container maxW="xl">
+    <Container maxW="2xl">
       <Box pt="4rem">
         <Flex align="center">
           <Image src="/maker.png" alt="maker" boxSize="100px" mr={6} />
-
-          <Heading>Black Thursday Simulation</Heading>
+          <Box maxW="18rem">
+            <Heading>Black Thursday Simulation</Heading>
+          </Box>
+          <Tag variant="solid" colorScheme="yellow">
+            DAI
+          </Tag>
+          <Spacer />
+          <Button rightIcon={<ArrowForwardIcon />} onClick={() => socket.emit('run')}>
+            Run
+          </Button>
         </Flex>
       </Box>
-      <Button onClick={() => socket.emit('run')}>Run</Button>
-      <Box bg="white" mb={6}>
+      <Box>
         <VictoryChart
           theme={{ chart: { padding: 30 } }}
           domain={{ x: [0, 144], y: [100, 200] }}
@@ -70,6 +86,7 @@ export default function Experiments() {
             data={data.map((t) => t.eth_price)}
           />
         </VictoryChart>
+        <Divider />
         <VictoryChart
           theme={{ chart: { padding: 30 } }}
           domain={{ x: [0, 144], y: [0, 100] }}
@@ -102,6 +119,7 @@ export default function Experiments() {
             data={data.map((t) => t.num_bites)}
           />
         </VictoryChart>
+        <Divider />
         <VictoryChart
           theme={{ chart: { padding: 30 } }}
           domain={{ x: [0, 144], y: [0, 180] }}
@@ -134,8 +152,10 @@ export default function Experiments() {
             data={data.map((t) => t.num_bids)}
           />
         </VictoryChart>
+        <Divider />
       </Box>
-      <Slider defaultValue={30}>
+      <Text my={3}>Use this slider to adjust the data</Text>
+      <Slider onChange={(val) => setSlice(val)} defaultValue={100} mb="12rem">
         <SliderTrack>
           <SliderFilledTrack />
         </SliderTrack>
