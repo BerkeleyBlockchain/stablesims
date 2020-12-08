@@ -1,11 +1,13 @@
-import { Box, Flex, Heading } from '@chakra-ui/react';
+import { Box, Flex, Heading, Link } from '@chakra-ui/react';
 import React from 'react';
 
 export default function NavBar() {
   return (
     <Flex>
       <Box p="2">
-        <Heading size="md">StableSims</Heading>
+        <Link href="/">
+          <Heading size="md">StableSims</Heading>
+        </Link>
       </Box>
     </Flex>
   );

@@ -2,7 +2,7 @@ import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Experiments from './pages/Experiments';
-import Graph from './pages/Graph';
+import BTGraph from './pages/BTGraph';
 import NavBar from './components/NavBar';
 
 function App() {
@@ -17,8 +17,11 @@ function App() {
       <NavBar />
       <Router>
         <Switch>
+          <Route path="/graphs/blackthursday">
+            <BTGraph />
+          </Route>
           <Route path="/graphs/:type">
-            <Graph />
+            <h1>Graph</h1>
           </Route>
           <Route path="/">
             <Experiments />
