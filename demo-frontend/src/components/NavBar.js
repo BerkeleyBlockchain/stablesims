@@ -4,8 +4,8 @@ import { Link as RouterLink } from 'react-router-dom';
 
 export default function NavBar() {
   return (
-    <Flex>
-      <Box p="2">
+    <Flex px={12} py={6}>
+      <Box>
         <Link as={RouterLink} to="/">
           <Heading size="md">StableSims</Heading>
         </Link>

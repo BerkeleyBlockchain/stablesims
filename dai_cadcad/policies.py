@@ -536,7 +536,8 @@ def tick(params, _substep, _state_hist, state):
 
     new_stats["num_bids"] = 0
     new_stats["num_bites"] = 0
-    new_stats["eth_price"] = new_spotter['ilks']['eth']['val']
+    new_stats["eth_price"] = new_spotter["ilks"]["eth"]["val"]
+    new_stats["balances"] = new_vat["gem"]["eth"]
 
     return {"vat": new_vat, "spotter": new_spotter, "stats": new_stats}
 
