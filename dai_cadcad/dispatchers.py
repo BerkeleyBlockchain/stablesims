@@ -1,15 +1,5 @@
-""" Policies Module
-
-Contains the definition of the cadCAD system's policies.
-Policies are typically broken down into `{{policy_name}}_all()` and `{{policy_name}}()` functions,
-where the `_all()` is the actual "policy" function passed into the PSUBs, and the other is a helper
-function.
-
-The helper function typically contains the actual policy logic,
-from the perspective of a single actor/action (executing the policy once).
-
-The `_all()` typically orchestrates how many times the policy should execute, and with what options,
-as well as checking the necessary conditions.
+""" Dispatchers Module
+    TODO
 """
 
 from uuid import uuid4
@@ -399,6 +389,7 @@ def init(params, _substep, _state_hist, state):
         subset of them to be keepers.
     """
 
+    actions = []
     now = state["timestep"]
 
     if now == 0:
@@ -453,11 +444,12 @@ def init(params, _substep, _state_hist, state):
         # Join users into system
         # Warm-start the spotter for this
 
-        init_timestep = params["INIT_TIMESTEP"]
-
-        spotter_poke(new_spotter, new_vat, "eth", now, init_timestep)
-        spotter_poke(new_spotter, new_vat, "dai", now, init_timestep)
-        spotter_poke(new_spotter, new_vat, "gas", now, init_timestep)
+        actions.extend(
+            [
+                {"method": "spotter.poke", "args": [ilk_id, now]}
+                for ilk_id in ("eth", "dai", "gas")
+            ]
+        )
 
         spot = float(new_vat["ilks"]["eth"]["spot"])
         rate = float(new_vat["ilks"]["eth"]["rate"])

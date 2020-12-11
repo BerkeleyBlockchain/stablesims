@@ -26,13 +26,13 @@ def make_call_from_action(action, state):
 
 def dispatch(params, substep, state_hist, state):
     state = deepcopy(state)
-    signals = {"actions": {}}
+    signals = {"actions": []}
     for dispatcher in params["DISPATCHERS"]:
         signals = {
-            "actions": {
-                **signals["actions"],
-                **dispatcher(params, substep, state_hist, state)
-            }
+            "actions": [
+                *signals["actions"],
+                *dispatcher(params, substep, state_hist, state),
+            ]
         }
 
     return signals
@@ -56,9 +56,6 @@ def log(params, substep, state_hist, state):
     state = deepcopy(state)
     signals = {}
     for logger in params["LOGGERS"]:
-        signals = {
-            **signals,
-            **logger(params, substep, state_hist, state)
-        }
+        signals = {**signals, **logger(params, substep, state_hist, state)}
 
     return signals
