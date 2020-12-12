@@ -10,7 +10,7 @@ from dai_cadcad.pymaker.numeric import Wad, Ray
 
 class Ilk:
     id = ""
-    pip = ""
+    pip = None
     mat = Ray(0)
 
     def __init__(self, ilk_id):
