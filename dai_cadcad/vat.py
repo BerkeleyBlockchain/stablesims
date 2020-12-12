@@ -15,13 +15,8 @@ class Ilk:
     line = Rad(0)
     dust = Rad(0)
 
-    def __init__(self, ilk_id, Art, rate, spot, line, dust):
+    def __init__(self, ilk_id):
         self.id = ilk_id
-        self.Art = Art
-        self.rate = rate
-        self.spot = spot
-        self.line = line
-        self.dust = dust
 
 
 class Urn:
@@ -50,30 +45,17 @@ class Vat:
     vice = Rad(0)
     Line = Rad(0)
 
-    def __init__(self, line, ilks):
-        """ `ilks` must be an array containing a configuration abject for each ilk type of the
-            following form:
-                {
-                    "ilk_id": str,
-                    "rate": Ray,
-                    "line": Rad,
-                    "dust": Rad
-                }
-        """
-
-        self.Line = line
-
-        for ilk in ilks:
-            ilk_id = ilk["ilk_id"]
-            self.ilks[ilk_id] = Ilk(
-                ilk_id, Wad(0), ilk["rate"], Ray(0), ilk["line"], ilk["dust"],
-            )
-            self.urns[ilk_id] = {}
-            self.gem[ilk_id] = {}
+    def init(self, ilk_id):
+        """ This specifically is *not* the __init__ method. """
+        require(not self.ilks.get(ilk_id), "Vat/ilk-already-init")
+        self.ilks[ilk_id] = Ilk(ilk_id)
+        self.ilks[ilk_id].rate = Ray.from_number(1)
 
     def file(self, what, data):
         if what == "Line":
             self.Line = data
+        else:
+            raise Exception("Vat/file-unrecognized-param")
 
     def file_ilk(self, ilk_id, what, data):
         if what == "spot":
@@ -82,6 +64,8 @@ class Vat:
             self.ilks[ilk_id].line = data
         elif what == "dust":
             self.ilks[ilk_id].dust = data
+        else:
+            raise Exception("Vat/file-unrecognized-param")
 
     def slip(self, ilk_id, usr, wad):
         usr_gem = self.gem[ilk_id].get(usr, Wad(0))

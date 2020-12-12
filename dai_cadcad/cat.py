@@ -15,11 +15,8 @@ class Ilk:
     chop = Wad(0)
     dunk = Rad(0)
 
-    def __init__(self, ilk_id, flip, chop, dunk):
+    def __init__(self, ilk_id):
         self.id = ilk_id
-        self.flip = flip
-        self.chop = chop
-        self.dunk = dunk
 
 
 class Cat:
@@ -32,25 +29,30 @@ class Cat:
     box = Rad(0)
     litter = Rad(0)
 
-    def __init__(self, ilks, vat, vow, box):
-        """ `ilks` must be an array containing a configuration object for each ilk type of the
-            following form:
-            {
-                "ilk_id": str,
-                "flip": Flipper,
-                "chop": Wad,
-                "dunk": Rad
-            }
-        """
-
+    def __init__(self, vat):
         self.vat = vat
-        self.vow = vow
-        self.box = box
 
-        for ilk in ilks:
-            self.ilks[ilk["ilk_id"]] = Ilk(
-                ilk["ilk_id"], ilk["flip"], ilk["chop"], ilk["dunk"]
-            )
+    def file(self, what, data):
+        # TODO: Typechecking here?
+        if what == "vow":
+            self.vow = data
+        elif what == "box":
+            self.box = data
+        else:
+            # TODO: Custom exception classes?
+            raise Exception("Cat/file-unrecognized-param")
+
+    def file_ilk(self, ilk_id, what, data):
+        if what in ("chop", "dunk", "flip"):
+            if not self.ilks.get(ilk_id):
+                self.ilks[ilk_id] = Ilk(ilk_id)
+            if what == "chop":
+                self.ilks[ilk_id].chop = data
+            elif what == "dunk":
+                self.ilks[ilk_id].dunk = data
+            elif what == "flip":
+                # TODO: nope-ing & hope-ing here
+                self.ilks[ilk_id].flip = data
 
     def bite(self, ilk_id, urn, now):
         # TODO: Remove `now` once better timekeeping solution is implemented

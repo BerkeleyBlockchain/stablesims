@@ -24,12 +24,28 @@ class Vow:
     bump = Rad(0)
     hump = Rad(0)
 
-    def __init__(self, wait, dump, sump, bump, hump):
-        self.wait = wait
-        self.dump = dump
-        self.sump = sump
-        self.bump = bump
-        self.hump = hump
+    def __init__(self, vat, flapper, flopper):
+        self.vat = vat
+        self.flapper = flapper
+        self.flopper = flopper
+
+    def file(self, what, data):
+        if what == "wait":
+            self.wait = data
+        elif what == "bump":
+            self.bump = data
+        elif what == "sump":
+            self.sump = data
+        elif what == "dump":
+            self.dump = data
+        elif what == "hump":
+            self.hump = data
+        elif what == "flapper":
+            self.flapper = data
+        elif what == "flopper":
+            self.flopper = data
+        else:
+            raise Exception("Vow/file-unrecognized-param")
 
     def fess(self, tab, now):
         # TODO: Remove `now` parameter if/when another solution for providing time / other

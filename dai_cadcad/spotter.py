@@ -13,10 +13,8 @@ class Ilk:
     pip = ""
     mat = Ray(0)
 
-    def __init__(self, ilk_id, pip, mat):
+    def __init__(self, ilk_id):
         self.id = ilk_id
-        self.pip = pip
-        self.mat = mat
 
 
 class PipLike:
@@ -41,21 +39,25 @@ class Spotter:
     vat = None
     par = Ray(0)
 
-    def __init__(self, ilks, vat, par):
-        """ `ilks` must be an array containing a configuration object for each ilk type of the
-            following form:
-            {
-                "ilk_id": str,
-                "pip": PipLike,
-                "mat": Ray,
-            }
-        """
-
+    def __init__(self, vat):
         self.vat = vat
-        self.par = par
 
-        for ilk in ilks:
-            self.ilks[ilk["ilk_id"]] = Ilk(ilk["ilk_id"], ilk["pip"], ilk["mat"])
+    def file(self, what, data):
+        if what == "par":
+            self.par = data
+        else:
+            raise Exception("Spotter/file-unrecognized-param")
+
+    def file_ilk(self, ilk_id, what, data):
+        if what in ("pip", "mat"):
+            if not self.ilks.get(ilk_id):
+                self.ilks[ilk_id] = Ilk(ilk_id)
+            if what == "pip":
+                self.ilks[ilk_id].pip = data
+            elif what == "mat":
+                self.ilks[ilk_id].mat = data
+            else:
+                raise Exception("Spotter/file-unrecognized-param")
 
     def poke(self, ilk_id, now):
         val = self.ilks[ilk_id]["pip"].peek(now)
