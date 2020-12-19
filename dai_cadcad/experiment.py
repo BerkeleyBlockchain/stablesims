@@ -3,91 +3,99 @@
     (contains simulation parameters, experiment name, etc.)
 """
 
-# from cadCAD.engine import ExecutionContext, ExecutionMode, Executor
-# from cadCAD import configuration
-# from cadCAD import configs
-
 
 class Experiment:
-    vat = None
-    vow = None
-    cat = None
-    flippers = {}
-    flapper = None
-    flopper = None
-    spotter = None
-    gem_joins = {}
-    dai_join = None
-    sim_params = {}
+    Cat = None
+    DaiJoin = None
+    Flapper = None
+    Flippers = {}
+    Flopper = None
+    GemJoins = {}
+    Spotter = None
+    Vat = None
+    Vow = None
+
+    Keepers = {}
+    sort_keepers = None
+
+    ilks = []
+    dai = None
+
+    stats = None
+    parameters = {}
 
     def __init__(
-        self,
-        ilks,
-        vat_params,
-        vow_params,
-        cat_params,
-        spotter_params,
-        dai_join_params,
-        gem_join_params,
-        dispatchers,
-        loggers,
-        action_sort_key,
+        self, contracts, keepers, sort_keepers, ilks, dai, mkr, stats, parameters,
     ):
-        """ `ilks` must be an array containing a configuration abject for each ilk type of the
-            following form:
-            {
-                "ilk_id": str,
-                "cat_params": {
-                    "flip": Flipper,
-                    "chop": Wad,
-                    "dunk": Rad
-                },
-                "spotter_params": {
-                    "pip": PipLike,
-                    "mat": Ray
-                },
-                "gem_join_params": {
-                    "gem": Token
-                },
-                "vat_params": {
-                    "line": Rad,
-                    "dust": Rad
-                }
-            }
-        """
+        self.Cat = contracts["Cat"]
+        self.DaiJoin = contracts["DaiJoin"]
+        self.Flapper = contracts["Flapper"]
+        self.Flippers = contracts["Flippers"]
+        self.Flopper = contracts["Flopper"]
+        self.GemJoins = contracts["GemJoins"]
+        self.Spotter = contracts["Spotter"]
+        self.Vat = contracts["Vat"]
+        self.Vow = contracts["Vow"]
 
-        self.vat = vat_params["Vat"]()
-        self.vat.file("Line", vat_params["Line"])
-
-        self.vow = vow_params["Vow"](self.vat, None, None)
-        for what in ("wait", "bump", "sump", "dump", "hump"):
-            self.vow.file(what, vow_params[what])
-
-        self.cat = cat_params["Cat"](self.vat)
-        self.cat.file("vow", self.vow)
-        self.cat.file("box", cat_params["box"])
-
-        self.spotter = spotter_params["Spotter"](self.vat)
-        self.spotter.file("par", spotter_params["par"])
-
-        self.dai_join = dai_join_params["DaiJoin"](self.vat, dai_join_params["dai"])
-
-        # TODO: Flipper, Flapper, Flopper
-
-        for ilk in ilks:
-            for what in ("line", "dust"):
-                self.vat.file_ilk(ilk["ilk_id"], what, ilk["vat_params"][what])
-            for what in ("chop", "dunk", "flip"):
-                self.cat.file_ilk(ilk["ilk_id"], what, ilk["cat_params"][what])
-            for what in ("pip", "mat"):
-                self.spotter.file_ilk(ilk["ilk_id"], what, ilk["spotter_params"][what])
-
-            self.gem_joins[ilk["ilk_id"]] = gem_join_params["GemJoin"](
-                self.vat, ilk["ilk_id"], ilk["gem_join_params"]["gem"]
-            )
-        self.dispatchers = dispatchers
-        self.loggers = loggers
-        self.action_sort_key = action_sort_key
+        self.Keepers = keepers
+        self.sort_keepers = sort_keepers
+        self.ilks = ilks
+        self.dai = dai
+        self.mkr = mkr
+        self.stats = stats
+        self.parameters = parameters
 
     def run(self):
-        pass
+        # Initialize assets
+        dai = self.dai("Dai", "DAI")
+        mkr = self.mkr("Maker", "MKR")
+        ilks = {ilk_id: Token(ilk_id) for ilk_id, Token in self.ilks}
+
+        # Initialize smart contracts
+        vat = self.Vat()
+        vat.file("Line", self.parameters["Vat"]["Line"])
+        for ilk_id in ilks:
+            vat.file_ilk(ilk_id, "line", self.parameters["Vat"][ilk_id]["line"])
+            vat.file_ilk(ilk_id, "dust", self.parameters["Vat"][ilk_id]["dust"])
+
+        spotter = self.Spotter(vat)
+        spotter.file("par", self.parameters["Spotter"]["par"])
+
+        dai_join = self.DaiJoin(vat, dai)
+        gem_joins = {
+            ilk_id: self.GemJoins[ilk_id](vat, ilk_id, ilk_token)
+            for ilk_id, ilk_token in ilks.items()
+        }
+
+        flapper = self.Flapper(vat, mkr)
+        flopper = self.Flopper(vat, mkr)
+
+        vow = self.Vow(vat, flapper, flopper)
+        for what in ("wait", "bump", "sump", "dump", "hump"):
+            vow.file(what, self.parameters["Vow"][what])
+
+        cat = self.Cat(vat)
+        flippers = {ilk_id: self.Flippers[ilk_id](vat, cat, ilk_id) for ilk_id in ilks}
+        cat.file("vow", vow)
+        cat.file("box", self.parameters["Cat"]["box"])
+        for ilk_id in ilks:
+            cat.file_ilk(ilk_id, "chop", self.parameters["Cat"][ilk_id]["chop"])
+            cat.file_ilk(ilk_id, "dunk", self.parameters["Cat"][ilk_id]["dunk"])
+            cat.file_ilk(ilk_id, "flip", flippers[ilk_id])
+
+        # Initialize keepers
+        keepers = []
+        for keeper_name in self.Keepers:
+            Keeper = self.Keepers[keeper_name]["Keeper"]
+            amount = self.Keepers[keeper_name]["amount"]
+            keeper_ilks = [
+                {"gem_join": gem_joins[ilk_id], "flipper": flippers[ilk_id]}
+                for ilk_id in ilks
+            ]
+            keepers.extend([Keeper(vat, dai_join, keeper_ilks) for _ in range(amount)])
+
+        # Run simulation
+        for _t in range(self.parameters["timesteps"]):
+            for keeper in sorted(keepers, self.sort_keepers):
+                keeper.execute_action_for_timestep()
+            # Record data
