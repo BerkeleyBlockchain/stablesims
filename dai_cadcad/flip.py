@@ -9,21 +9,22 @@ from dai_cadcad.util import require
 class Flipper:
     ADDRESS = ""
 
-    vat = None
     beg = None
+    bids = {}
+    cat = None
+    ilk_id = None
+    kicks = None
     ttl = None
     tau = None
-    kicks = None
-    bids = {}
-    ilk_id = None
+    vat = None
 
-    def __init__(self, vat, beg, ttl, tau, kicks, bids, ilk_id):
+    def __init__(self, beg, bids, cat, ilk_id, kicks, ttl, tau, vat):
         """"""
 
         self.ADDRESS = f"flipper_{ilk_id}"
 
         self.vat = vat
-
+        self.cat = cat
         self.beg = beg
         self.ttl = ttl
         self.tau = tau
