@@ -5,7 +5,7 @@ Models are separated by level of complexity.
 
 Access the models using the dictionary and the corresponding keys.
 """
-from dai_cadcad.pymaker.numeric import Wad
+from pydss.pymaker.numeric import Wad
 
 
 # status as defined by the docs:

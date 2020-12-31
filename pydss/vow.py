@@ -3,7 +3,7 @@
     (contains only what is necessary for the simulation)
 """
 
-from dai_cadcad.pymaker.numeric import Rad, Wad
+from pydss.pymaker.numeric import Rad, Wad
 
 
 class Vow:

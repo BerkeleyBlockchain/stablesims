@@ -6,7 +6,7 @@ Additionally, it contains primitive state update functions (all the real logic i
 policies).
 """
 
-from dai_cadcad.pymaker.numeric import Wad, Ray, Rad
+from pydss.pymaker.numeric import Wad, Ray, Rad
 
 
 initial_state = {

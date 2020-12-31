@@ -17,8 +17,8 @@ from copy import deepcopy
 import json
 import random
 
-from dai_cadcad import models
-from dai_cadcad.pymaker.numeric import Wad, Ray, Rad
+from pydss import models
+from pydss.pymaker.numeric import Wad, Ray, Rad
 
 
 # ---

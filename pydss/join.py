@@ -3,8 +3,8 @@
     (contains only what is necessary for the simulation)
 """
 
-from dai_cadcad.pymaker.numeric import Wad, Rad
-from dai_cadcad.util import require
+from pydss.pymaker.numeric import Wad, Rad
+from pydss.util import require
 
 
 class GemJoin:

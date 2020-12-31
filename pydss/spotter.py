@@ -5,7 +5,7 @@
 
 import json
 
-from dai_cadcad.pymaker.numeric import Wad, Ray
+from pydss.pymaker.numeric import Wad, Ray
 
 
 class Ilk:

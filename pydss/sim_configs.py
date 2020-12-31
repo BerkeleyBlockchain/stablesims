@@ -6,7 +6,7 @@ inherit from/reference.
 
 from cadCAD.configuration.utils import config_sim
 
-from dai_cadcad.pymaker.numeric import Wad, Ray, Rad
+from pydss.pymaker.numeric import Wad, Ray, Rad
 
 base_sim_config = {
     "T": range(1),

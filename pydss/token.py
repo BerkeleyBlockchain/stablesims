@@ -3,19 +3,17 @@
     (contains only what is necessary for the simulation)
 """
 
-from dai_cadcad.util import require
+from pydss.util import require
 
 
 class Token:
-    name = ""
     symbol = ""
 
     totalSupply = 0
 
     balances = {}
 
-    def __init__(self, name, symbol):
-        self.name = name
+    def __init__(self, symbol):
         self.symbol = symbol
 
     def mint(self, owner, value):
@@ -42,6 +40,6 @@ class Token:
         return self.balances.get(owner, 0)
 
 
-Ether = Token("Ether", "ETH")
-Dai = Token("Dai", "DAI")
-Maker = Token("Maker", "MKR")
+Ether = Token("ETH")
+Dai = Token("DAI")
+Maker = Token("MKR")

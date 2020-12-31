@@ -5,8 +5,8 @@
 
 from operator import itemgetter
 
-from dai_cadcad.pymaker.numeric import Wad, Rad, Ray
-from dai_cadcad.util import require
+from pydss.pymaker.numeric import Wad, Rad, Ray
+from pydss.util import require
 
 
 class Ilk:
