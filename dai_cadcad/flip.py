@@ -15,12 +15,12 @@ class Flipper:
     tau = None
     kicks = None
     bids = {}
-    ilk = None
+    ilk_id = None
 
-    def __init__(self, vat, beg, ttl, tau, kicks, bids, ilk):
+    def __init__(self, vat, beg, ttl, tau, kicks, bids, ilk_id):
         """"""
 
-        self.ADDRESS = f"flipper_{ilk}"
+        self.ADDRESS = f"flipper_{ilk_id}"
 
         self.vat = vat
 
@@ -29,7 +29,7 @@ class Flipper:
         self.tau = tau
         self.kicks = kicks
         self.bids = bids
-        self.ilk = ilk
+        self.ilk_id = ilk_id
 
     def kick(
         self, usr, gal, tab, lot, bid, end
@@ -50,7 +50,7 @@ class Flipper:
             "tab": tab,
         }
 
-        self.vat.flux(self.ilk, "cat", "flipper_eth", lot)
+        self.vat.flux(self.ilk_id, "cat", "flipper_eth", lot)
 
     def tend(self, bid_id, usr, lot, bid, now):
         """Places a tend bid on a Flipper auction."""
@@ -96,7 +96,9 @@ class Flipper:
         if usr != curr_bid["guy"]:
             self.vat.move(usr, curr_bid["guy"], curr_bid["bid"])
             curr_bid["guy"] = usr
-        self.vat.flux(self.ilk, "flipper_eth", curr_bid["usr"], curr_bid["lot"] - lot)
+        self.vat.flux(
+            self.ilk_id, "flipper_eth", curr_bid["usr"], curr_bid["lot"] - lot
+        )
 
         curr_bid["lot"] = lot
         curr_bid["tic"] = now + self.ttl
@@ -112,5 +114,5 @@ class Flipper:
         )
 
         self.cat.claw(curr_bid["tab"])
-        self.vat.flux(self.ilk, "flipper_eth", curr_bid["guy"], curr_bid["lot"])
+        self.vat.flux(self.ilk_id, "flipper_eth", curr_bid["guy"], curr_bid["lot"])
         del self.bids[bid_id]
