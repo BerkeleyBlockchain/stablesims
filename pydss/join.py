@@ -11,7 +11,7 @@ class GemJoin:
     ADDRESS = ""
 
     vat = None
-    ilk = ""
+    ilk_id = ""
     gem = None
 
     def __init__(self, vat, ilk_id, gem):
