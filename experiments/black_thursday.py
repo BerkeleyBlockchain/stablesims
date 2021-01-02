@@ -13,6 +13,8 @@ from pydss.vow import Vow
 from pydss.token import Token
 from pydss.pymaker.numeric import Wad, Rad
 from pydss.stats import ilk_price, num_new_bites, num_new_bids, keeper_balances
+from pydss.keeper import NaiveFlipperKeeper
+
 
 contracts = {
     "Cat": Cat,
@@ -25,7 +27,7 @@ contracts = {
     "Vat": Vat,
     "Vow": Vow,
 }
-keepers = {"NaiveFlipperKeeper": None}
+keepers = {"NaiveFlipperKeeper": NaiveFlipperKeeper}
 sort_keepers = random.random()
 ilk_ids = ["ETH"]
 stat_trackers = [ilk_price("ETH"), num_new_bites(), num_new_bids(), keeper_balances()]
@@ -37,7 +39,7 @@ parameters = {
             "dunk": Rad(50000000000000000000000000000000000000000000000000),
         },
     },
-    "Keepers": {"NaiveFlipperKeeper": {"amount": 1000}},
+    "Keepers": {"NaiveFlipperKeeper": {"amount": 1000, "c_ratio": 2}},
     "Spotter": {"par": 1},
     "timesteps": 144,
     "Vat": {

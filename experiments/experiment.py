@@ -42,7 +42,7 @@ class Experiment:
         stat_trackers: list of methods that measure stats over the course of the experiment,
         e.g.: [num_new_kicks]
         parameters: dict of parameters used to instantiate the contracts, keepers, and simulation,
-        e.g.: {"Spotter": {"par": 1}, "MyCustomKeeper": {"amount": 1000}, "timesteps": 144}
+        e.g.: {"Spotter": {...}, "MyCustomKeeper": {...}, "timesteps": ...}
         """
         self.Cat = contracts["Cat"]
         self.DaiJoin = contracts["DaiJoin"]
@@ -105,7 +105,13 @@ class Experiment:
             Keeper = self.Keepers[keeper_name]
             amount = self.parameters["Keepers"][keeper_name]["amount"]
             keeper_ilks = [
-                {"gem_join": gem_joins[ilk_id], "flipper": flippers[ilk_id]}
+                {
+                    "c_ratio": self.parameters["Keepers"][keeper_name]["c_ratio"],
+                    "flipper": flippers[ilk_id],
+                    "gem_join": gem_joins[ilk_id],
+                    "ilk_id": ilk_id,
+                    "token": ilks[ilk_id],
+                }
                 for ilk_id in ilks
             ]
             for _ in range(amount):
