@@ -130,15 +130,16 @@ class Experiment:
         }
 
         # Run simulation
-        for _t in range(self.parameters["timesteps"]):
+        for t in range(self.parameters["timesteps"]):
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_START"})
 
             # Execute keeper actions in the specified order
             for keeper in sorted(keepers, self.sort_keepers):
-                action = keeper.execute_action_for_timestep()
-                for track_stat in self.stat_trackers:
-                    track_stat(state, action)
+                actions = keeper.execute_actions_for_timestep(t)
+                for action in actions:
+                    for track_stat in self.stat_trackers:
+                        track_stat(state, action)
 
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_END"})

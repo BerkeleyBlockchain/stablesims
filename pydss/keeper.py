@@ -12,6 +12,22 @@ from pydss.pymaker.numeric import Wad, Rad
 class Keeper:
     ADDRESS = ""
 
+    ilks = {}
+
+    def __init__(self, ilks):
+        """ `ilks` must be an array containing a configuration object for each ilk type of the
+            following form:
+            {"ilk_id": str, "token": Token}
+        """
+        self.ADDRESS = f"keeper-{uuid4().hex}"
+        for ilk in ilks:
+            self.ilks[ilk["ilk_id"]] = ilk["token"]
+
+    def execute_actions_for_timestep(self):
+        pass
+
+
+class VaultKeeper(Keeper):
     vat = None
     dai_join = None
     gem_joins = {}
@@ -19,19 +35,21 @@ class Keeper:
     urns = {}
     num_urns = 0
 
-    def __init__(self, vat, dai_join, ilks):
-        """ `ilks` must be an array containing a configuration object for each ilk type of the
-            following form:
-            {"gem_join": GemJoin}
-        """
+    c_ratios = {}
 
-        self.ADDRESS = f"keeper-{uuid4().hex}"
+    def __init__(self, vat, dai_join, ilks):
+        """ Here, each ilk object in `ilks` must also contain a "gem_join" field with a GemJoin
+            object, as well as a "c_ratio" field w/ the keeper's desired collateralization ratio.
+        """
 
         self.vat = vat
         self.dai_join = dai_join
 
         for ilk in ilks:
             self.gem_joins[ilk["ilk_id"]] = ilk["gem_join"]
+            self.c_ratios[ilk["ilk_id"]] = ilk["c_ratio"]
+
+        super().__init__(ilks)
 
     def generate_urn_id(self):
         urn_id = f"urn-{self.num_urns}-{self.ADDRESS}"
@@ -58,7 +76,7 @@ class Keeper:
         del self.urns[urn_id]
 
 
-class AuctionKeeper(Keeper):
+class AuctionKeeper(VaultKeeper):
     def find_bids(self, **kwargs):
         raise NotImplementedError
 
@@ -83,7 +101,27 @@ class FlipperKeeper(AuctionKeeper):
 
         super().__init__(vat, dai_join, ilks)
 
+    def execute_actions_for_timestep(self, t):
+        actions = []
+        if t == 0:
+            for ilk_id in self.ilks:
+                dink = self.ilks[ilk_id].balanceOf(self.ADDRESS)
+                dart = (1 / self.c_ratios[ilk_id]) * self.vat.ilks[ilk_id].spot * dink
+                self.open_vault(ilk_id, dink, dart)
+                actions.append({"key": "OPEN_VAULT"})
+        else:
+            bids = self.find_bids()
+            for ilk_id in bids:
+                for bid in bids[ilk_id]:
+                    stance = self.run_bidding_model(bid)
+                    action = self.place_bid(bid.id, stance["price"], t, ilk_id)
+                    if action:
+                        actions.append(action)
+        return actions
+
     def find_bids(self, **kwargs):
+        """ Must return a dict w/ ilk_ids as keys and lists of bids as values.
+        """
         raise NotImplementedError
 
     def run_bidding_model(self, bid, **kwargs):
@@ -104,6 +142,7 @@ class FlipperKeeper(AuctionKeeper):
                 and self.vat.dai[self.ADDRESS] >= bid.bid
             ):
                 flipper.dent(bid_id, self.ADDRESS, our_lot, bid.bid, now)
+                return {"key": "DENT"}
 
         else:
             # Tend phase
@@ -115,6 +154,9 @@ class FlipperKeeper(AuctionKeeper):
                 >= (our_bid if self.ADDRESS != bid.guy else our_bid - bid.bid)
             ):
                 flipper.tend(bid_id, self.ADDRESS, bid.lot, our_bid, now)
+                return {"key": "TEND"}
+
+        return None
 
 
 class NaiveFlipperKeeper(FlipperKeeper):
