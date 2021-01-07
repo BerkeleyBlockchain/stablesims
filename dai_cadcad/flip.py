@@ -1,9 +1,31 @@
 """ Flip Module
     Class-based representation of the Flip smart contract
     (contains only what is necessary for the simulation)
-"""
 
+"""
+from dai_cadcad.pymaker.numeric import Wad, Rad
 from dai_cadcad.util import require
+
+
+class Bid:
+    bid = Rad(0)
+    lot = Wad(0)
+    guy = ""
+    tic = ""  # Date
+    end = ""  # Date
+    usr = ""
+    gal = ""
+    tab = Rad(0)
+
+    def __init__(self, bid, lot, guy, tic, end, usr, gal, tab):
+        self.bid = bid
+        self.lot = lot
+        self.guy = guy
+        self.tic = tic
+        self.end = end
+        self.usr = usr
+        self.gal = gal
+        self.tab = tab
 
 
 class Flipper:
