@@ -62,16 +62,7 @@ class Flipper:
         self.kicks += 1
         bid_id = self.kicks
 
-        self.bids[bid_id] = {
-            "bid": bid,
-            "lot": lot,
-            "guy": "cat",
-            "tic": 0,
-            "end": end,
-            "usr": usr,
-            "gal": gal,
-            "tab": tab,
-        }
+        self.bids[bid_id] = Bid(bid, lot, "cat", 0, end, usr, gal, tab)
 
         self.vat.flux(self.ilk_id, "cat", "flipper_eth", lot)
 
