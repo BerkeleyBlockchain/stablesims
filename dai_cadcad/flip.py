@@ -11,8 +11,8 @@ class Bid:
     bid = Rad(0)
     lot = Wad(0)
     guy = ""
-    tic = ""  # Date or int
-    end = ""  # Date
+    tic = 0
+    end = 0
     usr = ""
     gal = ""
     tab = Rad(0)
