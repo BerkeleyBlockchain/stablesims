@@ -33,13 +33,13 @@ class Bid:
 class Flipper:
     ADDRESS = ""
 
-    beg = None
+    beg = Wad(0)
     bids = {}
     cat = None
-    ilk_id = None
-    kicks = None
-    ttl = None
-    tau = None
+    ilk_id = ""
+    kicks = 0
+    ttl = 0
+    tau = 0
     vat = None
 
     def __init__(self, beg, cat, ilk_id, kicks, ttl, tau, vat):
