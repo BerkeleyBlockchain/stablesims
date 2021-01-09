@@ -16,9 +16,9 @@ class Bid:
     usr = ""
     gal = ""
     tab = Rad(0)
-    id = ""
+    bid_id = ""
 
-    def __init__(self, bid, lot, guy, tic, end, usr, gal, tab, id):
+    def __init__(self, bid, lot, guy, tic, end, usr, gal, tab, bid_id):
         self.bid = bid
         self.lot = lot
         self.guy = guy
@@ -27,7 +27,7 @@ class Bid:
         self.usr = usr
         self.gal = gal
         self.tab = tab
-        self.id = id
+        self.bid_id = bid_id
 
 
 class Flipper:
