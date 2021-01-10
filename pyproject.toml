@@ -19,6 +19,7 @@ black = "^19.10b0"
 autohooks = "^2.1.0"
 autohooks-plugin-pylint = "^1.2.0"
 autohooks-plugin-black = "^1.2.0"
+jedi = "^0.17.2"
 
 [tool.autohooks]
 mode = "poetry"
