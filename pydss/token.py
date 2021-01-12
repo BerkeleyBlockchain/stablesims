@@ -29,10 +29,11 @@ class Token:
 
     def transferFrom(self, from_address, to_address, value):
         require(
-            self.balances[from_address] >= value,
+            not from_address or self.balances[from_address] >= value,
             f"{self.symbol}/insufficient-transferFrom",
         )
-        self.balances[from_address] -= value
+        if from_address:
+            self.balances[from_address] -= value
         self.balances[to_address] = self.balances.get(to_address, 0) + value
         return True
 

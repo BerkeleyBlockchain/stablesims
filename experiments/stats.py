@@ -17,7 +17,7 @@ def ilk_price(ilk_id):
     def track_stat(state, action):
         # TODO: Constantize the action keys somewhere
         if action["key"] == "POKE":
-            if not state["stats"]["ilk_price"]:
+            if not state["stats"].get("ilk_price"):
                 state["stats"]["ilk_price"] = {}
             state["stats"]["ilk_price"][ilk_id] = state["vat"].ilks[ilk_id].spot
 
@@ -47,10 +47,12 @@ def num_new_bids():
 def keeper_balances():
     def track_stat(state, action):
         if action["key"] == "T_END":
+            if not state["stats"].get("keeper_balances"):
+                state["stats"]["keeper_balances"] = {}
             for keeper in state["keepers"]:
                 state["stats"]["keeper_balances"][keeper.ADDRESS] = {
                     ilk_id: ilk_token.balanceOf(keeper.ADDRESS)
-                    for ilk_id, ilk_token in state["ilks"]
+                    for ilk_id, ilk_token in state["ilks"].items()
                 }
 
     return track_stat

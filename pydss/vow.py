@@ -50,5 +50,7 @@ class Vow:
     def fess(self, tab, now):
         # TODO: Remove `now` parameter if/when another solution for providing time / other
         # contextual info is implemented
+        if not self.sin.get(now):
+            self.sin[now] = Rad(0)
         self.sin[now] += tab
         self.Sin += tab

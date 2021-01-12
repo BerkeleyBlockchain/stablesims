@@ -17,13 +17,14 @@ class Keeper:
     def __init__(self, ilks):
         """ `ilks` must be an array containing a configuration object for each ilk type of the
             following form:
-            {"ilk_id": str, "token": Token}
+            {"ilk_id": str, "token": Token, "init_balance": float}
         """
         self.ADDRESS = f"keeper-{uuid4().hex}"
         for ilk in ilks:
             self.ilks[ilk["ilk_id"]] = ilk["token"]
+            self.ilks[ilk["ilk_id"]].transferFrom("", self.ADDRESS, ilk["init_balance"])
 
-    def execute_actions_for_timestep(self):
+    def execute_actions_for_timestep(self, t):
         pass
 
 
@@ -105,8 +106,12 @@ class FlipperKeeper(AuctionKeeper):
         actions = []
         if t == 0:
             for ilk_id in self.ilks:
-                dink = self.ilks[ilk_id].balanceOf(self.ADDRESS)
-                dart = (1 / self.c_ratios[ilk_id]) * self.vat.ilks[ilk_id].spot * dink
+                dink = Wad.from_number(self.ilks[ilk_id].balanceOf(self.ADDRESS))
+                dart = (
+                    Wad.from_number(1 / self.c_ratios[ilk_id])
+                    * self.vat.ilks[ilk_id].spot
+                    * dink
+                )
                 self.open_vault(ilk_id, dink, dart)
                 actions.append({"key": "OPEN_VAULT"})
         else:
@@ -160,8 +165,11 @@ class FlipperKeeper(AuctionKeeper):
 
 
 class NaiveFlipperKeeper(FlipperKeeper):
-    def find_bids(self, ilk_id=""):
-        return self.flippers[ilk_id].bids
+    def find_bids(self):
+        bids = []
+        for ilk_id in self.ilks:
+            bids.extend(self.flippers[ilk_id].bids)
+        return bids
 
     def run_bidding_model(self, bid, ilk_id=""):
         if bid.guy == self.ADDRESS or not bid.lot:
@@ -171,3 +179,43 @@ class NaiveFlipperKeeper(FlipperKeeper):
             return {"price": Wad(1)}
 
         return {"price": self.flippers[ilk_id].beg * Wad(bid.bid / Rad(bid.lot))}
+
+
+class SpotterKeeper(Keeper):
+    spotter = None
+
+    def __init__(self, ilks, spotter):
+        self.spotter = spotter
+        super().__init__(ilks)
+
+    def execute_actions_for_timestep(self, t):
+        actions = []
+        for ilk_id in self.ilks:
+            self.spotter.poke(ilk_id, t)
+            actions.append({"key": "POKE", "meta": {"ilk_id": ilk_id}})
+        return actions
+
+
+class BiteKeeper(Keeper):
+    cat = None
+    vat = None
+
+    def __init__(self, ilks, cat, vat):
+        self.cat = cat
+        self.vat = vat
+        super().__init__(ilks)
+
+    def execute_actions_for_timestep(self, t):
+        actions = []
+        for ilk_id in self.ilks:
+            ilk = self.vat.ilks[ilk_id]
+            for urn in self.vat.urns[ilk_id].values():
+                if Rad(urn.ink * ilk.spot) < Rad(urn.art * ilk.rate):
+                    self.cat.bite(ilk_id, urn.ADDRESS, t)
+                    actions.append(
+                        {
+                            "key": "BITE",
+                            "meta": {"urn_addr": urn.ADDRESS, "ilk_id": ilk_id},
+                        }
+                    )
+        return actions

@@ -50,6 +50,9 @@ class Vat:
         require(not self.ilks.get(ilk_id), "Vat/ilk-already-init")
         self.ilks[ilk_id] = Ilk(ilk_id)
         self.ilks[ilk_id].rate = Ray.from_number(1)
+        # This is not canon lol
+        self.urns[ilk_id] = {}
+        self.gem[ilk_id] = {}
 
     def file(self, what, data):
         if what == "Line":
@@ -112,7 +115,7 @@ class Vat:
         self.dai[w] = w_dai
 
         self.urns[i][u] = urn
-        self.ilks[i] = i
+        self.ilks[i] = ilk
 
     def grab(self, i, u, v, w, dink, dart):
         urn = self.urns[i][u]
@@ -124,6 +127,10 @@ class Vat:
 
         dtab = Rad(ilk.rate * dart)
 
+        if not self.gem[i].get(v):
+            self.gem[i][v] = Wad(0)
         self.gem[i][v] -= dink
+        if not self.sin.get(w):
+            self.sin[w] = Rad(0)
         self.sin[w] -= dtab
         self.vice -= dtab

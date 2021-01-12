@@ -60,6 +60,6 @@ class Spotter:
                 raise Exception("Spotter/file-unrecognized-param")
 
     def poke(self, ilk_id, now):
-        val = self.ilks[ilk_id]["pip"].peek(now)
-        spot = Ray(val) / self.par / self.ilks[ilk_id].mat
-        self.vat.file(ilk_id, "spot", spot)
+        val = self.ilks[ilk_id].pip.peek(now)
+        spot = Ray(val / Wad(self.par) / self.ilks[ilk_id].mat)
+        self.vat.file_ilk(ilk_id, "spot", spot)
