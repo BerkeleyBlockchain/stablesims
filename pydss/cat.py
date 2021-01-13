@@ -8,27 +8,38 @@ from pydss.util import require
 
 
 class Ilk:
-    id = ""
-    flip = None
-    chop = Wad(0)
-    dunk = Rad(0)
+    """
+    id = str
+    flip = Flipper
+    chop = Wad
+    dunk = Rad
+    """
 
     def __init__(self, ilk_id):
         self.id = ilk_id
+        self.chop = Wad(0)
+        self.dunk = Rad(0)
 
 
 class Cat:
-    ADDRESS = "cat"
+    """
+    ADDRESS = str
 
-    ilks = {}
+    ilks = dict[str: Ilk]
 
-    vat = None
-    vow = None
-    box = Rad(0)
-    litter = Rad(0)
+    vat = Vat
+    vow = Vow
+    box = Rad
+    litter = Rad
+    """
 
     def __init__(self, vat):
+        self.ADDRESS = "cat"
+        self.ilks = {}
         self.vat = vat
+        self.box = Rad(0)
+        self.litter = Rad(0)
+        self.vow = None
 
     def file(self, what, data):
         # TODO: Typechecking here?

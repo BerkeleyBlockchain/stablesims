@@ -7,14 +7,16 @@ from pydss.util import require
 
 
 class Token:
-    symbol = ""
-
-    totalSupply = 0
-
-    balances = {}
+    """
+    symbol = str
+    totalSupply = int
+    balances = dict[str: float]
+    """
 
     def __init__(self, symbol):
         self.symbol = symbol
+        self.totalSupply = 0
+        self.balances = {}
 
     def mint(self, owner, value):
         self.balances[owner] = self.balances.get(owner, 0) + value

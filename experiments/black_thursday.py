@@ -60,9 +60,9 @@ parameters = {
                     {
                         "ilk_id": "ETH",
                         "token": state["ilks"]["ETH"],
-                        "init_balance": 1000,
+                        "init_balance": random.gauss(500, 215.517),
                         "gem_join": state["gem_joins"]["ETH"],
-                        "c_ratio": 1.6,
+                        "c_ratio": random.gauss(2, 0.216),
                         "flipper": state["flippers"]["ETH"],
                     }
                 ],

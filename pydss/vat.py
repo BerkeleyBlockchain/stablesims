@@ -8,22 +8,31 @@ from pydss.util import require
 
 
 class Ilk:
-    id = ""
-    Art = Wad(0)
-    rate = Ray(0)
-    spot = Ray(0)
-    line = Rad(0)
-    dust = Rad(0)
+    """
+    id = str
+    Art = Wad
+    rate = Ray
+    spot = Ray
+    line = Rad
+    dust = Rad
+    """
 
     def __init__(self, ilk_id):
         self.id = ilk_id
+        self.Art = Wad(0)
+        self.rate = Ray(0)
+        self.spot = Ray(0)
+        self.line = Rad(0)
+        self.dust = Rad(0)
 
 
 class Urn:
-    ADDRESS = ""
+    """
+    ADDRESS = str
 
-    ink = Wad(0)
-    art = Wad(0)
+    ink = Wad
+    art = Wad
+    """
 
     def __init__(self, address, ink, art):
         self.ADDRESS = address
@@ -33,17 +42,31 @@ class Urn:
 
 
 class Vat:
-    ADDRESS = "vat"
+    """
+    ADDRESS = str
 
-    ilks = {}
-    urns = {}
-    gem = {}
-    dai = {}
-    sin = {}
+    ilks = dict[str: Ilk]
+    urns = dict[str: Urn]
+    gem = dict[str: Wad]
+    dai = dict[str: Rad]
+    sin = dict[str: Rad]
 
-    debt = Rad(0)
-    vice = Rad(0)
-    Line = Rad(0)
+    debt = Rad
+    vice = Rad
+    Line = Rad
+    """
+
+    def __init__(self):
+        self.ADDRESS = "vat"
+        self.ilks = {}
+        self.urns = {}
+        self.gem = {}
+        self.dai = {}
+        self.sin = {}
+
+        self.debt = Rad(0)
+        self.vice = Rad(0)
+        self.Line = Rad(0)
 
     def init(self, ilk_id):
         """ This specifically is *not* the __init__ method. """

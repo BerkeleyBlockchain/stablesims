@@ -5,23 +5,25 @@
 
 
 class Experiment:
-    Cat = None
-    DaiJoin = None
-    Flapper = None
-    Flippers = {}
-    Flopper = None
-    GemJoin = None
-    Spotter = None
-    Vat = None
-    Vow = None
+    """
+    Cat = Cat
+    DaiJoin = DaiJoin
+    Flapper = Flapper
+    Flippers = dict[str: Flipper]
+    Flopper = Flopper
+    GemJoin = GemJoin
+    Spotter = Spotter
+    Vat = Vat
+    Vow = Vow
 
-    Keepers = {}
-    sort_keepers = None
+    Keepers = dict[str: Keeper]
+    sort_keepers = function
 
-    ilk_ids = []
+    ilk_ids = list[str]
 
-    stat_trackers = []
-    parameters = {}
+    stat_trackers = list[function]
+    parameters = dict
+    """
 
     def __init__(
         self,
@@ -133,10 +135,11 @@ class Experiment:
         for keeper_name in self.Keepers:
             Keeper = self.Keepers[keeper_name]
             amount = self.parameters["Keepers"][keeper_name]["amount"]
-            keeper_params = self.parameters["Keepers"][keeper_name]["get_params"](state)
             for _ in range(amount):
-                keeper = Keeper(*keeper_params)
-                keepers.append(keeper)
+                keeper_params = self.parameters["Keepers"][keeper_name]["get_params"](
+                    state
+                )
+                keepers.append(Keeper(*keeper_params))
 
         # Add keepers into state
         state["keepers"] = keepers
@@ -156,5 +159,6 @@ class Experiment:
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_END"})
 
+            print(state["stats"])
             # TODO: Stream back stats
             # For now: write to file

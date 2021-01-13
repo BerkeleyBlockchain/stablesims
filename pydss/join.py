@@ -8,13 +8,16 @@ from pydss.util import require
 
 
 class GemJoin:
+    """
     ADDRESS = ""
 
-    vat = None
+    vat = Vat
     ilk_id = ""
-    gem = None
+    gem = Token
+    """
 
     def __init__(self, vat, ilk_id, gem):
+        self.ADDRESS = f"gem_join-{ilk_id}"
         self.vat = vat
         self.ilk_id = ilk_id
         self.gem = gem
@@ -37,12 +40,15 @@ class GemJoin:
 
 
 class DaiJoin:
-    ADDRESS = "dai_join"
+    """
+    ADDRESS = str
 
-    vat = None
-    dai = None
+    vat = Vat
+    dai = Token
+    """
 
     def __init__(self, vat, dai):
+        self.ADDRESS = "dai_join"
         self.vat = vat
         self.dai = dai
 

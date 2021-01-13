@@ -9,16 +9,22 @@ from pydss.pymaker.numeric import Wad, Ray
 
 
 class Ilk:
-    id = ""
-    pip = None
-    mat = Ray(0)
+    """
+    id = str
+    pip = PipLike
+    mat = Ray
+    """
 
     def __init__(self, ilk_id):
         self.id = ilk_id
+        self.pip = None
+        self.mat = Ray(0)
 
 
 class PipLike:
-    price_feed_file = ""
+    """
+    price_feed_file = str
+    """
 
     def __init__(self, price_feed_file):
         self.price_feed_file = price_feed_file
@@ -32,15 +38,20 @@ class PipLike:
 
 
 class Spotter:
-    ADDRESS = ""
+    """
+    ADDRESS = str
 
-    ilks = {}
+    ilks = dict[str: Ilk]
 
-    vat = None
-    par = Ray(0)
+    vat = Vat
+    par = Ray
+    """
 
     def __init__(self, vat):
+        self.ADDRESS = "spotter"
         self.vat = vat
+        self.ilks = {}
+        self.par = Ray(0)
 
     def file(self, what, data):
         if what == "par":

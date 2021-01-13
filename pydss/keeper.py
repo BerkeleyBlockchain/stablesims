@@ -6,13 +6,14 @@
 
 from uuid import uuid4
 
-from pydss.pymaker.numeric import Wad, Rad
+from pydss.pymaker.numeric import Wad, Rad, Ray
 
 
 class Keeper:
-    ADDRESS = ""
-
-    ilks = {}
+    """
+    ADDRESS = str
+    ilks = dict[str: Token]
+    """
 
     def __init__(self, ilks):
         """ `ilks` must be an array containing a configuration object for each ilk type of the
@@ -20,6 +21,7 @@ class Keeper:
             {"ilk_id": str, "token": Token, "init_balance": float}
         """
         self.ADDRESS = f"keeper-{uuid4().hex}"
+        self.ilks = {}
         for ilk in ilks:
             self.ilks[ilk["ilk_id"]] = ilk["token"]
             self.ilks[ilk["ilk_id"]].transferFrom("", self.ADDRESS, ilk["init_balance"])
@@ -29,14 +31,16 @@ class Keeper:
 
 
 class VaultKeeper(Keeper):
-    vat = None
-    dai_join = None
-    gem_joins = {}
+    """
+    vat = Vat
+    dai_join = DaiJoin
+    gem_joins = dict[str: GemJoin]
 
-    urns = {}
-    num_urns = 0
+    urns = dict[int: str]
+    num_urns = int
 
-    c_ratios = {}
+    c_ratios = dict[str: float]
+    """
 
     def __init__(self, vat, dai_join, ilks):
         """ Here, each ilk object in `ilks` must also contain a "gem_join" field with a GemJoin
@@ -45,6 +49,10 @@ class VaultKeeper(Keeper):
 
         self.vat = vat
         self.dai_join = dai_join
+        self.gem_joins = {}
+        self.urns = {}
+        self.num_urns = 0
+        self.c_ratios = {}
 
         for ilk in ilks:
             self.gem_joins[ilk["ilk_id"]] = ilk["gem_join"]
@@ -81,22 +89,24 @@ class AuctionKeeper(VaultKeeper):
     def find_bids(self, **kwargs):
         raise NotImplementedError
 
-    def run_bidding_model(self, bid, **kwargs):
+    def run_bidding_model(self, bid, ilk_id, **kwargs):
         raise NotImplementedError
 
-    def place_bid(self, bid_id, price, now, **kwargs):
+    def place_bid(self, bid_id, price, now, ilk_id, **kwargs):
         raise NotImplementedError
 
 
 class FlipperKeeper(AuctionKeeper):
-
-    flippers = {}
+    """
+    flippers = dict[str: Flipper]
+    """
 
     def __init__(self, vat, dai_join, ilks):
         """ Here, each ilk object in `ilks` must also contain a "flipper" field with a Flipper
             object.
         """
 
+        self.flippers = {}
         for ilk in ilks:
             self.flippers[ilk["ilk_id"]] = ilk["flipper"]
 
@@ -104,24 +114,28 @@ class FlipperKeeper(AuctionKeeper):
 
     def execute_actions_for_timestep(self, t):
         actions = []
-        if t == 0:
-            for ilk_id in self.ilks:
+        for ilk_id in self.ilks:
+            if self.ilks[ilk_id].balanceOf(self.ADDRESS) > 0 and self.vat.ilks[
+                ilk_id
+            ].spot > Ray(0):
                 dink = Wad.from_number(self.ilks[ilk_id].balanceOf(self.ADDRESS))
                 dart = (
                     Wad.from_number(1 / self.c_ratios[ilk_id])
                     * self.vat.ilks[ilk_id].spot
                     * dink
                 )
-                self.open_vault(ilk_id, dink, dart)
-                actions.append({"key": "OPEN_VAULT"})
-        else:
-            bids = self.find_bids()
-            for ilk_id in bids:
-                for bid in bids[ilk_id]:
-                    stance = self.run_bidding_model(bid)
-                    action = self.place_bid(bid.id, stance["price"], t, ilk_id)
-                    if action:
-                        actions.append(action)
+                if dart > Wad(self.vat.ilks[ilk_id].dust):
+                    self.open_vault(ilk_id, dink, dart)
+                    actions.append({"key": "OPEN_VAULT"})
+
+        bids = self.find_bids()
+        for ilk_id in bids:
+            for bid in bids[ilk_id]:
+                stance = self.run_bidding_model(bid, ilk_id)
+                action = self.place_bid(bid.id, stance["price"], t, ilk_id)
+                if action:
+                    actions.append(action)
+
         return actions
 
     def find_bids(self, **kwargs):
@@ -129,60 +143,65 @@ class FlipperKeeper(AuctionKeeper):
         """
         raise NotImplementedError
 
-    def run_bidding_model(self, bid, **kwargs):
+    def run_bidding_model(self, bid, ilk_id, **kwargs):
         raise NotImplementedError
 
-    def place_bid(self, bid_id, price, now, ilk_id=""):
+    def place_bid(self, bid_id, price, now, ilk_id):
         # TODO: Make sure this aligns with the Flipper class
 
-        flipper = self.flippers[ilk_id]
-        bid = flipper.bids[bid_id]
+        if price > Wad(0):
+            flipper = self.flippers[ilk_id]
+            bid = flipper.bids[bid_id]
 
-        if bid.bid == bid.tab:
-            # Dent phase
-            our_lot = Wad(bid.bid / Rad(price))
-            if (
-                our_lot * flipper.beg <= bid.lot
-                and our_lot < bid.lot
-                and self.vat.dai[self.ADDRESS] >= bid.bid
-            ):
-                flipper.dent(bid_id, self.ADDRESS, our_lot, bid.bid, now)
-                return {"key": "DENT"}
+            if bid.bid == bid.tab:
+                # Dent phase
+                our_lot = Wad(bid.bid / Rad(price))
+                if (
+                    our_lot * flipper.beg <= bid.lot
+                    and our_lot < bid.lot
+                    and self.vat.dai.get(self.ADDRESS)
+                    and self.vat.dai[self.ADDRESS] >= bid.bid
+                ):
+                    flipper.dent(bid_id, self.ADDRESS, our_lot, bid.bid, now)
+                    return {"key": "DENT"}
 
-        else:
-            # Tend phase
-            our_bid = Rad.min(Rad(bid.lot) * price, bid.tab)
-            if (
-                (our_bid >= bid.bid * flipper.beg or our_bid == bid.tab)
-                and our_bid > bid.bid
-                and self.vat.dai[self.ADDRESS]
-                >= (our_bid if self.ADDRESS != bid.guy else our_bid - bid.bid)
-            ):
-                flipper.tend(bid_id, self.ADDRESS, bid.lot, our_bid, now)
-                return {"key": "TEND"}
+            else:
+                # Tend phase
+                our_bid = Rad.min(Rad(bid.lot) * price, bid.tab)
+                if (
+                    (our_bid >= bid.bid * flipper.beg or our_bid == bid.tab)
+                    and our_bid > bid.bid
+                    and self.vat.dai.get(self.ADDRESS)
+                    and self.vat.dai[self.ADDRESS]
+                    >= (our_bid if self.ADDRESS != bid.guy else our_bid - bid.bid)
+                ):
+                    flipper.tend(bid_id, self.ADDRESS, bid.lot, our_bid, now)
+                    return {"key": "TEND"}
 
         return None
 
 
 class NaiveFlipperKeeper(FlipperKeeper):
     def find_bids(self):
-        bids = []
+        bids = {}
         for ilk_id in self.ilks:
-            bids.extend(self.flippers[ilk_id].bids)
+            bids[ilk_id] = list(self.flippers[ilk_id].bids.values())
         return bids
 
-    def run_bidding_model(self, bid, ilk_id=""):
+    def run_bidding_model(self, bid, ilk_id):
         if bid.guy == self.ADDRESS or not bid.lot:
             return {"price": Wad(0)}
 
         if bid.bid == Rad(0):
-            return {"price": Wad(1)}
+            return {"price": Wad(bid.tab * Rad.from_number(0.05))}
 
         return {"price": self.flippers[ilk_id].beg * Wad(bid.bid / Rad(bid.lot))}
 
 
 class SpotterKeeper(Keeper):
-    spotter = None
+    """
+    spotter = Spotter
+    """
 
     def __init__(self, ilks, spotter):
         self.spotter = spotter
@@ -197,8 +216,10 @@ class SpotterKeeper(Keeper):
 
 
 class BiteKeeper(Keeper):
-    cat = None
-    vat = None
+    """
+    cat = Cat
+    vat = Vat
+    """
 
     def __init__(self, ilks, cat, vat):
         self.cat = cat

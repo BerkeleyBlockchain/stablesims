@@ -3,20 +3,22 @@
     (contains only what is necessary for the simulation)
 
 """
-from pydss.pymaker.numeric import Wad, Rad
+from pydss.pymaker.numeric import Wad
 from pydss.util import require
 
 
 class Bid:
-    bid = Rad(0)
-    lot = Wad(0)
-    guy = ""
-    tic = 0
-    end = 0
-    usr = ""
-    gal = ""
-    tab = Rad(0)
-    bid_id = ""
+    """
+    id = str
+    bid = Rad
+    lot = Wad
+    guy = str
+    tic = int
+    end = int
+    usr = str
+    gal = str
+    tab = Rad
+    """
 
     def __init__(self, bid, lot, guy, tic, end, usr, gal, tab, bid_id):
         self.bid = bid
@@ -27,29 +29,37 @@ class Bid:
         self.usr = usr
         self.gal = gal
         self.tab = tab
-        self.bid_id = bid_id
+        self.id = bid_id
 
 
 class Flipper:
-    ADDRESS = ""
+    """
+    ADDRESS = str
 
-    beg = Wad(0)
-    bids = {}
-    cat = None
-    ilk_id = ""
-    kicks = 0
-    ttl = 0
-    tau = 0
-    vat = None
+    beg = Wad
+    bids = dict[int: Bid]
+    cat = Cat
+    ilk_id = str
+    kicks = int
+    ttl = int
+    tau = int
+    vat = Vat
+    """
 
     def __init__(self, vat, cat, ilk_id):
         """"""
 
-        self.ADDRESS = f"flipper_{ilk_id}"
+        self.ADDRESS = f"flipper-{ilk_id}"
 
         self.vat = vat
         self.cat = cat
         self.ilk_id = ilk_id
+
+        self.beg = Wad(0)
+        self.bids = {}
+        self.kicks = 0
+        self.ttl = 0
+        self.tau = 0
 
     def file(self, what, data):
         if what == "beg":
@@ -64,14 +74,16 @@ class Flipper:
             raise Exception("Flipper/file-unrecognized-param")
 
     def kick(
-        self, usr, gal, tab, lot, bid, end
+        self, usr, gal, tab, lot, bid, now
     ):  # TODO: should these be instance attribute?
         """Kicks off a new Flip auction."""
 
         self.kicks += 1
         bid_id = self.kicks
 
-        self.bids[bid_id] = Bid(bid, lot, "cat", 0, end, usr, gal, tab, bid_id)
+        self.bids[bid_id] = Bid(
+            bid, lot, "cat", 0, now + self.tau, usr, gal, tab, bid_id
+        )
 
         self.vat.flux(self.ilk_id, "cat", "flipper_eth", lot)
 
@@ -81,9 +93,9 @@ class Flipper:
         curr_bid = self.bids[bid_id]
 
         require(
-            curr_bid.tic > now or curr_bid.tic == 0, "Flipper/already-finishied-tic",
+            curr_bid.tic > now or curr_bid.tic == 0, "Flipper/already-finished-tic",
         )
-        require(curr_bid.end > now, "Flipper/already-finishied-end")
+        require(curr_bid.end > now, "Flipper/already-finished-end")
 
         require(lot == curr_bid.lot, "Flipper/lot-not-matching")
         require(bid <= curr_bid.tab, "Flipper/higher-than-tab")
