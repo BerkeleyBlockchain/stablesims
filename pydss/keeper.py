@@ -5,6 +5,7 @@
 """
 
 from uuid import uuid4
+import random
 
 from pydss.pymaker.numeric import Wad, Rad, Ray
 
@@ -26,7 +27,7 @@ class Keeper:
             self.ilks[ilk["ilk_id"]] = ilk["token"]
             self.ilks[ilk["ilk_id"]].transferFrom("", self.ADDRESS, ilk["init_balance"])
 
-    def execute_actions_for_timestep(self, t):
+    def generate_actions_for_timestep(self, t):
         pass
 
 
@@ -84,15 +85,47 @@ class VaultKeeper(Keeper):
         self.gem_joins[ilk_id].exit(self.ADDRESS, self.ADDRESS, Wad(0) - dink)
         del self.urns[urn_id]
 
+    def open_max_vaults(self, actions):
+        for ilk_id in self.ilks:
+            vat_ilk = self.vat.ilks[ilk_id]
+            if self.ilks[ilk_id].balanceOf(self.ADDRESS) > 0 and vat_ilk.spot > Ray(0):
+                dink = Wad.from_number(self.ilks[ilk_id].balanceOf(self.ADDRESS))
+                dart = Wad.from_number(1 / self.c_ratios[ilk_id]) * vat_ilk.spot * dink
+                if dart > Wad(vat_ilk.dust) and Rad(dart * vat_ilk.rate) <= Rad(
+                    dink * vat_ilk.spot
+                ):
+                    actions.append(
+                        {
+                            "key": "OPEN_VAULT",
+                            "keeper": self,
+                            "handler": self.open_vault,
+                            "args": [ilk_id, dink, dart],
+                            "kwargs": {},
+                        }
+                    )
+
+
+class NaiveVaultKeeper(VaultKeeper):
+    def generate_actions_for_timestep(self, t):
+        actions = []
+        self.open_max_vaults(actions)
+        return actions
+
 
 class AuctionKeeper(VaultKeeper):
-    def find_bids(self, **kwargs):
+    def find_bids_to_place(self, now, **kwargs):
         raise NotImplementedError
 
     def run_bidding_model(self, bid, ilk_id, **kwargs):
         raise NotImplementedError
 
-    def place_bid(self, bid_id, price, now, ilk_id, **kwargs):
+    def place_bid(self, bid_id, price, ilk_id, now, **kwargs):
+        raise NotImplementedError
+
+    def find_bids_to_deal(self, now, **kwargs):
+        raise NotImplementedError
+
+    def deal_bid(self, bid_id, ilk_id, now, **kwargs):
         raise NotImplementedError
 
 
@@ -112,33 +145,14 @@ class FlipperKeeper(AuctionKeeper):
 
         super().__init__(vat, dai_join, ilks)
 
-    def execute_actions_for_timestep(self, t):
+    def generate_actions_for_timestep(self, t):
         actions = []
-        for ilk_id in self.ilks:
-            if self.ilks[ilk_id].balanceOf(self.ADDRESS) > 0 and self.vat.ilks[
-                ilk_id
-            ].spot > Ray(0):
-                dink = Wad.from_number(self.ilks[ilk_id].balanceOf(self.ADDRESS))
-                dart = (
-                    Wad.from_number(1 / self.c_ratios[ilk_id])
-                    * self.vat.ilks[ilk_id].spot
-                    * dink
-                )
-                if dart > Wad(self.vat.ilks[ilk_id].dust):
-                    self.open_vault(ilk_id, dink, dart)
-                    actions.append({"key": "OPEN_VAULT"})
-
-        bids = self.find_bids()
-        for ilk_id in bids:
-            for bid in bids[ilk_id]:
-                stance = self.run_bidding_model(bid, ilk_id)
-                action = self.place_bid(bid.id, stance["price"], t, ilk_id)
-                if action:
-                    actions.append(action)
-
+        self.open_max_vaults(actions)
+        self.find_and_deal_bids(t, actions)
+        self.find_and_place_bids(t, actions)
         return actions
 
-    def find_bids(self, **kwargs):
+    def find_bids_to_place(self, now, **kwargs):
         """ Must return a dict w/ ilk_ids as keys and lists of bids as values.
         """
         raise NotImplementedError
@@ -146,9 +160,7 @@ class FlipperKeeper(AuctionKeeper):
     def run_bidding_model(self, bid, ilk_id, **kwargs):
         raise NotImplementedError
 
-    def place_bid(self, bid_id, price, now, ilk_id):
-        # TODO: Make sure this aligns with the Flipper class
-
+    def place_bid(self, bid_id, price, ilk_id, now):
         if price > Wad(0):
             flipper = self.flippers[ilk_id]
             bid = flipper.bids[bid_id]
@@ -162,8 +174,13 @@ class FlipperKeeper(AuctionKeeper):
                     and self.vat.dai.get(self.ADDRESS)
                     and self.vat.dai[self.ADDRESS] >= bid.bid
                 ):
-                    flipper.dent(bid_id, self.ADDRESS, our_lot, bid.bid, now)
-                    return {"key": "DENT"}
+                    return {
+                        "key": "DENT",
+                        "keeper": self,
+                        "handler": flipper.dent,
+                        "args": [bid_id, self.ADDRESS, our_lot, bid.bid, now],
+                        "kwargs": {},
+                    }
 
             else:
                 # Tend phase
@@ -175,27 +192,101 @@ class FlipperKeeper(AuctionKeeper):
                     and self.vat.dai[self.ADDRESS]
                     >= (our_bid if self.ADDRESS != bid.guy else our_bid - bid.bid)
                 ):
-                    flipper.tend(bid_id, self.ADDRESS, bid.lot, our_bid, now)
-                    return {"key": "TEND"}
+                    return {
+                        "key": "TEND",
+                        "keeper": self,
+                        "handler": flipper.tend,
+                        "args": [bid_id, self.ADDRESS, bid.lot, our_bid, now],
+                        "kwargs": {},
+                    }
 
         return None
 
+    def find_and_place_bids(self, t, actions):
+        bids_to_place = self.find_bids_to_place(t)
+        for ilk_id in bids_to_place:
+            for bid in bids_to_place[ilk_id]:
+                stance = self.run_bidding_model(bid, ilk_id)
+                action = self.place_bid(bid.id, stance["price"], ilk_id, t)
+                if action:
+                    actions.append(action)
 
-class NaiveFlipperKeeper(FlipperKeeper):
-    def find_bids(self):
+    def find_bids_to_deal(self, now):
         bids = {}
         for ilk_id in self.ilks:
-            bids[ilk_id] = list(self.flippers[ilk_id].bids.values())
+            bids[ilk_id] = list(
+                filter(
+                    lambda bid: bid.guy == self.ADDRESS
+                    and bid.tic <= now
+                    or bid.end <= now,
+                    self.flippers[ilk_id].bids.values(),
+                )
+            )
+        return bids
+
+    def deal_bid(self, bid_id, ilk_id, now):
+        return {
+            "key": "DEAL",
+            "keeper": self,
+            "handler": self.flippers[ilk_id].deal,
+            "args": [bid_id, now],
+            "kwargs": {},
+        }
+
+    def find_and_deal_bids(self, t, actions):
+        bids_to_deal = self.find_bids_to_deal(t)
+        for ilk_id in bids_to_deal:
+            for bid in bids_to_deal[ilk_id]:
+                action = self.deal_bid(bid.id, ilk_id, t)
+                if action:
+                    actions.append(action)
+
+
+class NaiveFlipperKeeper(FlipperKeeper):
+    def find_bids_to_place(self, now):
+        bids = {}
+        for ilk_id in self.ilks:
+            bids[ilk_id] = list(
+                filter(
+                    lambda bid: bid.guy != self.ADDRESS
+                    and (bid.tic > now or bid.tic == 0)
+                    and bid.end > now,
+                    self.flippers[ilk_id].bids.values(),
+                )
+            )
         return bids
 
     def run_bidding_model(self, bid, ilk_id):
-        if bid.guy == self.ADDRESS or not bid.lot:
+        curr_price = Wad(bid.bid) / bid.lot
+        if (
+            bid.guy == self.ADDRESS
+            or bid.lot == Wad(0)
+            or curr_price > Wad(self.vat.ilks[ilk_id].spot)
+        ):
             return {"price": Wad(0)}
 
         if bid.bid == Rad(0):
-            return {"price": Wad(bid.tab * Rad.from_number(0.05))}
+            return {"price": Wad.from_number(0.05) * Wad(bid.tab / Rad(bid.lot))}
 
-        return {"price": self.flippers[ilk_id].beg * Wad(bid.bid / Rad(bid.lot))}
+        return {
+            "price": curr_price
+            * (self.flippers[ilk_id].beg + Wad.from_number(random.uniform(0, 0.15)))
+        }
+
+
+class PatientFlipperKeeper(NaiveFlipperKeeper):
+    def __init__(self, vat, dai_join, ilks, other_keepers):
+        self.other_keepers = other_keepers
+        super().__init__(vat, dai_join, ilks)
+
+    def run_bidding_model(self, bid, ilk_id):
+        if bid.tic != 0:
+            return {"price": Wad(0)}
+        for keeper in self.other_keepers:
+            if self.vat.dai.get(keeper.ADDRESS, Rad(0)) >= bid.tab:
+                return {"price": Wad(0)}
+
+        return super().run_bidding_model(bid, ilk_id)
 
 
 class SpotterKeeper(Keeper):
@@ -207,11 +298,18 @@ class SpotterKeeper(Keeper):
         self.spotter = spotter
         super().__init__(ilks)
 
-    def execute_actions_for_timestep(self, t):
+    def generate_actions_for_timestep(self, t):
         actions = []
         for ilk_id in self.ilks:
-            self.spotter.poke(ilk_id, t)
-            actions.append({"key": "POKE", "meta": {"ilk_id": ilk_id}})
+            actions.append(
+                {
+                    "key": "POKE",
+                    "keeper": self,
+                    "handler": self.spotter.poke,
+                    "args": [ilk_id, t],
+                    "kwargs": {},
+                }
+            )
         return actions
 
 
@@ -226,17 +324,19 @@ class BiteKeeper(Keeper):
         self.vat = vat
         super().__init__(ilks)
 
-    def execute_actions_for_timestep(self, t):
+    def generate_actions_for_timestep(self, t):
         actions = []
         for ilk_id in self.ilks:
             ilk = self.vat.ilks[ilk_id]
             for urn in self.vat.urns[ilk_id].values():
                 if Rad(urn.ink * ilk.spot) < Rad(urn.art * ilk.rate):
-                    self.cat.bite(ilk_id, urn.ADDRESS, t)
                     actions.append(
                         {
                             "key": "BITE",
-                            "meta": {"urn_addr": urn.ADDRESS, "ilk_id": ilk_id},
+                            "keeper": self,
+                            "handler": self.cat.bite,
+                            "args": [ilk_id, urn.ADDRESS, t],
+                            "kwargs": {},
                         }
                     )
         return actions

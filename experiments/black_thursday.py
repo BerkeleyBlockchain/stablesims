@@ -5,7 +5,13 @@
 import random
 
 from experiments.experiment import Experiment
-from experiments.stats import ilk_price, num_new_bites, num_new_bids, keeper_balances
+from experiments.stats import (
+    ilk_price,
+    num_new_bites,
+    num_bids_placed,
+    num_active_bids,
+    keeper_gem_balances,
+)
 from pydss.cat import Cat
 from pydss.join import DaiJoin, GemJoin
 from pydss.spotter import Spotter, PipLike
@@ -14,7 +20,13 @@ from pydss.vat import Vat
 from pydss.vow import Vow
 from pydss.token import Token
 from pydss.pymaker.numeric import Wad, Rad, Ray
-from pydss.keeper import NaiveFlipperKeeper, SpotterKeeper, BiteKeeper
+from pydss.keeper import (
+    NaiveFlipperKeeper,
+    PatientFlipperKeeper,
+    SpotterKeeper,
+    BiteKeeper,
+    NaiveVaultKeeper,
+)
 
 
 contracts = {
@@ -29,17 +41,20 @@ contracts = {
     "Vow": Vow,
 }
 keepers = {
+    "NaiveVaultKeeper": NaiveVaultKeeper,
     "NaiveFlipperKeeper": NaiveFlipperKeeper,
+    "PatientFlipperKeeper": PatientFlipperKeeper,
     "SpotterKeeper": SpotterKeeper,
     "BiteKeeper": BiteKeeper,
 }
-sort_keepers = lambda _: random.random()
+sort_actions = lambda _: random.random()
 ilk_ids = ["ETH"]
 stat_trackers = [
     ilk_price("ETH"),
     num_new_bites(),
-    num_new_bids(),
-    keeper_balances(),
+    num_bids_placed(),
+    keeper_gem_balances(),
+    num_active_bids(),
 ]
 parameters = {
     "Cat": {
@@ -51,8 +66,8 @@ parameters = {
     },
     "Flipper": {"ETH": {"beg": Wad(1050000000000000000), "ttl": 18, "tau": 288,}},
     "Keepers": {
-        "NaiveFlipperKeeper": {
-            "amount": 1000,
+        "NaiveVaultKeeper": {
+            "amount": 500,
             "get_params": lambda state: [
                 state["vat"],
                 state["dai_join"],
@@ -60,12 +75,46 @@ parameters = {
                     {
                         "ilk_id": "ETH",
                         "token": state["ilks"]["ETH"],
-                        "init_balance": random.gauss(500, 215.517),
+                        "init_balance": random.gauss(10, 2.155),
+                        "gem_join": state["gem_joins"]["ETH"],
+                        "c_ratio": random.gauss(1.5, 0.216),
+                    }
+                ],
+            ],
+        },
+        "NaiveFlipperKeeper": {
+            "amount": 5,
+            "get_params": lambda state: [
+                state["vat"],
+                state["dai_join"],
+                [
+                    {
+                        "ilk_id": "ETH",
+                        "token": state["ilks"]["ETH"],
+                        "init_balance": random.gauss(250, 64.655),
                         "gem_join": state["gem_joins"]["ETH"],
                         "c_ratio": random.gauss(2, 0.216),
                         "flipper": state["flippers"]["ETH"],
                     }
                 ],
+            ],
+        },
+        "PatientFlipperKeeper": {
+            "amount": 1,
+            "get_params": lambda state: [
+                state["vat"],
+                state["dai_join"],
+                [
+                    {
+                        "ilk_id": "ETH",
+                        "token": state["ilks"]["ETH"],
+                        "init_balance": 500,
+                        "gem_join": state["gem_joins"]["ETH"],
+                        "c_ratio": random.gauss(2, 0.216),
+                        "flipper": state["flippers"]["ETH"],
+                    }
+                ],
+                state["keepers"]["NaiveFlipperKeeper"],
             ],
         },
         "SpotterKeeper": {
@@ -109,5 +158,5 @@ parameters = {
 }
 
 BlackThursday = Experiment(
-    contracts, keepers, sort_keepers, ilk_ids, Token, stat_trackers, parameters
+    contracts, keepers, sort_actions, ilk_ids, Token, stat_trackers, parameters
 )

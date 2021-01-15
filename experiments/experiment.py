@@ -3,6 +3,8 @@
     (contains simulation parameters, experiment name, etc.)
 """
 
+from pydss.util import RequireException
+
 
 class Experiment:
     """
@@ -17,7 +19,7 @@ class Experiment:
     Vow = Vow
 
     Keepers = dict[str: Keeper]
-    sort_keepers = function
+    sort_actions = function
 
     ilk_ids = list[str]
 
@@ -29,7 +31,7 @@ class Experiment:
         self,
         contracts,
         keepers,
-        sort_keepers,
+        sort_actions,
         ilk_ids,
         Token,
         stat_trackers,
@@ -38,7 +40,7 @@ class Experiment:
         """
         contracts: dict of smart contract classes, e.g. {"Cat": MyCustomCatClass}
         keepers: dict of keeper classes, e.g. {"MyCustomKeeper": MyCustomKeeperClass}
-        sort_keepers: sort key used to decide the order in which keepers act each timestep
+        sort_actions: sort key used to decide the order in which keepers act each timestep
         ilk_ids: list of ilks by their ticker symbol
         Token: token class
         stat_trackers: list of methods that measure stats over the course of the experiment,
@@ -57,7 +59,7 @@ class Experiment:
         self.Vow = contracts["Vow"]
 
         self.Keepers = keepers
-        self.sort_keepers = sort_keepers
+        self.sort_actions = sort_actions
         self.ilk_ids = ilk_ids
         self.Token = Token
         self.stat_trackers = stat_trackers
@@ -131,7 +133,7 @@ class Experiment:
         }
 
         # Initialize keepers
-        keepers = []
+        state["keepers"] = {keeper_name: [] for keeper_name in self.Keepers}
         for keeper_name in self.Keepers:
             Keeper = self.Keepers[keeper_name]
             amount = self.parameters["Keepers"][keeper_name]["amount"]
@@ -139,26 +141,28 @@ class Experiment:
                 keeper_params = self.parameters["Keepers"][keeper_name]["get_params"](
                     state
                 )
-                keepers.append(Keeper(*keeper_params))
-
-        # Add keepers into state
-        state["keepers"] = keepers
+                state["keepers"][keeper_name].append(Keeper(*keeper_params))
 
         # Run simulation
         for t in range(self.parameters["timesteps"]):
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_START"})
 
-            # Execute keeper actions in the specified order
-            for keeper in sorted(keepers, key=self.sort_keepers):
-                actions = keeper.execute_actions_for_timestep(t)
-                for action in actions:
-                    for track_stat in self.stat_trackers:
-                        track_stat(state, action)
+            actions_t = []
+            for keeper_name in state["keepers"]:
+                for keeper in state["keepers"][keeper_name]:
+                    actions_t.extend(keeper.generate_actions_for_timestep(t))
+
+            for action in sorted(actions_t, key=self.sort_actions):
+                try:
+                    action["handler"](*action["args"], **action["kwargs"])
+                except RequireException:
+                    continue
+                for track_stat in self.stat_trackers:
+                    track_stat(state, action)
 
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_END"})
 
-            print(state["stats"])
             # TODO: Stream back stats
             # For now: write to file

@@ -82,10 +82,10 @@ class Flipper:
         bid_id = self.kicks
 
         self.bids[bid_id] = Bid(
-            bid, lot, "cat", 0, now + self.tau, usr, gal, tab, bid_id
+            bid, lot, self.cat.ADDRESS, 0, now + self.tau, usr, gal, tab, bid_id
         )
 
-        self.vat.flux(self.ilk_id, "cat", "flipper_eth", lot)
+        self.vat.flux(self.ilk_id, self.cat.ADDRESS, self.ADDRESS, lot)
 
     def tend(self, bid_id, usr, lot, bid, now):
         """Places a tend bid on a Flipper auction."""
@@ -129,7 +129,7 @@ class Flipper:
         if usr != curr_bid.guy:
             self.vat.move(usr, curr_bid.guy, curr_bid.bid)
             curr_bid.guy = usr
-        self.vat.flux(self.ilk_id, "flipper_eth", curr_bid.usr, curr_bid.lot - lot)
+        self.vat.flux(self.ilk_id, self.ADDRESS, curr_bid.usr, curr_bid.lot - lot)
 
         curr_bid.lot = lot
         curr_bid.tic = now + self.ttl
@@ -140,10 +140,10 @@ class Flipper:
         curr_bid = self.bids[bid_id]
 
         require(
-            curr_bid.tic != 0 and (curr_bid["tic"] <= now or curr_bid.end <= now),
+            curr_bid.tic != 0 and (curr_bid.tic <= now or curr_bid.end <= now),
             "Flipper/not-finished",
         )
 
         self.cat.claw(curr_bid.tab)
-        self.vat.flux(self.ilk_id, "flipper_eth", curr_bid.guy, curr_bid.lot)
+        self.vat.flux(self.ilk_id, self.ADDRESS, curr_bid.guy, curr_bid.lot)
         del self.bids[bid_id]
