@@ -3,6 +3,8 @@
     (contains simulation parameters, experiment name, etc.)
 """
 
+from datetime import datetime
+
 
 class Experiment:
     Cat = None
@@ -145,3 +147,41 @@ class Experiment:
 
             # TODO: Stream back stats
             # For now: write to file
+            self.write(self.generate_name(), state)
+
+    def format_data(self, data):
+        # state = {
+        #     "cat": cat,
+        #     "dai": dai,
+        #     "dai_join": dai_join,
+        #     "flapper": flapper,
+        #     "flippers": flippers,
+        #     "flopper": flopper,
+        #     "gem_joins": gem_joins,
+        #     "ilks": ilks,
+        #     "keepers": keepers,
+        #     "spotter": spotter,
+        #     "stats": {},
+        #     "vat": vat,
+        #     "vow": vow,
+        # }
+        for key, value in data.items():
+            # serialize stats
+            if key == "stats":
+                pass
+            # default behavior: get id of contracts
+            else:
+                data[key] = value.ADDRESS
+        return data
+
+    def write(self, filename, data):
+        f = open(filename, "w")
+        formatted_data = self.format_data(data)
+        f.write("STABLESIMS EXPERIMENT\n")
+        f.write("Collected Data:\n")
+        f.write(formatted_data)
+        f.close()
+
+    def generate_name(self):
+        name = datetime.now().strftime("Experiment %d-%m-%Y at %H.%M.%S.txt")
+        return name
