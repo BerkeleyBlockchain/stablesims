@@ -4,6 +4,8 @@
 """
 
 from datetime import datetime
+import copy
+from pydss.pymaker.numeric import Wad, Rad, Ray
 
 
 class Experiment:
@@ -150,28 +152,13 @@ class Experiment:
             self.write(self.generate_name(), state)
 
     def format_data(self, data):
-        # state = {
-        #     "cat": cat,
-        #     "dai": dai,
-        #     "dai_join": dai_join,
-        #     "flapper": flapper,
-        #     "flippers": flippers,
-        #     "flopper": flopper,
-        #     "gem_joins": gem_joins,
-        #     "ilks": ilks,
-        #     "keepers": keepers,
-        #     "spotter": spotter,
-        #     "stats": {},
-        #     "vat": vat,
-        #     "vow": vow,
-        # }
+        data = copy.deepcopy(data)
         for key, value in data.items():
-            # serialize stats
-            if key == "stats":
-                pass
-            # default behavior: get id of contracts
-            else:
-                data[key] = value.ADDRESS
+            if isinstance(value, (Ray, Rad, Wad)):
+                data[key] = float(data[value])
+            elif isinstance(value, dict):
+                data[key] = self.format_data(value)
+
         return data
 
     def write(self, filename, data):
