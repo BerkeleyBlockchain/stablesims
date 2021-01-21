@@ -151,7 +151,8 @@ class Experiment:
             # For now: write to file
             self.write(self.generate_name(), state)
 
-    def format_data(self, data):
+    def format_data(self, state, full_state=True):
+        data = state if full_state else state["stats"]
         data = copy.deepcopy(data)
         for key, value in data.items():
             if isinstance(value, (Ray, Rad, Wad)):
