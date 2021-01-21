@@ -161,11 +161,10 @@ class Experiment:
         return data
 
     def write(self, filename, data, t):
-        f = open(filename, "a")
-        f.write("==================\n")
-        f.write("Timestep: {}".format(t))
-        f.write(self.format_data(data) + "\n")
-        f.close()
+        with open(filename, "a") as f:
+            f.write("==================\n")
+            f.write("Timestep: {}".format(t))
+            f.write(self.format_data(data) + "\n")
 
     def generate_name(self):
         name = datetime.now().strftime("Experiment %d-%m-%Y at %H.%M.%S.txt")
