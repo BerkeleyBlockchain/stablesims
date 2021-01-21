@@ -147,9 +147,7 @@ class Experiment:
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_END"})
 
-            # TODO: Stream back stats
-            # For now: write to file
-            self.write(self.generate_name(), state)
+            self.write(self.generate_name(), state, _t)
 
     def format_data(self, state, full_state=True):
         data = state if full_state else state["stats"]
@@ -162,12 +160,11 @@ class Experiment:
 
         return data
 
-    def write(self, filename, data):
-        f = open(filename, "w")
-        formatted_data = self.format_data(data)
-        f.write("STABLESIMS EXPERIMENT\n")
-        f.write("Collected Data:\n")
-        f.write(formatted_data)
+    def write(self, filename, data, t):
+        f = open(filename, "a")
+        f.write("==================\n")
+        f.write("Timestep: {}".format(t))
+        f.write(self.format_data(data) + "\n")
         f.close()
 
     def generate_name(self):
