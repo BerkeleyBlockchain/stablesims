@@ -17,9 +17,9 @@ def ilk_price(ilk_id):
     def track_stat(state, action):
         # TODO: Constantize the action keys somewhere
         if action["key"] == "POKE":
-            if not state["stats"]["ilk_price"]:
+            if not state["stats"].get("ilk_price"):
                 state["stats"]["ilk_price"] = {}
-            state["stats"]["ilk_price"][ilk_id] = state["vat"].ilks[ilk_id].spot
+            state["stats"]["ilk_price"][ilk_id] = float(state["vat"].ilks[ilk_id].spot)
 
     return track_stat
 
@@ -34,23 +34,34 @@ def num_new_bites():
     return track_stat
 
 
-def num_new_bids():
+def num_bids_placed():
     def track_stat(state, action):
         if action["key"] == "T_START":
-            state["stats"]["num_new_bids"] = 0
+            state["stats"]["num_bids_placed"] = 0
         elif action["key"] == "TEND" or action["key"] == "DENT":
-            state["stats"]["num_new_bids"] += 1
+            state["stats"]["num_bids_placed"] += 1
 
     return track_stat
 
 
-def keeper_balances():
+def num_active_bids():
+    def track_stat(state, _action):
+        state["stats"]["num_active_bids"] = {
+            ilk_id: len(state["flippers"][ilk_id].bids) for ilk_id in state["flippers"]
+        }
+
+    return track_stat
+
+
+def keeper_gem_balances():
     def track_stat(state, action):
         if action["key"] == "T_END":
+            if not state["stats"].get("keeper_balances"):
+                state["stats"]["keeper_balances"] = {}
             for keeper in state["keepers"]:
                 state["stats"]["keeper_balances"][keeper.ADDRESS] = {
-                    ilk_id: ilk_token.balanceOf(keeper.ADDRESS)
-                    for ilk_id, ilk_token in state["ilks"]
+                    ilk_id: state["vat"].gem[ilk_id][keeper.ADDRESS]
+                    for ilk_id in state["ilks"]
                 }
 
     return track_stat

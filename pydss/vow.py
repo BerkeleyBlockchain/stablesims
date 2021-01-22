@@ -7,27 +7,42 @@ from pydss.pymaker.numeric import Rad, Wad
 
 
 class Vow:
-    ADDRESS = "vow"
+    """
+    ADDRESS = str
 
-    vat = None
-    flapper = None
-    flopper = None
+    vat = Vat
+    flapper = Flapper
+    flopper = Flopper
 
-    sin = {}
-    Sin = Rad(0)
-    Ash = Rad(0)
+    sin = dict[int: Rad]
+    Sin = Rad
+    Ash = Rad
 
-    wait = 0
-    dump = Wad(0)
-    sump = Rad(0)
+    wait = int
+    dump = Wad
+    sump = Rad
 
-    bump = Rad(0)
-    hump = Rad(0)
+    bump = Rad
+    hump = Rad
+    """
 
     def __init__(self, vat, flapper, flopper):
+        self.ADDRESS = "vow"
+
         self.vat = vat
         self.flapper = flapper
         self.flopper = flopper
+
+        self.sin = {}
+        self.Sin = Rad(0)
+        self.Ash = Rad(0)
+
+        self.wait = 0
+        self.dump = Wad(0)
+        self.sump = Rad(0)
+
+        self.bump = Rad(0)
+        self.hump = Rad(0)
 
     def file(self, what, data):
         if what == "wait":
@@ -50,5 +65,7 @@ class Vow:
     def fess(self, tab, now):
         # TODO: Remove `now` parameter if/when another solution for providing time / other
         # contextual info is implemented
+        if not self.sin.get(now):
+            self.sin[now] = Rad(0)
         self.sin[now] += tab
         self.Sin += tab
