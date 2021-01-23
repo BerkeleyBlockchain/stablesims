@@ -18,7 +18,7 @@ Finally, to handle the protocol's fixed-point integer `Wad`, `Rad`, and `Ray` un
 
 ## Common Conventions
 
-The guiding principle in implementing these smart contract classes was to *replicate the Maker source code as closely as possible.* This even included variable naming conventions, with some slight adjustments.
+The guiding principle in implementing these smart contract classes was to **replicate the Maker source code as closely as possible.** This even included variable naming conventions, with some slight adjustments.
 
 ### `self.ADDRESS`
 
