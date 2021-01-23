@@ -77,7 +77,7 @@ parameters = {
                         "token": state["ilks"]["ETH"],
                         "init_balance": random.gauss(10, 2.155),
                         "gem_join": state["gem_joins"]["ETH"],
-                        "c_ratio": random.gauss(1.5, 0.216),
+                        "spot_padding": Wad.from_number(random.gauss(12 / 14, 0.216)),
                     }
                 ],
             ],
@@ -93,10 +93,11 @@ parameters = {
                         "token": state["ilks"]["ETH"],
                         "init_balance": random.gauss(250, 64.655),
                         "gem_join": state["gem_joins"]["ETH"],
-                        "c_ratio": random.gauss(2, 0.216),
+                        "spot_padding": Wad.from_number(random.gauss(3 / 4, 0.216)),
                         "flipper": state["flippers"]["ETH"],
                     }
                 ],
+                state["spotter"],
             ],
         },
         "PatientFlipperKeeper": {
@@ -110,10 +111,11 @@ parameters = {
                         "token": state["ilks"]["ETH"],
                         "init_balance": 500,
                         "gem_join": state["gem_joins"]["ETH"],
-                        "c_ratio": random.gauss(2, 0.216),
+                        "spot_padding": Wad.from_number(random.gauss(3 / 4, 0.216)),
                         "flipper": state["flippers"]["ETH"],
                     }
                 ],
+                state["spotter"],
                 state["keepers"]["NaiveFlipperKeeper"],
             ],
         },

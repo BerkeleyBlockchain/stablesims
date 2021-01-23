@@ -19,7 +19,9 @@ def ilk_price(ilk_id):
         if action["key"] == "POKE":
             if not state["stats"].get("ilk_price"):
                 state["stats"]["ilk_price"] = {}
-            state["stats"]["ilk_price"][ilk_id] = float(state["vat"].ilks[ilk_id].spot)
+            state["stats"]["ilk_price"][ilk_id] = float(
+                state["vat"].ilks[ilk_id].spot * state["spotter"].ilks[ilk_id].mat
+            )
 
     return track_stat
 
