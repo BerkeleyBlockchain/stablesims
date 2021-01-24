@@ -58,10 +58,11 @@ def keeper_gem_balances():
         if action["key"] == "T_END":
             if not state["stats"].get("keeper_balances"):
                 state["stats"]["keeper_balances"] = {}
-            for keeper in state["keepers"]:
-                state["stats"]["keeper_balances"][keeper.ADDRESS] = {
-                    ilk_id: state["vat"].gem[ilk_id][keeper.ADDRESS]
-                    for ilk_id in state["ilks"]
-                }
+            for keeper_name in state["keepers"]:
+                for keeper in state["keepers"][keeper_name]:
+                    state["stats"]["keeper_balances"][keeper.ADDRESS] = {
+                        ilk_id: state["vat"].gem[ilk_id].get(keeper.ADDRESS, 0)
+                        for ilk_id in state["ilks"]
+                    }
 
     return track_stat
