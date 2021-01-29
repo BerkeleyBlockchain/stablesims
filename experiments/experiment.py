@@ -158,7 +158,7 @@ class Experiment:
             elif isinstance(value, dict):
                 data[key] = self.format_data(value)
             elif hasattr(value, '__iter__'):
-                data[key] = list(map(lambda x: float(x), value))
+                data[key] = list(map(lambda x: self.format_data(x), value))
 
         return data
 
