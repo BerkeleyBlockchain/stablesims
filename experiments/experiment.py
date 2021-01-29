@@ -6,32 +6,34 @@
 from datetime import datetime
 import copy
 from pydss.pymaker.numeric import Wad, Rad, Ray
-
+from pydss.util import RequireException
 
 class Experiment:
-    Cat = None
-    DaiJoin = None
-    Flapper = None
-    Flippers = {}
-    Flopper = None
-    GemJoin = None
-    Spotter = None
-    Vat = None
-    Vow = None
+    """
+    Cat = Cat
+    DaiJoin = DaiJoin
+    Flapper = Flapper
+    Flippers = dict[str: Flipper]
+    Flopper = Flopper
+    GemJoin = GemJoin
+    Spotter = Spotter
+    Vat = Vat
+    Vow = Vow
 
-    Keepers = {}
-    sort_keepers = None
+    Keepers = dict[str: Keeper]
+    sort_actions = function
 
-    ilk_ids = []
+    ilk_ids = list[str]
 
-    stat_trackers = []
-    parameters = {}
+    stat_trackers = list[function]
+    parameters = dict
+    """
 
     def __init__(
         self,
         contracts,
         keepers,
-        sort_keepers,
+        sort_actions,
         ilk_ids,
         Token,
         stat_trackers,
@@ -40,18 +42,18 @@ class Experiment:
         """
         contracts: dict of smart contract classes, e.g. {"Cat": MyCustomCatClass}
         keepers: dict of keeper classes, e.g. {"MyCustomKeeper": MyCustomKeeperClass}
-        sort_keepers: sort key used to decide the order in which keepers act each timestep
+        sort_actions: sort key used to decide the order in which keepers act each timestep
         ilk_ids: list of ilks by their ticker symbol
         Token: token class
         stat_trackers: list of methods that measure stats over the course of the experiment,
         e.g.: [num_new_kicks]
         parameters: dict of parameters used to instantiate the contracts, keepers, and simulation,
-        e.g.: {"Spotter": {"par": 1}, "MyCustomKeeper": {"amount": 1000}, "timesteps": 144}
+        e.g.: {"Spotter": {...}, "MyCustomKeeper": {...}, "timesteps": ...}
         """
         self.Cat = contracts["Cat"]
         self.DaiJoin = contracts["DaiJoin"]
         self.Flapper = contracts["Flapper"]
-        self.Flippers = contracts["Flippers"]
+        self.Flipper = contracts["Flipper"]
         self.Flopper = contracts["Flopper"]
         self.GemJoin = contracts["GemJoin"]
         self.Spotter = contracts["Spotter"]
@@ -59,7 +61,7 @@ class Experiment:
         self.Vow = contracts["Vow"]
 
         self.Keepers = keepers
-        self.sort_keepers = sort_keepers
+        self.sort_actions = sort_actions
         self.ilk_ids = ilk_ids
         self.Token = Token
         self.stat_trackers = stat_trackers
@@ -68,18 +70,22 @@ class Experiment:
     def run(self):
         # Initialize assets
         dai = self.Token("DAI")
-        mkr = self.Token("MKR")
+        # mkr = self.Token("MKR")
         ilks = {ilk_id: self.Token(ilk_id) for ilk_id in self.ilk_ids}
 
         # Initialize smart contracts
         vat = self.Vat()
         vat.file("Line", self.parameters["Vat"]["Line"])
         for ilk_id in ilks:
+            vat.init(ilk_id)
             vat.file_ilk(ilk_id, "line", self.parameters["Vat"][ilk_id]["line"])
             vat.file_ilk(ilk_id, "dust", self.parameters["Vat"][ilk_id]["dust"])
 
         spotter = self.Spotter(vat)
         spotter.file("par", self.parameters["Spotter"]["par"])
+        for ilk_id in ilks:
+            spotter.file_ilk(ilk_id, "pip", self.parameters["Spotter"][ilk_id]["pip"])
+            spotter.file_ilk(ilk_id, "mat", self.parameters["Spotter"][ilk_id]["mat"])
 
         dai_join = self.DaiJoin(vat, dai)
         gem_joins = {
@@ -87,34 +93,30 @@ class Experiment:
             for ilk_id, ilk_token in ilks.items()
         }
 
-        flapper = self.Flapper(vat, mkr)
-        flopper = self.Flopper(vat, mkr)
+        # flapper = self.Flapper(vat, mkr)
+        # flopper = self.Flopper(vat, mkr)
+        flapper = None
+        flopper = None
 
         vow = self.Vow(vat, flapper, flopper)
         for what in ("wait", "dump", "sump", "bump", "hump"):
             vow.file(what, self.parameters["Vow"][what])
 
         cat = self.Cat(vat)
-        flippers = {ilk_id: self.Flippers[ilk_id](vat, cat, ilk_id) for ilk_id in ilks}
         cat.file("vow", vow)
         cat.file("box", self.parameters["Cat"]["box"])
+
+        flippers = {}
         for ilk_id in ilks:
+            flipper = self.Flipper(vat, cat, ilk_id,)
+            flipper.file("beg", self.parameters["Flipper"][ilk_id]["beg"])
+            flipper.file("ttl", self.parameters["Flipper"][ilk_id]["ttl"])
+            flipper.file("tau", self.parameters["Flipper"][ilk_id]["tau"])
+            flippers[ilk_id] = flipper
+
             cat.file_ilk(ilk_id, "chop", self.parameters["Cat"][ilk_id]["chop"])
             cat.file_ilk(ilk_id, "dunk", self.parameters["Cat"][ilk_id]["dunk"])
-            cat.file_ilk(ilk_id, "flip", flippers[ilk_id])
-
-        # Initialize keepers
-        keepers = []
-        for keeper_name in self.Keepers:
-            Keeper = self.Keepers[keeper_name]
-            amount = self.parameters["Keepers"][keeper_name]["amount"]
-            keeper_ilks = [
-                {"gem_join": gem_joins[ilk_id], "flipper": flippers[ilk_id]}
-                for ilk_id in ilks
-            ]
-            for _ in range(amount):
-                keeper = Keeper(vat, dai_join, keeper_ilks)
-                keepers.append(keeper)
+            cat.file_ilk(ilk_id, "flip", flipper)
 
         # Initialize state
         state = {
@@ -126,21 +128,38 @@ class Experiment:
             "flopper": flopper,
             "gem_joins": gem_joins,
             "ilks": ilks,
-            "keepers": keepers,
             "spotter": spotter,
             "stats": {},
             "vat": vat,
             "vow": vow,
         }
 
+        # Initialize keepers
+        state["keepers"] = {keeper_name: [] for keeper_name in self.Keepers}
+        for keeper_name in self.Keepers:
+            Keeper = self.Keepers[keeper_name]
+            amount = self.parameters["Keepers"][keeper_name]["amount"]
+            for _ in range(amount):
+                keeper_params = self.parameters["Keepers"][keeper_name]["get_params"](
+                    state
+                )
+                state["keepers"][keeper_name].append(Keeper(*keeper_params))
+
         # Run simulation
-        for _t in range(self.parameters["timesteps"]):
+        for t in range(self.parameters["timesteps"]):
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_START"})
 
-            # Execute keeper actions in the specified order
-            for keeper in sorted(keepers, self.sort_keepers):
-                action = keeper.execute_action_for_timestep()
+            actions_t = []
+            for keeper_name in state["keepers"]:
+                for keeper in state["keepers"][keeper_name]:
+                    actions_t.extend(keeper.generate_actions_for_timestep(t))
+
+            for action in sorted(actions_t, key=self.sort_actions):
+                try:
+                    action["handler"](*action["args"], **action["kwargs"])
+                except RequireException:
+                    continue
                 for track_stat in self.stat_trackers:
                     track_stat(state, action)
 
