@@ -157,7 +157,7 @@ class Experiment:
                 data[key] = float(data[value])
             elif isinstance(value, dict):
                 data[key] = self.format_data(value)
-            elif isinstance(value, (list, set)):
+            elif hasattr(value, '__iter__'):
                 data[key] = list(map(lambda x: float(x), value))
 
         return data
