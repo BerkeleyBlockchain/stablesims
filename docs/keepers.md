@@ -13,7 +13,7 @@ The base interface for all other keeper classes. `generate_actions_for_timestep`
 
 ### VaultKeeper
 
-Class representation of a keeper who opens vaults. `open_max_vaults` will open the maximum possible number of vaults for each ilk.
+Class representation of a keeper that owns vaults. `open_max_vaults` will open the maximum possible number of vaults for each ilk.
 
 ### NaiveVaultKeeper
 
@@ -21,12 +21,13 @@ The Naive Vault Keeper will open the maximum number of vaults possible at each t
 
 ### AuctionKeeper
 
-The base interface for auction keeper classes. 
+The base interface for auction keeper classes.
+Refer to [Maker's Auction Keeper Bot Setup Guide](https://docs.makerdao.com/keepers/auction-keepers/auction-keeper-bot-setup-guide) for documentation for the output format.
 `find_bids_to_place` will take `now` (current timestep as String TODO) as input and will output a dictionary with `ilk_ids` as keys and lists of bids as values.
 `run_bidding_model` will take `bid`, `ilk_id` as inputs and will output a dictionary with "price" as a key and the bid price as the value.
-`place_bid` will take `bid_id`, `price`,`ilk_id`, `now` as inputs and will output an `action` object.
-`find_bids_to_deal` will take `now` as input and will output
-`deal_bid` will take `bid_id`, `ilk_id`, `now` as inputs and will output
+`place_bid` will take `bid_id`, `price`,`ilk_id`, `now` as inputs and will output an `action` object based on whether the auction is in a `TEND` or `DENT` phase. This function will also verify that the bid is valid based on the checks that Maker makes (proposed bid is greater than latest bid, etc.)
+`find_bids_to_deal` will take `now` as input and will output a dictionary of valid bids to be dealt. It filters through the bids of a specific `ilk_id`, finding the bids that belong to the current keeper.
+`deal_bid` will take `bid_id`, `ilk_id`, `now` as inputs and will output an `action` that will deal the bid.
 
 ### FlipperKeeper
 
