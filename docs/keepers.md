@@ -23,17 +23,17 @@ The Naive Vault Keeper will open the maximum number of vaults possible at each t
 
 The base interface for auction keeper classes.
 Refer to [Maker's Auction Keeper Bot Setup Guide](https://docs.makerdao.com/keepers/auction-keepers/auction-keeper-bot-setup-guide) for documentation for the output format.
-`find_bids_to_place` will take `now` (current timestep as String TODO) as input and will output a dictionary with `ilk_ids` as keys and lists of bids as values.
-`run_bidding_model` will take `bid`, `ilk_id` as inputs and will output a dictionary with "price" as a key and the bid price as the value.
-`place_bid` will take `bid_id`, `price`,`ilk_id`, `now` as inputs and will output an `action` object based on whether the auction is in a `TEND` or `DENT` phase. This function will also verify that the bid is valid based on the checks that Maker makes (proposed bid is greater than latest bid, etc.)
-`find_bids_to_deal` will take `now` as input and will output a dictionary of valid bids to be dealt. It filters through the bids of a specific `ilk_id`, finding the bids that belong to the current keeper.
-`deal_bid` will take `bid_id`, `ilk_id`, `now` as inputs and will output an `action` that will deal the bid.
+- `find_bids_to_place` will take `now` (current timestep as String TODO) as input and will output a dictionary with `ilk_ids` as keys and lists of bids as values.
+- `run_bidding_model` will take `bid`, `ilk_id` as inputs and will output a dictionary with "price" as a key and the bid price as the value.
+- `place_bid` will take `bid_id`, `price`,`ilk_id`, `now` as inputs and will output an `action` object based on whether the auction is in a `TEND` or `DENT` phase. This function will also verify that the bid is valid based on the checks that Maker makes (proposed bid is greater than latest bid, etc.)
+- `find_bids_to_deal` will take `now` as input and will output a dictionary of valid bids to be dealt. It filters through the bids of a specific `ilk_id`, finding the bids that belong to the current keeper.
+- `deal_bid` will take `bid_id`, `ilk_id`, `now` as inputs and will output an `action` that will deal the bid.
 
 ### FlipperKeeper
 
 The base interface for all other Flipper Keeper classes. The Flipper Keeper will open the maximum number of vaults possible at each timestep. It will also find, deal, and place bids during both dent and tend phases.
-`find_and_deal_bids` will add additional deal actions to the `actions` array. 
-`deal_bids` converts bid information into an `action` object. Used to claim a winning bid.
+- `find_and_deal_bids` will add additional deal actions to the `actions` array. 
+- `deal_bids` converts bid information into an `action` object. Used to claim a winning bid.
 
 ### NaiveFlipperKeeper
 
