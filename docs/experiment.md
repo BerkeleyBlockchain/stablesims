@@ -26,5 +26,5 @@ The core function of the simulation.
 Initializes assets, smart contracts, state, and keepers.
 One timestep consists of the following:
 - send an `action` object to signal stat-tracking functions to begin tracking data.
-- iterates through
+- iterates through [TODO]
 - send an `action` object to signal stat-tracking functions to end tracking data.
