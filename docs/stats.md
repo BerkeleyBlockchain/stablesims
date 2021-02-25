@@ -1,12 +1,10 @@
 # Stats
 
 ## Overview
-<!-- TODO: move module definitions here? -->
 A set of methods used to calculate statistics over the course of an
 experiment.
 Each such method is a higher-order function returning a `track_stat` method
-that takes in an Experiment object, an action key, and the address of the
-Keeper that executed said action.
+that takes in a `state` object from an `Experiment`'s `run` method, and an `action` object.
 The higher-order function can take in whatever parameters it may need to
 provide to `track_stat`.
 Each `track_stat` function will be run after a Keeper executes in an action
@@ -15,6 +13,7 @@ in a timestep, so an intended design pattern is to guard your logic in
 in response to a specific action you were listening for.
 
 ## Common Conventions
+Each `track_stat` function is expected to record its statistic in the `state["stats"]` dict that is part of `experiment.py`. The key will be equivalent to the higher-order function's name (e.g. `num_bids_placed` is the name of the HOF, and also we save the result to `state["stats"]["num_bids_placed"]`.
 
 ## Functions
 ### ilk_price

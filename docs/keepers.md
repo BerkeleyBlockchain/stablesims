@@ -37,24 +37,23 @@ Refer to [Maker's Auction Keeper Bot Setup Guide](https://docs.makerdao.com/keep
 
 The base interface for all other `FlipperKeeper` classes. Inherits from `VaultKeeper`. It will also find, deal, and place bids during both dent and tend phases, and keeps track of a set of Flipper contracts for every Ilk type that it's interested in.
 - `find_and_deal_bids` will add additional deal actions to the `actions` array. 
-- `deal_bids` converts bid information into an `action` object. Used to claim a winning bid.
 
 ### NaiveFlipperKeeper
 > superclass: FlipperKeeper
 
-The Naive Flipper Keeper will start an auction with a bid value that is 5% of the tab/lot. Consecutive bids will increase by the beg + random noise.
+The Naive Flipper Keeper will start an auction with a bid value that is 5% of the tab/lot. Consecutive bids will increase by the beg + a small, random amount of padding.
 
 ### PatientFlipperKeeper
 > superclass: FlipperKeeper
 
-Runs the same bidding model as the Naive Flipper Keeper, however will only place bids when other keepers have 0 DAI balances.
+Runs the same bidding model as the Naive Flipper Keeper, however will only place bids when the auction has not started yet and there does not exist another keeper with enough DAI to cover the auction's `tab`.
 
 ### SpotterKeeper
 > superclass: Keeper
 
-Will update the `ilk_id` prices.
+Will update the `ilk_id` prices using the `poke` function that is part of the `spotter` smart contract.
 
 ### BiteKeeper
 > superclass: Keeper
 
-Will bite urns with liquidation ratios that are too low.
+Will bite urns with liquidation ratios that are too low using the `bite` function that is part of the `cat` smart contract.
