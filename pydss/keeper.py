@@ -40,12 +40,15 @@ class VaultKeeper(Keeper):
     urns = dict[int: str]
     num_urns = int
 
-    c_ratios = dict[str: float]
+    spot_paddings = dict[str: Wad]
     """
 
     def __init__(self, vat, dai_join, ilks):
         """ Here, each ilk object in `ilks` must also contain a "gem_join" field with a GemJoin
-            object, as well as a "c_ratio" field w/ the keeper's desired collateralization ratio.
+            object, as well as a "spot_padding" field w/ denoting what % of maximum debt
+            to open a vault with. This should be a Wad.
+            E.g. if minimum collateralization ratio (mat) is 1.5, a spot_padding of 3/4 will
+            result in a collateralization ratio of 1.5 / 3/4 = 2.
         """
 
         self.vat = vat
@@ -53,11 +56,11 @@ class VaultKeeper(Keeper):
         self.gem_joins = {}
         self.urns = {}
         self.num_urns = 0
-        self.c_ratios = {}
+        self.spot_paddings = {}
 
         for ilk in ilks:
             self.gem_joins[ilk["ilk_id"]] = ilk["gem_join"]
-            self.c_ratios[ilk["ilk_id"]] = ilk["c_ratio"]
+            self.spot_paddings[ilk["ilk_id"]] = ilk["spot_padding"]
 
         super().__init__(ilks)
 
@@ -90,7 +93,7 @@ class VaultKeeper(Keeper):
             vat_ilk = self.vat.ilks[ilk_id]
             if self.ilks[ilk_id].balanceOf(self.ADDRESS) > 0 and vat_ilk.spot > Ray(0):
                 dink = Wad.from_number(self.ilks[ilk_id].balanceOf(self.ADDRESS))
-                dart = Wad.from_number(1 / self.c_ratios[ilk_id]) * vat_ilk.spot * dink
+                dart = self.spot_paddings[ilk_id] * vat_ilk.spot * dink
                 if dart > Wad(vat_ilk.dust) and Rad(dart * vat_ilk.rate) <= Rad(
                     dink * vat_ilk.spot
                 ):
@@ -134,7 +137,7 @@ class FlipperKeeper(AuctionKeeper):
     flippers = dict[str: Flipper]
     """
 
-    def __init__(self, vat, dai_join, ilks):
+    def __init__(self, vat, dai_join, ilks, spotter):
         """ Here, each ilk object in `ilks` must also contain a "flipper" field with a Flipper
             object.
         """
@@ -142,6 +145,8 @@ class FlipperKeeper(AuctionKeeper):
         self.flippers = {}
         for ilk in ilks:
             self.flippers[ilk["ilk_id"]] = ilk["flipper"]
+
+        self.spotter = spotter
 
         super().__init__(vat, dai_join, ilks)
 
@@ -261,7 +266,8 @@ class NaiveFlipperKeeper(FlipperKeeper):
         if (
             bid.guy == self.ADDRESS
             or bid.lot == Wad(0)
-            or curr_price > Wad(self.vat.ilks[ilk_id].spot)
+            or curr_price
+            > Wad(self.vat.ilks[ilk_id].spot * self.spotter.ilks[ilk_id].mat)
         ):
             return {"price": Wad(0)}
 
@@ -275,9 +281,9 @@ class NaiveFlipperKeeper(FlipperKeeper):
 
 
 class PatientFlipperKeeper(NaiveFlipperKeeper):
-    def __init__(self, vat, dai_join, ilks, other_keepers):
+    def __init__(self, vat, dai_join, ilks, spotter, other_keepers):
         self.other_keepers = other_keepers
-        super().__init__(vat, dai_join, ilks)
+        super().__init__(vat, dai_join, ilks, spotter)
 
     def run_bidding_model(self, bid, ilk_id):
         if bid.tic != 0:
