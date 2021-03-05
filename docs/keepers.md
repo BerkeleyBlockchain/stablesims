@@ -36,7 +36,7 @@ Refer to [Maker's Auction Keeper Bot Setup Guide](https://docs.makerdao.com/keep
 > superclass: FlipperKeeper
 
 The base interface for all other `FlipperKeeper` classes. Inherits from `VaultKeeper`. It will also find, deal, and place bids during both dent and tend phases, and keeps track of a set of Flipper contracts for every Ilk type that it's interested in.
-- `find_and_deal_bids` will add additional deal actions to the `actions` array. 
+- `find_and_deal_bids` uses `find_bids_to_deal` and `deal_bids` to append multiple action objects to the actions array.
 
 ### NaiveFlipperKeeper
 > superclass: FlipperKeeper
