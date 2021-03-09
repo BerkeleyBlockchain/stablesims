@@ -3,32 +3,36 @@
     (contains only what is necessary for the simulation)
 """
 
-from dai_cadcad.pymaker.numeric import Wad, Rad, Ray
-from dai_cadcad.util import require
+from pydss.pymaker.numeric import Wad, Rad, Ray
+from pydss.util import require
 
 
 class Ilk:
-    id = ""
-    Art = Wad(0)
-    rate = Ray(0)
-    spot = Ray(0)
-    line = Rad(0)
-    dust = Rad(0)
+    """
+    id = str
+    Art = Wad
+    rate = Ray
+    spot = Ray
+    line = Rad
+    dust = Rad
+    """
 
-    def __init__(self, ilk_id, Art, rate, spot, line, dust):
+    def __init__(self, ilk_id):
         self.id = ilk_id
-        self.Art = Art
-        self.rate = rate
-        self.spot = spot
-        self.line = line
-        self.dust = dust
+        self.Art = Wad(0)
+        self.rate = Ray(0)
+        self.spot = Ray(0)
+        self.line = Rad(0)
+        self.dust = Rad(0)
 
 
 class Urn:
-    ADDRESS = ""
+    """
+    ADDRESS = str
 
-    ink = Wad(0)
-    art = Wad(0)
+    ink = Wad
+    art = Wad
+    """
 
     def __init__(self, address, ink, art):
         self.ADDRESS = address
@@ -38,42 +42,46 @@ class Urn:
 
 
 class Vat:
-    ADDRESS = "vat"
+    """
+    ADDRESS = str
 
-    ilks = {}
-    urns = {}
-    gem = {}
-    dai = {}
-    sin = {}
+    ilks = dict[str: Ilk]
+    urns = dict[str: Urn]
+    gem = dict[str: Wad]
+    dai = dict[str: Rad]
+    sin = dict[str: Rad]
 
-    debt = Rad(0)
-    vice = Rad(0)
-    Line = Rad(0)
+    debt = Rad
+    vice = Rad
+    Line = Rad
+    """
 
-    def __init__(self, line, ilks):
-        """ `ilks` must be an array containing a configuration abject for each ilk type of the
-            following form:
-                {
-                    "ilk_id": str,
-                    "rate": Ray,
-                    "line": Rad,
-                    "dust": Rad
-                }
-        """
+    def __init__(self):
+        self.ADDRESS = "vat"
+        self.ilks = {}
+        self.urns = {}
+        self.gem = {}
+        self.dai = {}
+        self.sin = {}
 
-        self.Line = line
+        self.debt = Rad(0)
+        self.vice = Rad(0)
+        self.Line = Rad(0)
 
-        for ilk in ilks:
-            ilk_id = ilk["ilk_id"]
-            self.ilks[ilk_id] = Ilk(
-                ilk_id, Wad(0), ilk["rate"], Ray(0), ilk["line"], ilk["dust"],
-            )
-            self.urns[ilk_id] = {}
-            self.gem[ilk_id] = {}
+    def init(self, ilk_id):
+        """ This specifically is *not* the __init__ method. """
+        require(not self.ilks.get(ilk_id), "Vat/ilk-already-init")
+        self.ilks[ilk_id] = Ilk(ilk_id)
+        self.ilks[ilk_id].rate = Ray.from_number(1)
+        # This is not canon lol
+        self.urns[ilk_id] = {}
+        self.gem[ilk_id] = {}
 
     def file(self, what, data):
         if what == "Line":
             self.Line = data
+        else:
+            raise Exception("Vat/file-unrecognized-param")
 
     def file_ilk(self, ilk_id, what, data):
         if what == "spot":
@@ -82,6 +90,8 @@ class Vat:
             self.ilks[ilk_id].line = data
         elif what == "dust":
             self.ilks[ilk_id].dust = data
+        else:
+            raise Exception("Vat/file-unrecognized-param")
 
     def slip(self, ilk_id, usr, wad):
         usr_gem = self.gem[ilk_id].get(usr, Wad(0))
@@ -128,7 +138,7 @@ class Vat:
         self.dai[w] = w_dai
 
         self.urns[i][u] = urn
-        self.ilks[i] = i
+        self.ilks[i] = ilk
 
     def grab(self, i, u, v, w, dink, dart):
         urn = self.urns[i][u]
@@ -140,6 +150,10 @@ class Vat:
 
         dtab = Rad(ilk.rate * dart)
 
+        if not self.gem[i].get(v):
+            self.gem[i][v] = Wad(0)
         self.gem[i][v] -= dink
+        if not self.sin.get(w):
+            self.sin[w] = Rad(0)
         self.sin[w] -= dtab
         self.vice -= dtab
