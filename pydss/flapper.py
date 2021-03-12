@@ -6,6 +6,13 @@ interface VatLike {
 }
 """
 import time
+
+import require as require
+
+from pymaker.numeric import Wad
+from util import require
+
+
 class VatLike:
     def move(self, fro,to,amt):
         pass
@@ -33,16 +40,9 @@ class GemLike:
 */
 """
 class Flapper:
-    wards = dict()
-    #messageclass
-    message = 0;
 
-    def rely(self, usr,send):
-        if self.wards[send] != 1:
-            self.wards[usr] = 1
-    def deny(self, usr,send):
-        if self.wards[send] != 1:
-            self.wards[usr] = 0
+
+
 #bid info
     class Bid :
         bid = 0;
@@ -51,16 +51,7 @@ class Flapper:
         tic = 0
         end = 0
 
-    bids = dict()
-    ONE = 1.00E18;
-    beg = 1.05E18;
-    #3 hours bidduration[seconds]
-    ttl = 3*60*60;
-    #2 days total auction length  [seconds]
-    tau = 2 *24*60*60
-    kicks = 0;
-    live = 0
-    now = time.time()
+
 
     """"
     // --- Events ---
@@ -70,103 +61,82 @@ class Flapper:
       uint256 bid
     );
     """
-    vat = None;
-    gem = None
+
 
     def __init__(self, vat, gem,msg) :
+        self.wards = dict()
         self.message = msg
         self.wards[msg.sender] = 1;
         self.vat = VatLike(vat);
         self.gem = GemLike(gem);
         self.live = 1;
+        self.bids = dict()
+        self.ONE = Wad.from_number(1.00)
+        self.beg = Wad.from_number(1.05)
+        # 3 hours bidduration[seconds]
+        self.ttl = 3 * 60 * 60;
+        # 2 days total auction length  [seconds]
+        self.tau = 2 * 24 * 60 * 60
+        self.kicks = 0;
+        self.live = 0
+        self.vat = vat
+        self.gem =gem
 
-    def add(self, x, y):
-        z = x+y
-        if z > x:
-            return z
-        return -1
 
-    def mul(self, x, y):
-        z = x * y
-        if (y == 0 or (z // y == x)):
-            return z
-        return -1
     def kick(self, lot, bid) :
-        if (self.live != 1):
-            return "Flapper/not-live"
-        if (self.kicks < -1):
-            return "Flapper/overflow";
-        sid = id(self)
-        sid += self.kicks;
+        require(self.live == 1,"Flapper/not-live")
 
-        self.bids[sid].bid = bid;
-        self.bids[sid].lot = lot;
-        self.bids[sid].guy = self.message.sender;
-        self.bids[sid].end = self.add(self.now, self.tau);
+        require(self.kicks < -1,"Flapper/overflow")
+
+        self.kicks+=1
+        self.bid_id += self.kicks;
+
+        self.bids[bid].bid = bid;
+        self.bids[self.bid_id].lot = lot;
+        self.bids[self.bid_id].guy = self.message.sender;
+        self.bids[self.bid_id].end = self.now+self.tau
 
         self.vat.move(self.msg.sender, self.address(self), lot);
         # emit Kick(id, lot, bid);
-    """
-    // --- Admin ---
-    function file(bytes32 what, uint data) external note auth 
-        if (what == "beg") beg = data;
-        else if (what == "ttl") ttl = uint48(data);
-        else if (what == "tau") tau = uint48(data);
-        else revert("Flapper/file-unrecognized-param");
-    
-    """
+
+    def file(self,what, data):
+        if (what == "beg"):
+            self.beg = data;
+        elif (what == "ttl"):
+            self.ttl = data;
+        elif (what == "tau"):
+            self.tau = data;
+        else:
+            raise Exception("Flapper/file-unrecognized-param");
+    def deal(self,bid_id):
+        require(self.live == 1,"Flapper/not-live")
+        require(self.bids[bid_id].tic != 0 and (self.bids[bid_id].tic < self.now or self.bids[bid_id].end < self.now),"Flapper/not-finished")
+        self.vat.move(bid_id, self.bids[bid_id].guy, self.bids[bid_id].lot);
+        self.gem.burn(bid_id, self.bids[bid_id].bid);
+        del self.bids[bid_id];
+
+    def tick(self, bid_id):
+        require(self.bids[bid_id].end <= self.now, "Flapper/not-finished")
+        require(self.bids[bid_id].tic == 0, "Flapper/bid-already-placed")
+        self.bids[bid_id].lot = self.pad * self.bids[bid_id].lot
+
+    def tend(self, bid_id, lot, bid,sender_id):
+        require(self.live == 1,"Flapper/not-live")
+        require(self.bids[bid_id].guy != 0,"Flapper/guy-not-set")
+        require(self.bids[bid_id].tic > self.now or self.bids[bid_id].tic == 0,"Flapper/already-finished-tic")
+        require(self.bids[bid_id].end > self.now,"Flapper/already-finished-end")
+        require(lot == self.bids[bid_id].lot,"Flapper/lot-not-matching")
+        require(bid >  self.bids[bid_id].bid,"Flapper/bid-not-higher")
+        require(self.mul(bid, self.ONE) >= self.mul(self.beg, self.bids[bid_id].bid),"Flapper/insufficient-increase")
+
+        if (self.msg.sender != self.bids[bid_id].guy):
+            self.gem.move(self.message.sender, self.bids[bid_id].guy, self.bids[bid_id].bid);
+            self.bids[bid_id].guy = self.message.sender;
+        self.gem.move(self.msg.sender,sender_id, bid - self.bids[bid_id].bid);
+
+        self.bids[bid_id].bid = bid;
+        self.bids[bid_id].tic = self.add(self.now, self.ttl);
 
 
-    def tick(self, sid) :
-        if self.bids[sid].end > self.now:
-            return "Flapper/not-finished"
-        if self.bids[sid].tic != 0:
-            return "Flapper/bid-already-placed"
-        self.bids[sid].end = self.add(self.now, self.tau);
-    def tend(self, sid, lot, bid):
-        if self.live != 1:
-            return "Flapper/not-live"
-        if self.bids[sid].guy == 0:
-           return "Flapper/guy-not-set";
-        if not (self.bids[sid].tic > self.now or self.bids[sid].tic == 0):
-            return "Flapper/already-finished-tic"
-        if not (self.bids[sid].end > self.now):
-            return "Flapper/already-finished-end"
-
-        if not (lot == self.bids[sid].lot):
-            return "Flapper/lot-not-matching"
-        if not (bid >  self.bids[sid].bid):
-            return "Flapper/bid-not-higher";
-        if not (self.mul(bid, self.ONE) >= self.mul(self.beg, self.bids[sid].bid)):
-            return "Flapper/insufficient-increase"
-
-        if (self.msg.sender != self.bids[sid].guy):
-            self.gem.move(self.message.sender, self.bids[sid].guy, self.bids[sid].bid);
-            self.bids[sid].guy = self.message.sender;
-
-        self.gem.move(self.msg.sender, id(self.message.sender), bid - self.bids[sid].bid);
-
-        self.bids[sid].bid = bid;
-        self.bids[sid].tic = self.add(self.now, self.ttl);
-
-    def deal( self,sid):
-        if not(self.live == 1):
-            return "Flapper/not-live"
-        if not(self.bids[sid].tic != 0 and (self.bids[sid].tic < self.now or self.bids[sid].end < self.now)):
-            return "Flapper/not-finished"
-        self.vat.move(sid, self.bids[sid].guy, self.bids[sid].lot);
-        self.gem.burn(sid, self.bids[sid].bid);
-        del self.bids[sid];
 
 
-    def cage(self, rad):
-       self.live = 0;
-       #self.vat.move(address(this), self.message.sender, rad);
-
-    def yank(self, sid):
-        if not(self.live == 0):
-            return "Flapper/still-live"
-        if not (self.bids[sid].guy != 0):
-            return "Flapper/guy-not-set"
-        #self.gem.move(address(this), self.bids[sid].guy, self.bids[sid].bid;
-        del self.bids[sid];
