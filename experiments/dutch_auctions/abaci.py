@@ -3,11 +3,11 @@
     (contains only what is necessary for the simulation)
 """
 
-from pydss.pymaker.numeric import Wad, Rad
+from pydss.pymaker.numeric import Wad, Rad, Ray
 from pydss.util import require
 
 
-class Abaci:
+class Abacus:
     """
     """
 
@@ -25,14 +25,13 @@ class Abaci:
         pass
 
 
-class LinearDecrease(Abaci):
+class LinearDecrease(Abacus):
     """
     tau = int
     """
 
     def __init__(self):
         self.tau = 0
-        super().__init__()
 
     def file(self, what, data):
         if what == "tau":
@@ -43,27 +42,27 @@ class LinearDecrease(Abaci):
     def price(self, top, dur):
         if dur >= self.tau:
             return 0
-        return top * (self.tau - dur) / self.tau  # TODO: need to cast to Rad
+        return top * Ray.from_number((self.tau - dur) / self.tau)
 
 
-class StairstepExponentialDecrease(Abaci):
+class StairstepExponentialDecrease(Abacus):
     """
     step = int, seconds between price drop
-    cut = int, percentage to decrease
+    cut = Ray, percentage to decrease
     """
 
     def __init__(self):
         self.step = 0
-        self.cut = 0
-        super().__init__()
+        self.cut = Ray(0)
 
     def file(self, what, data):
         if what == "cut":
-            self.cut = data  # TODO: Maker uses require here?
+            require(data <= 10 ** 27, "StairstepExponentialDecrease/cut-gt-RAY")
+            self.cut = data
         elif what == "step":
             self.step = data
         else:
             raise Exception("StairstepExponentialDecrease/file-unrecognized-param")
 
     def price(self, top, dur):
-        return top * (self.cut ** (dur / self.step))
+        return top * (self.cut ** Ray.from_number(dur / self.step))
