@@ -25,7 +25,6 @@ interface GemLike {
     function mint(address,uint) external;
 }
 """
-import time
 
 from pymaker.numeric import Wad
 from util import require
@@ -56,9 +55,9 @@ class Flopper:
         end = 0
 
     def __init__(self, vat, gem, msg):
-        self.wards = dict()
-        self.message = msg
-        self.wards[msg.sender] = 1;
+
+        self.msg = msg
+
         self.vat = vat
         self.gem = gem
         self.bids = dict()
@@ -92,12 +91,12 @@ def kick(self, gal, lot, bid, now):
     require(self.kicks > -1, "Flapper/overflow")
 
     self.kicks += 1
-    self.bid_id += self.kicks;
+    bid_id += self.kicks;
 
-    self.bids[self.bid_id].bid = bid;
-    self.bids[self.bid_id].lot = lot;
-    self.bids[self.bid_id].guy = gal;
-    self.bids[self.bid_id].end = self.add(now, self.tau);
+    self.bids[bid_id].bid = bid;
+    self.bids[bid_id].lot = lot;
+    self.bids[bid_id].guy = gal;
+    self.bids[bid_id].end = now+self.tau;
 
 
 def tick(self, bid_id,now):
@@ -115,8 +114,8 @@ def dent(self, bid_id, lot, bid):
     require(bid == self.bids[bid_id].bid,"Flopper/not-matching-bid")
     require(self.lot < self.bids[bid_id].lot,"Flopper/lot-not-lower")
     require(self.beg* lot <= self.bids[bid_id].lot,"Flopper/insufficient-decrease")
-    if (self.message.sender != self.bids[bid_id].guy):
-        self.vat.move(self.bids.message.sender, self.bids[bid_id].guy, bid);
+    if (self.msg.sender != self.bids[bid_id].guy):
+        self.vat.move(self.bids.msg.sender, self.bids[bid_id].guy, bid);
         if (self.bids[bid_id].tic == 0):
             Ash = self.bids[bid_id].guy.Ash();
             self.bids[bid_id].guy.kiss(min(bid, Ash));

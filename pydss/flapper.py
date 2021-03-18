@@ -5,7 +5,7 @@ interface VatLike {
     function move(address,address,uint) external;
 }
 """
-import time
+
 
 import require as require
 
@@ -64,9 +64,9 @@ class Flapper:
 
 
     def __init__(self, vat, gem,msg) :
-        self.wards = dict()
-        self.message = msg
-        self.wards[msg.sender] = 1;
+
+        self.msg = msg
+
         self.vat = VatLike(vat);
         self.gem = GemLike(gem);
         self.live = 1;
@@ -89,12 +89,12 @@ class Flapper:
         require(self.kicks < -1,"Flapper/overflow")
 
         self.kicks+=1
-        self.bid_id += self.kicks;
+        bid_id = self.kicks;
 
-        self.bids[bid].bid = bid;
-        self.bids[self.bid_id].lot = lot;
-        self.bids[self.bid_id].guy = self.message.sender;
-        self.bids[self.bid_id].end = self.now+self.tau
+        self.bids[bid_id].bid = bid;
+        self.bids[bid_id].lot = lot;
+        self.bids[bid_id].guy = self.msg.sender;
+        self.bids[bid_id].end = self.now+self.tau
 
         self.vat.move(self.msg.sender, self.address(self), lot);
         # emit Kick(id, lot, bid);
@@ -130,8 +130,8 @@ class Flapper:
         require(self.mul(bid, self.ONE) >= self.mul(self.beg, self.bids[bid_id].bid),"Flapper/insufficient-increase")
 
         if (self.msg.sender != self.bids[bid_id].guy):
-            self.gem.move(self.message.sender, self.bids[bid_id].guy, self.bids[bid_id].bid);
-            self.bids[bid_id].guy = self.message.sender;
+            self.gem.move(self.msg.sender, self.bids[bid_id].guy, self.bids[bid_id].bid);
+            self.bids[bid_id].guy = self.msg.sender;
         self.gem.move(self.msg.sender,sender_id, bid - self.bids[bid_id].bid);
 
         self.bids[bid_id].bid = bid;
