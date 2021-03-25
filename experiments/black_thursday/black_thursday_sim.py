@@ -14,7 +14,7 @@ from experiments.stats import (
 )
 from pydss.cat import Cat
 from pydss.join import DaiJoin, GemJoin
-from pydss.spotter import Spotter, PipLike
+from pydss.spot import Spotter, PipLike
 from pydss.flip import Flipper
 from pydss.vat import Vat
 from pydss.vow import Vow

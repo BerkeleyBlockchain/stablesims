@@ -151,7 +151,7 @@ class Clipper:
 
     def status(self, tic, top, now):
         price = self.calc.price(top, now - tic)
-        done = now - tic > self.tail or Ray(price) * top < self.cusp
+        done = now - tic > self.tail or Ray(price) / top < self.cusp
         return (done, price)
 
     @lock

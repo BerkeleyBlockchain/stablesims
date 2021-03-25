@@ -1,67 +1,21 @@
-""" Experiment Module
-    Class-based representation of an experiment
-    (contains simulation parameters, experiment name, etc.)
+""" Extension of the experiment module using the Dutch Auction system.
 """
 
 from pydss.util import RequireException
+from experiments.experiment import Experiment
 
 
-class Experiment:
+class DutchAuctionExperiment(Experiment):
+    """ Experiment engine fit for the set of contracts in Maker's
+        liquidations 2.0 system.
     """
-    Cat = Cat
-    DaiJoin = DaiJoin
-    Flapper = Flapper
-    Flippers = dict[str: Flipper]
-    Flopper = Flopper
-    GemJoin = GemJoin
-    Spotter = Spotter
-    Vat = Vat
-    Vow = Vow
-
-    Keepers = dict[str: Keeper]
-    sort_actions = function
-
-    ilk_ids = list[str]
-
-    stat_trackers = list[function]
-    parameters = dict
-    """
-
-    def __init__(
-        self,
-        contracts,
-        keepers,
-        sort_actions,
-        ilk_ids,
-        Token,
-        stat_trackers,
-        parameters,
-    ):
-        """
-        contracts: dict of smart contract classes, e.g. {"Cat": MyCustomCatClass}
-        keepers: dict of keeper classes, e.g. {"MyCustomKeeper": MyCustomKeeperClass}
-        sort_actions: sort key used to decide the order in which keepers act each timestep
-        ilk_ids: list of ilks by their ticker symbol
-        Token: token class
-        stat_trackers: list of methods that measure stats over the course of the experiment,
-        e.g.: [num_new_kicks]
-        parameters: dict of parameters used to instantiate the contracts, keepers, and simulation,
-        e.g.: {"Spotter": {...}, "MyCustomKeeper": {...}, "timesteps": ...}
-        """
-        self.file_contracts(contracts)
-
-        self.Keepers = keepers
-        self.sort_actions = sort_actions
-        self.ilk_ids = ilk_ids
-        self.Token = Token
-        self.stat_trackers = stat_trackers
-        self.parameters = parameters
 
     def file_contracts(self, contracts):
-        self.Cat = contracts["Cat"]
+        self.Abacus = contracts["Abacus"]
+        self.Clipper = contracts["Clipper"]
         self.DaiJoin = contracts["DaiJoin"]
+        self.Dog = contracts["Dog"]
         self.Flapper = contracts["Flapper"]
-        self.Flipper = contracts["Flipper"]
         self.Flopper = contracts["Flopper"]
         self.GemJoin = contracts["GemJoin"]
         self.Spotter = contracts["Spotter"]
@@ -103,29 +57,34 @@ class Experiment:
         for what in ("wait", "dump", "sump", "bump", "hump"):
             vow.file(what, self.parameters["Vow"][what])
 
-        cat = self.Cat(vat)
-        cat.file("vow", vow)
-        cat.file("box", self.parameters["Cat"]["box"])
+        dog = self.Dog(vat)
+        dog.file("vow", vow)
+        dog.file("Hole", self.parameters["Dog"]["Hole"])
 
-        flippers = {}
+        calc = self.Abacus()
+        for what in self.parameters["Abacus"]:
+            calc.file(what, self.parameters["Abacus"][what])
+
+        clippers = {}
         for ilk_id in ilks:
-            flipper = self.Flipper(vat, cat, ilk_id,)
-            flipper.file("beg", self.parameters["Flipper"][ilk_id]["beg"])
-            flipper.file("ttl", self.parameters["Flipper"][ilk_id]["ttl"])
-            flipper.file("tau", self.parameters["Flipper"][ilk_id]["tau"])
-            flippers[ilk_id] = flipper
-
-            cat.file_ilk(ilk_id, "chop", self.parameters["Cat"][ilk_id]["chop"])
-            cat.file_ilk(ilk_id, "dunk", self.parameters["Cat"][ilk_id]["dunk"])
-            cat.file_ilk(ilk_id, "flip", flipper)
+            clipper = self.Clipper(vat, spotter, dog, ilk_id)
+            clipper.file("buf", self.parameters["Clipper"][ilk_id]["buf"])
+            clipper.file("tail", self.parameters["Clipper"][ilk_id]["tail"])
+            clipper.file("cusp", self.parameters["Clipper"][ilk_id]["cusp"])
+            clipper.file("chip", self.parameters["Clipper"][ilk_id]["chip"])
+            clipper.file("tip", self.parameters["Clipper"][ilk_id]["tip"])
+            clipper.file_address("vow", vow)
+            clipper.file_address("calc", calc)
+            clippers[ilk_id] = clipper
 
         # Initialize state
         state = {
-            "cat": cat,
+            "calc": calc,
+            "clippers": clippers,
             "dai": dai,
             "dai_join": dai_join,
+            "dog": dog,
             "flapper": flapper,
-            "flippers": flippers,
             "flopper": flopper,
             "gem_joins": gem_joins,
             "ilks": ilks,
