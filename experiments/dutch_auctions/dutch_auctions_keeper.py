@@ -3,23 +3,24 @@
     Dutch auction liquidation system.
 """
 
-from pydss.keeper import Keeper, VaultKeeper
-from pydss.pymaker.numeric import Rad
+from pydss.keeper import VaultKeeper
+from pydss.pymaker.numeric import Wad, Rad, Ray
 
 
-class BarkKeeper(Keeper):
+class BarkKeeper(VaultKeeper):
     """
     dog = Dog
     vat = Vat
     """
 
-    def __init__(self, ilks, dog, vat):
+    def __init__(self, ilks, dog, vat, dai_join):
         self.dog = dog
         self.vat = vat
-        super().__init__(ilks)
+        super().__init__(vat, dai_join, ilks)
 
     def generate_actions_for_timestep(self, t):
         actions = []
+        self.open_max_vaults(actions)
         for ilk_id in self.ilks:
             ilk = self.vat.ilks[ilk_id]
             for urn in self.vat.urns[ilk_id].values():
@@ -61,7 +62,7 @@ class ClipperKeeper(VaultKeeper):
         sales_to_take = self.find_sales_to_take(t)
         for ilk_id in sales_to_take:
             for sale in sales_to_take[ilk_id]:
-                stance = self.run_bidding_model(sale, ilk_id)
+                stance = self.run_bidding_model(sale, ilk_id, t)
                 if stance:
                     actions.append(
                         {
@@ -84,7 +85,7 @@ class ClipperKeeper(VaultKeeper):
     def find_sales_to_take(self, t):
         raise NotImplementedError
 
-    def run_bidding_model(self, sale, ilk_id):
+    def run_bidding_model(self, sale, ilk_id, t):
         raise NotImplementedError
 
 
@@ -92,8 +93,42 @@ class NaiveClipperKeeper(ClipperKeeper):
     """ Takes a sale when its price is below this keeper's desired discount.
     """
 
-    def find_sales_to_take(self, t):
-        pass
+    def __init__(self, vat, dai_join, ilks):
+        self.desired_discounts = {}
+        for ilk in ilks:
+            self.desired_discounts[ilk["ilk_id"]] = ilk["desired_discount"]
 
-    def run_bidding_model(self, sale, ilk_id):
-        pass
+        super().__init__(vat, dai_join, ilks)
+
+    def find_sales_to_take(self, t):
+        sales_to_take = []
+        for ilk_id in self.ilks:
+            clipper = self.clippers[ilk_id]
+            des_disc = self.desired_discounts[ilk_id]
+            for sale in clipper.sales.values():
+                done, price = clipper.status(sale.tic, sale.top, t)
+                pip = clipper.spotter.ilks[ilk_id].pip
+                val = pip.peek(t)
+                if not done and price <= Ray(val / Wad(clipper.spotter.par)) * des_disc:
+                    sales_to_take.append(sale)
+
+        return sales_to_take
+
+    def run_bidding_model(self, sale, ilk_id, t):
+        stance = {}
+
+        clipper = self.clippers[ilk_id]
+        pip = clipper.spotter.ilks[ilk_id].pip
+        val = pip.peek(t)
+        max_price = Ray(val / Wad(clipper.spotter.par)) * self.desired_discounts[ilk_id]
+        amt = (
+            max_price * sale.lot
+            if max_price * sale.lot <= self.vat.dai.get(self.ADDRESS, Rad(0))
+            else self.vat.dai.get(self.ADDRESS, Rad(0))
+        )
+        stance["max_price"] = max_price
+        stance["amt"] = amt
+        stance["who"] = ""
+        stance["data"] = []
+
+        return stance

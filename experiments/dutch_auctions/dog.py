@@ -3,7 +3,7 @@
     (contains only what is necessary for the simulation)
 """
 
-from pydss.pymaker.numeric import Wad, Rad
+from pydss.pymaker.numeric import Wad, Rad, Ray
 from pydss.util import require
 
 
@@ -68,29 +68,32 @@ class Dog:
         rate = self.vat.ilks[ilk_id].rate
         spot = self.vat.ilks[ilk_id].spot
         dust = self.vat.ilks[ilk_id].dust
-        require(spot > 0 and ink * spot < art * rate, "Dog/not-unsafe")
+        require(spot > Ray(0) and spot * ink < rate * art, "Dog/not-unsafe")
 
         room = min(self.Hole - self.Dirt, milk.hole - milk.dirt)
-        require(room > 0 and room >= dust, "Dog/liquidation-limit-hit")
+        require(room > Rad(0) and room >= dust, "Dog/liquidation-limit-hit")
 
         dart = min(art, Wad(room / Rad(rate)) / milk.chop)
 
-        if (art - dart) * rate < dust:
+        if Rad(rate * (art - dart)) < dust:
             # Q: What if art > room?
             # Resetting dart = art here can push past liq limit
             dart = art
 
         dink = ink * dart / art
 
-        require(dink > 0, "Dog/null-auction")
-        require(dart <= 2 ** 255 and dink <= 2 * 255, "Dog/overflow")
+        require(dink > Wad(0), "Dog/null-auction")
+        require(
+            dart <= Wad.from_number(2 ** 255) and dink <= Wad.from_number(2 * 255),
+            "Dog/overflow",
+        )
 
         self.vat.grab(
             ilk_id, urn_id, milk.clip, self.vow.ADDRESS, Wad(0) - dink, Wad(0) - dart
         )
 
-        due = dart * rate
-        self.vow.fess(due)
+        due = Rad(rate * dart)
+        self.vow.fess(due, now)
 
         tab = due * Rad(milk.chop)
         self.Dirt += tab

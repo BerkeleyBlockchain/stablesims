@@ -7,12 +7,17 @@ from experiments.dutch_auctions.dutch_auctions_experiment import DutchAuctionExp
 from experiments.dutch_auctions.abaci import LinearDecrease
 from experiments.dutch_auctions.clip import Clipper
 from experiments.dutch_auctions.dog import Dog
+from experiments.dutch_auctions.dutch_auctions_keeper import (
+    BarkKeeper,
+    NaiveClipperKeeper,
+)
 from pydss.join import DaiJoin, GemJoin
 from pydss.spot import Spotter, PipLike
 from pydss.vat import Vat
 from pydss.vow import Vow
 from pydss.token import Token
 from pydss.pymaker.numeric import Wad, Rad, Ray
+from pydss.keeper import NaiveVaultKeeper, SpotterKeeper
 
 
 contracts = {
@@ -27,7 +32,12 @@ contracts = {
     "Vat": Vat,
     "Vow": Vow,
 }
-keepers = {}
+keepers = {
+    "NaiveVaultKeeper": NaiveVaultKeeper,
+    "NaiveClipperKeeper": NaiveClipperKeeper,
+    "BarkKeeper": BarkKeeper,
+    "SpotterKeeper": SpotterKeeper,
+}
 sort_actions = lambda _: random.random()
 ilk_ids = ["ETH"]
 stat_trackers = []
@@ -42,8 +52,73 @@ parameters = {
             "tip": Rad(0),
         }
     },
-    "Dog": {"Hole": Rad(15000000000000000000000000000000000000000000000000000)},
-    "Keepers": {},
+    "Dog": {
+        "Hole": Rad(15000000000000000000000000000000000000000000000000000),
+        "ETH": {
+            "chop": Wad.from_number(1.13),
+            "hole": Rad(15000000000000000000000000000000000000000000000000000),
+        },
+    },
+    "Keepers": {
+        "NaiveVaultKeeper": {
+            "amount": 500,
+            "get_params": lambda state: [
+                state["vat"],
+                state["dai_join"],
+                [
+                    {
+                        "ilk_id": "ETH",
+                        "token": state["ilks"]["ETH"],
+                        "init_balance": random.gauss(10, 2.155),
+                        "gem_join": state["gem_joins"]["ETH"],
+                        "c_ratio": random.gauss(1.5, 0.216),
+                    }
+                ],
+            ],
+        },
+        "NaiveClipperKeeper": {
+            "amount": 5,
+            "get_params": lambda state: [
+                state["vat"],
+                state["dai_join"],
+                [
+                    {
+                        "ilk_id": "ETH",
+                        "token": state["ilks"]["ETH"],
+                        "init_balance": random.gauss(250, 64.655),
+                        "gem_join": state["gem_joins"]["ETH"],
+                        "c_ratio": random.gauss(2, 0.216),
+                        "clipper": state["clippers"]["ETH"],
+                        "desired_discount": random.gauss(0.85, 0.061),
+                    }
+                ],
+            ],
+        },
+        "SpotterKeeper": {
+            "amount": 1,
+            "get_params": lambda state: [
+                [{"ilk_id": "ETH", "token": state["ilks"]["ETH"], "init_balance": 0}],
+                state["spotter"],
+            ],
+        },
+        "BarkKeeper": {
+            "amount": 1,
+            "get_params": lambda state: [
+                [
+                    {
+                        "ilk_id": "ETH",
+                        "token": state["ilks"]["ETH"],
+                        "init_balance": random.gauss(10, 2.155),
+                        "gem_join": state["gem_joins"]["ETH"],
+                        "c_ratio": random.gauss(1.5, 0.216),
+                    }
+                ],
+                state["dog"],
+                state["vat"],
+                state["dai_join"],
+            ],
+        },
+    },
     "Spotter": {
         "par": Ray(1000000000000000000000000000),
         "ETH": {

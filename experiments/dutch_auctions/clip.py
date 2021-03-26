@@ -133,7 +133,7 @@ class Clipper:
         sale_id = self.kicks
         self.active.append(sale_id)
 
-        pip = self.spotter.ilks[self.ilk_id]
+        pip = self.spotter.ilks[self.ilk_id].pip
         val = pip.peek(now)
 
         self.sales[sale_id] = Sale(
@@ -146,7 +146,7 @@ class Clipper:
             sale_id,
         )
 
-        if self.tip > 0 or self.chip > 0:
+        if self.tip > Rad(0) or self.chip > Wad(0):
             self.vat.suck(self.vow.ADDRESS, kpr, self.tip + tab * Rad(self.chip))
 
     def status(self, tic, top, now):

@@ -57,17 +57,21 @@ class DutchAuctionExperiment(Experiment):
         for what in ("wait", "dump", "sump", "bump", "hump"):
             vow.file(what, self.parameters["Vow"][what])
 
-        dog = self.Dog(vat)
-        dog.file("vow", vow)
-        dog.file("Hole", self.parameters["Dog"]["Hole"])
-
         calc = self.Abacus()
         for what in self.parameters["Abacus"]:
             calc.file(what, self.parameters["Abacus"][what])
 
+        dog = self.Dog(vat)
+        dog.file("vow", vow)
+        dog.file("Hole", self.parameters["Dog"]["Hole"])
+        for ilk_id in ilks:
+            dog.file_ilk(ilk_id, "chop", self.parameters["Dog"][ilk_id]["chop"])
+            dog.file_ilk(ilk_id, "hole", self.parameters["Dog"][ilk_id]["hole"])
+
         clippers = {}
         for ilk_id in ilks:
             clipper = self.Clipper(vat, spotter, dog, ilk_id)
+            dog.file_ilk(ilk_id, "clip", clipper)
             clipper.file("buf", self.parameters["Clipper"][ilk_id]["buf"])
             clipper.file("tail", self.parameters["Clipper"][ilk_id]["tail"])
             clipper.file("cusp", self.parameters["Clipper"][ilk_id]["cusp"])
