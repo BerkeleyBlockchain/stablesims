@@ -130,5 +130,7 @@ class DutchAuctionExperiment(Experiment):
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_END"})
 
+            print(state["stats"])
+
             # TODO: Stream back stats
             # For now: write to file

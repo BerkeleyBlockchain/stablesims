@@ -89,7 +89,12 @@ class Dog:
         )
 
         self.vat.grab(
-            ilk_id, urn_id, milk.clip, self.vow.ADDRESS, Wad(0) - dink, Wad(0) - dart
+            ilk_id,
+            urn_id,
+            milk.clip.ADDRESS,
+            self.vow.ADDRESS,
+            Wad(0) - dink,
+            Wad(0) - dart,
         )
 
         due = Rad(rate * dart)

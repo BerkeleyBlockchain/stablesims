@@ -183,10 +183,9 @@ class Clipper:
     @lock
     @is_stopped(2)
     def take(self, sale_id, amt, max_price, who, data, now, sender):
+        require(self.sales.get(sale_id), "Clipper/not-running-auction")
         usr = self.sales[sale_id].usr
         tic = self.sales[sale_id].tic
-
-        require(bool(usr), "Clipper/not-running-auction")
 
         (done, price) = self.status(tic, self.sales[sale_id].top, now)
         require(not done, "Clipper/needs-reset")
@@ -197,17 +196,17 @@ class Clipper:
         tab = self.sales[sale_id].tab
 
         lot_slice = min(lot, amt)
-        owe = lot_slice * price
+        owe = Rad(price * lot_slice)
 
         if owe > tab:
             owe = tab
-            lot_slice = owe / price
+            lot_slice = Wad(owe / Rad(price))
         elif owe < tab and lot_slice < lot:
             dust = self.vat.ilks[self.ilk_id].dust
             if tab - owe < dust:
                 require(tab > dust, "Clipper/no-partial-purchase")
                 owe = tab - dust
-                lot_slice = owe / price
+                lot_slice = Wad(owe / Rad(price))
 
         tab = tab - owe
         lot = lot - lot_slice
@@ -221,9 +220,9 @@ class Clipper:
 
         self.dog.digs(self.ilk_id, owe)
 
-        if lot == 0:
+        if lot == Wad(0):
             self._remove(sale_id)
-        elif tab == 0:
+        elif tab == Rad(0):
             self.vat.flux(self.ilk_id, self.ADDRESS, usr, lot)
             self._remove(sale_id)
         else:

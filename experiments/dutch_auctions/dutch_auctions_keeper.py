@@ -101,7 +101,7 @@ class NaiveClipperKeeper(ClipperKeeper):
         super().__init__(vat, dai_join, ilks)
 
     def find_sales_to_take(self, t):
-        sales_to_take = []
+        sales_to_take = {}
         for ilk_id in self.ilks:
             clipper = self.clippers[ilk_id]
             des_disc = self.desired_discounts[ilk_id]
@@ -110,7 +110,9 @@ class NaiveClipperKeeper(ClipperKeeper):
                 pip = clipper.spotter.ilks[ilk_id].pip
                 val = pip.peek(t)
                 if not done and price <= Ray(val / Wad(clipper.spotter.par)) * des_disc:
-                    sales_to_take.append(sale)
+                    if not sales_to_take.get(ilk_id):
+                        sales_to_take[ilk_id] = []
+                    sales_to_take[ilk_id].append(sale)
 
         return sales_to_take
 
@@ -122,9 +124,9 @@ class NaiveClipperKeeper(ClipperKeeper):
         val = pip.peek(t)
         max_price = Ray(val / Wad(clipper.spotter.par)) * self.desired_discounts[ilk_id]
         amt = (
-            max_price * sale.lot
-            if max_price * sale.lot <= self.vat.dai.get(self.ADDRESS, Rad(0))
-            else self.vat.dai.get(self.ADDRESS, Rad(0))
+            sale.lot * max_price
+            if Rad(sale.lot * max_price) <= self.vat.dai.get(self.ADDRESS, Rad(0))
+            else Wad(self.vat.dai.get(self.ADDRESS, Rad(0)))
         )
         stance["max_price"] = max_price
         stance["amt"] = amt

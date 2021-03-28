@@ -11,6 +11,10 @@ from experiments.dutch_auctions.dutch_auctions_keeper import (
     BarkKeeper,
     NaiveClipperKeeper,
 )
+from experiments.dutch_auctions.dutch_auctions_stats import (
+    num_new_barks,
+    num_sales_taken,
+)
 from pydss.join import DaiJoin, GemJoin
 from pydss.spot import Spotter, PipLike
 from pydss.vat import Vat
@@ -40,13 +44,13 @@ keepers = {
 }
 sort_actions = lambda _: random.random()
 ilk_ids = ["ETH"]
-stat_trackers = []
+stat_trackers = [num_new_barks(), num_sales_taken()]
 parameters = {
-    "Abacus": {"tau": 172800},
+    "Abacus": {"tau": 72},
     "Clipper": {
         "ETH": {
-            "buf": Ray.from_number(1.5),
-            "tail": 172800,
+            "buf": Ray.from_number(1.05),
+            "tail": 72,
             "cusp": Ray.from_number(0.5),
             "chip": Wad.from_number(0.08),
             "tip": Rad(0),
@@ -89,7 +93,7 @@ parameters = {
                         "gem_join": state["gem_joins"]["ETH"],
                         "c_ratio": random.gauss(2, 0.216),
                         "clipper": state["clippers"]["ETH"],
-                        "desired_discount": random.gauss(0.85, 0.061),
+                        "desired_discount": Ray.from_number(random.gauss(0.85, 0.061)),
                     }
                 ],
             ],
