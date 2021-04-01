@@ -65,7 +65,7 @@ class Flapper:
 
     def __init__(self, vat, gem,msg) :
 
-        self.msg = msg
+
 
         self.vat = VatLike(vat);
         self.gem = GemLike(gem);
@@ -83,7 +83,7 @@ class Flapper:
         self.gem =gem
 
 
-    def kick(self, lot, bid) :
+    def kick(self, lot, bid,now,sender) :
         require(self.live == 1,"Flapper/not-live")
 
         require(self.kicks < -1,"Flapper/overflow")
@@ -93,10 +93,10 @@ class Flapper:
 
         self.bids[bid_id].bid = bid;
         self.bids[bid_id].lot = lot;
-        self.bids[bid_id].guy = self.msg.sender;
-        self.bids[bid_id].end = self.now+self.tau
+        self.bids[bid_id].guy = sender;
+        self.bids[bid_id].end = now+self.tau
 
-        self.vat.move(self.msg.sender, self.address(self), lot);
+        self.vat.transferfrom(sender, self.ADDRESS, lot);
         # emit Kick(id, lot, bid);
 
     def file(self,what, data):
@@ -108,10 +108,10 @@ class Flapper:
             self.tau = data;
         else:
             raise Exception("Flapper/file-unrecognized-param");
-    def deal(self,bid_id):
+    def deal(self,bid_id,sender,bid):
         require(self.live == 1,"Flapper/not-live")
         require(self.bids[bid_id].tic != 0 and (self.bids[bid_id].tic < self.now or self.bids[bid_id].end < self.now),"Flapper/not-finished")
-        self.vat.move(bid_id, self.bids[bid_id].guy, self.bids[bid_id].lot);
+        self.gem.transferFrom(sender, self.ADDRESS, bid - self.bids[bid_id].bid)
         self.gem.burn(bid_id, self.bids[bid_id].bid);
         del self.bids[bid_id];
 
@@ -120,7 +120,7 @@ class Flapper:
         require(self.bids[bid_id].tic == 0, "Flapper/bid-already-placed")
         self.bids[bid_id].lot = self.pad * self.bids[bid_id].lot
 
-    def tend(self, bid_id, lot, bid,sender_id):
+    def tend(self, bid_id, lot, bid,sender):
         require(self.live == 1,"Flapper/not-live")
         require(self.bids[bid_id].guy != 0,"Flapper/guy-not-set")
         require(self.bids[bid_id].tic > self.now or self.bids[bid_id].tic == 0,"Flapper/already-finished-tic")
@@ -130,9 +130,9 @@ class Flapper:
         require(self.mul(bid, self.ONE) >= self.mul(self.beg, self.bids[bid_id].bid),"Flapper/insufficient-increase")
 
         if (self.msg.sender != self.bids[bid_id].guy):
-            self.gem.move(self.msg.sender, self.bids[bid_id].guy, self.bids[bid_id].bid);
+            self.gem.transferFrom(self.msg.sender, self.bids[bid_id].guy, self.bids[bid_id].bid);
             self.bids[bid_id].guy = self.msg.sender;
-        self.gem.move(self.msg.sender,sender_id, bid - self.bids[bid_id].bid);
+        self.gem.transferFrom(sender, self.ADDRESS, bid - self.bids[bid_id].bid)
 
         self.bids[bid_id].bid = bid;
         self.bids[bid_id].tic = self.add(self.now, self.ttl);

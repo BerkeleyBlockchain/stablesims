@@ -91,7 +91,7 @@ def kick(self, gal, lot, bid, now):
     require(self.kicks > -1, "Flapper/overflow")
 
     self.kicks += 1
-    bid_id += self.kicks;
+    bid_id = self.kicks;
 
     self.bids[bid_id].bid = bid;
     self.bids[bid_id].lot = lot;
@@ -106,7 +106,7 @@ def tick(self, bid_id,now):
     self.bids[bid_id].end = now+ self.tau;
 
 
-def dent(self, bid_id, lot, bid):
+def dent(self, bid_id, lot, bid, sender):
     require( (self.live == 1), "Flopper/not-live")
     require( (self.bids[bid_id].guy != 0),"Flopper/guy-not-set")
     require ( (self.bids[bid_id].tic > self.now or self.bids[id].tic == 0),"Flopper/already-finished-tic")
@@ -115,7 +115,7 @@ def dent(self, bid_id, lot, bid):
     require(self.lot < self.bids[bid_id].lot,"Flopper/lot-not-lower")
     require(self.beg* lot <= self.bids[bid_id].lot,"Flopper/insufficient-decrease")
     if (self.msg.sender != self.bids[bid_id].guy):
-        self.vat.move(self.bids.msg.sender, self.bids[bid_id].guy, bid);
+        self.vat.transferFrom(sender, self.bids[bid_id].guy, bid);
         if (self.bids[bid_id].tic == 0):
             Ash = self.bids[bid_id].guy.Ash();
             self.bids[bid_id].guy.kiss(min(bid, Ash));
@@ -126,10 +126,10 @@ def dent(self, bid_id, lot, bid):
     self.bids[bid_id].tic = int(self.now)+ self.ttl
 
 
-def deal(self, sid):
+def deal(self, sid,lot):
     require(self.live == 1,"Flapper/not-live")
     require(self.bids[sid].tic != 0 and (self.bids[sid].tic < self.now or self.bids[sid].end < self.now), "Flapper/not-finished")
-    self.vat.move(sid, self.bids[sid].guy, self.bids[sid].lot);
+    self.vat.transferFrom(sid, self.bids[sid].guy, lot);
     self.gem.mint(sid, self.bids[sid].bid)
     del self.bids[sid];
 
