@@ -100,22 +100,22 @@ def kick(self, gal, lot, bid, now):
 
 
 def tick(self, bid_id,now):
-    require(self.bids[bid_id].end <= self.now,"Flapper/not-finished")
+    require(self.bids[bid_id].end <= now,"Flapper/not-finished")
     require(self.bids[bid_id].tic == 0,"Flapper/bid-already-placed")
     self.bids[bid_id].lot = self.pad * self.bids[bid_id].lot
     self.bids[bid_id].end = now+ self.tau;
 
 
-def dent(self, bid_id, lot, bid, sender):
+def dent(self, bid_id, lot, bid, sender,now):
     require( (self.live == 1), "Flopper/not-live")
     require( (self.bids[bid_id].guy != 0),"Flopper/guy-not-set")
-    require ( (self.bids[bid_id].tic > self.now or self.bids[id].tic == 0),"Flopper/already-finished-tic")
-    require(self.bids[bid_id].end > self.now, "Flopper/already-finished-end")
+    require ( (self.bids[bid_id].tic > now or self.bids[id].tic == 0),"Flopper/already-finished-tic")
+    require(self.bids[bid_id].end > now, "Flopper/already-finished-end")
     require(bid == self.bids[bid_id].bid,"Flopper/not-matching-bid")
     require(self.lot < self.bids[bid_id].lot,"Flopper/lot-not-lower")
     require(self.beg* lot <= self.bids[bid_id].lot,"Flopper/insufficient-decrease")
     if (self.msg.sender != self.bids[bid_id].guy):
-        self.vat.transferFrom(sender, self.bids[bid_id].guy, bid);
+        self.vat.move(sender, self.bids[bid_id].guy, bid);
         if (self.bids[bid_id].tic == 0):
             Ash = self.bids[bid_id].guy.Ash();
             self.bids[bid_id].guy.kiss(min(bid, Ash));
@@ -123,14 +123,13 @@ def dent(self, bid_id, lot, bid, sender):
         self.bids[bid_id].guy = self.msg.sender;
 
     self.bids[bid_id].lot = lot;
-    self.bids[bid_id].tic = int(self.now)+ self.ttl
+    self.bids[bid_id].tic = int(now)+ self.ttl
 
 
-def deal(self, sid,lot):
+def deal(self, bid_id,now):
     require(self.live == 1,"Flapper/not-live")
-    require(self.bids[sid].tic != 0 and (self.bids[sid].tic < self.now or self.bids[sid].end < self.now), "Flapper/not-finished")
-    self.vat.transferFrom(sid, self.bids[sid].guy, lot);
-    self.gem.mint(sid, self.bids[sid].bid)
+    require(self.bids[sid].tic != 0 and (self.bids[sid].tic < now or self.bids[sid].end < now), "Flapper/not-finished")
+    self.gem.mint(bid_id, self.bids[sid].bid)
     del self.bids[sid];
 
 
