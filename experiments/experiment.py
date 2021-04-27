@@ -8,6 +8,7 @@ import copy
 from pydss.pymaker.numeric import Wad, Rad, Ray
 from pydss.util import RequireException
 
+
 class Experiment:
     """
     Cat = Cat
@@ -169,7 +170,9 @@ class Experiment:
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_END"})
 
-            self.write(self.generate_name(), state, _t)
+            self.write(
+                datetime.now().strftime("Experiment %d-%m-%Y at %H.%M.%S.txt"), state, t
+            )
 
     def format_data(self, state, full_state=True):
         data = state if full_state else state["stats"]
@@ -179,8 +182,8 @@ class Experiment:
                 data[key] = float(data[value])
             elif isinstance(value, dict):
                 data[key] = self.format_data(value)
-            elif hasattr(value, '__iter__'):
-                data[key] = list(map(lambda x: self.format_data(x), value))
+            elif hasattr(value, "__iter__"):
+                data[key] = list(map(self.format_data, value))
 
         return data
 
@@ -189,7 +192,3 @@ class Experiment:
             f.write("==================\n")
             f.write("Timestep: {}".format(t))
             f.write(self.format_data(data) + "\n")
-
-    def generate_name(self):
-        name = datetime.now().strftime("Experiment %d-%m-%Y at %H.%M.%S.txt")
-        return name

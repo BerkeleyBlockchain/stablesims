@@ -1,142 +1,97 @@
-""""
-//pragma solidity >=0.5.12;
-import "./lib.sol";
-interface VatLike {
-    function move(address,address,uint) external;
-}
+"""
+Class-based representation of the Flapper smart contract.
+Contains only what is necessary for the simulation.
 """
 
-
-import require as require
-
-from pymaker.numeric import Wad
-from util import require
+from pydss.pymaker.numeric import Wad
+from pydss.util import require
 
 
-class VatLike:
-    def move(self, fro,to,amt):
-        pass
-
-
-"""
-interface GemLike {
-    function move(address,address,uint) external;
-    function burn(address,uint) external;
-}
-"""
-class GemLike:
-    def move(self, fro,to,amt):
-        pass
-    def move(self, adr,amt):
-        pass
-"""
-/*
-   This thing lets you sell some dai in return for gems.
- - `lot` dai in return for bid
- - `bid` gems paid
- - `ttl` single bid lifetime
- - `beg` minimum bid increase
- - `end` max auction duration
-*/
-"""
 class Flapper:
 
-
-
-#bid info
-    class Bid :
-        bid = 0;
-        lot = 0 ;
-        guy = 0;
+    # bid info
+    class Bid:
+        bid = 0
+        lot = 0
+        guy = 0
         tic = 0
         end = 0
 
-
-
-    """"
-    // --- Events ---
-    event Kick(
-      uint256 id,
-      uint256 lot,
-      uint256 bid
-    );
-    """
-
-
-    def __init__(self, vat, gem,msg) :
-
-
-
-        self.vat = VatLike(vat);
-        self.gem = GemLike(gem);
-        self.live = 1;
+    def __init__(self, vat, gem):
+        self.ADDRESS = "flapper"
+        self.vat = vat
+        self.gem = gem
+        self.live = 1
         self.bids = dict()
-        self.ONE = Wad.from_number(1.00)
         self.beg = Wad.from_number(1.05)
-        # 3 hours bidduration[seconds]
-        self.ttl = 3 * 60 * 60;
-        # 2 days total auction length  [seconds]
+        self.ttl = 3 * 60 * 60
         self.tau = 2 * 24 * 60 * 60
-        self.kicks = 0;
+        self.kicks = 0
         self.live = 0
         self.vat = vat
-        self.gem =gem
+        self.gem = gem
 
+    def kick(self, lot, bid, now, sender):
+        require(self.live == 1, "Flapper/not-live")
 
-    def kick(self, lot, bid,now,sender) :
-        require(self.live == 1,"Flapper/not-live")
+        require(self.kicks < -1, "Flapper/overflow")
 
-        require(self.kicks < -1,"Flapper/overflow")
+        self.kicks += 1
+        bid_id = self.kicks
 
-        self.kicks+=1
-        bid_id = self.kicks;
+        self.bids[bid_id].bid = bid
+        self.bids[bid_id].lot = lot
+        self.bids[bid_id].guy = sender
+        self.bids[bid_id].end = now + self.tau
 
-        self.bids[bid_id].bid = bid;
-        self.bids[bid_id].lot = lot;
-        self.bids[bid_id].guy = sender;
-        self.bids[bid_id].end = now+self.tau
+        self.vat.move(sender, self.ADDRESS, lot)
 
-        self.vat.move(sender, self.ADDRESS, lot);
-        # emit Kick(id, lot, bid);
-
-    def file(self,what, data):
-        if (what == "beg"):
-            self.beg = data;
-        elif (what == "ttl"):
-            self.ttl = data;
-        elif (what == "tau"):
-            self.tau = data;
+    def file(self, what, data):
+        if what == "beg":
+            self.beg = data
+        elif what == "ttl":
+            self.ttl = data
+        elif what == "tau":
+            self.tau = data
         else:
-            raise Exception("Flapper/file-unrecognized-param");
-    def deal(self,bid_id,sender,bid,now):
-        require(self.live == 1,"Flapper/not-live")
-        require(self.bids[bid_id].tic != 0 and (self.bids[bid_id].tic < now or self.bids[bid_id].end < now),"Flapper/not-finished")
-        self.gem.transferFrom(sender, self.ADDRESS, bid - self.bids[bid_id].bid)
-        self.gem.burn(bid_id, self.bids[bid_id].bid);
-        del self.bids[bid_id];
+            raise Exception("Flapper/file-unrecognized-param")
 
-    def tick(self, bid_id,now):
+    def deal(self, bid_id, sender, bid, now):
+        require(self.live == 1, "Flapper/not-live")
+        require(
+            self.bids[bid_id].tic != 0
+            and (self.bids[bid_id].tic < now or self.bids[bid_id].end < now),
+            "Flapper/not-finished",
+        )
+        self.gem.transferFrom(sender, self.ADDRESS, bid - self.bids[bid_id].bid)
+        self.gem.burn(bid_id, self.bids[bid_id].bid)
+        del self.bids[bid_id]
+
+    def tick(self, bid_id, now):
         require(self.bids[bid_id].end <= now, "Flapper/not-finished")
         require(self.bids[bid_id].tic == 0, "Flapper/bid-already-placed")
-        self.bids[bid_id].lot = self.pad * self.bids[bid_id].lot
+        # @Nathan TODO: This is the incorrect tick function, from flop.sol
+        # Please transcribe the appropriate one from Maker's flap.sol
+        # self.bids[bid_id].lot = self.pad * self.bids[bid_id].lot
 
-    def tend(self, bid_id, lot, bid,sender,now):
-        require(self.live == 1,"Flapper/not-live")
-        require(self.bids[bid_id].guy != 0,"Flapper/guy-not-set")
-        require(self.bids[bid_id].tic > now or self.bids[bid_id].tic == 0,"Flapper/already-finished-tic")
-        require(self.bids[bid_id].end > now,"Flapper/already-finished-end")
-        require(lot == self.bids[bid_id].lot,"Flapper/lot-not-matching")
-        require(bid >  self.bids[bid_id].bid,"Flapper/bid-not-higher")
-        require(self.mul(bid, self.ONE) >= self.mul(self.beg, self.bids[bid_id].bid),"Flapper/insufficient-increase")
+    def tend(self, bid_id, lot, bid, sender, now):
+        require(self.live == 1, "Flapper/not-live")
+        require(self.bids[bid_id].guy != 0, "Flapper/guy-not-set")
+        require(
+            self.bids[bid_id].tic > now or self.bids[bid_id].tic == 0,
+            "Flapper/already-finished-tic",
+        )
+        require(self.bids[bid_id].end > now, "Flapper/already-finished-end")
+        require(lot == self.bids[bid_id].lot, "Flapper/lot-not-matching")
+        require(bid > self.bids[bid_id].bid, "Flapper/bid-not-higher")
+        require(
+            bid >= self.beg * self.bids[bid_id].bid, "Flapper/insufficient-increase",
+        )
 
-        if (self.msg.sender != self.bids[bid_id].guy):
-            self.gem.transferFrom(self.msg.sender, self.bids[bid_id].guy, self.bids[bid_id].bid);
-            self.bids[bid_id].guy = self.msg.sender;
+        if sender != self.bids[bid_id].guy:
+            self.gem.transferFrom(sender, self.bids[bid_id].guy, self.bids[bid_id].bid)
+            self.bids[bid_id].guy = sender
         self.gem.transferFrom(sender, self.ADDRESS, bid - self.bids[bid_id].bid)
 
-        self.bids[bid_id].bid = bid;
-        self.bids[bid_id].tic = self.add(now, self.ttl);
-
-
-
-
+        self.bids[bid_id].bid = bid
+        self.bids[bid_id].tic = now + self.ttl

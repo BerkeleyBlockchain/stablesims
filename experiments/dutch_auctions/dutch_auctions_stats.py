@@ -20,3 +20,31 @@ def num_sales_taken():
             state["stats"]["num_sales_taken"] += 1
 
     return track_stat
+
+
+def net_debt():
+    def track_stat(_state, _action):
+        pass
+
+    return track_stat
+
+
+def incentive_bid_ratio():
+    def track_stat(_state, _action):
+        pass
+
+    return track_stat
+
+
+def collateralization_ratio():
+    def track_stat(_state, _action):
+        pass
+
+    return track_stat
+
+
+def num_redos():
+    def track_stat(_state, _action):
+        pass
+
+    return track_stat

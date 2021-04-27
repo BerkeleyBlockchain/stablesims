@@ -3,16 +3,13 @@
     (contains only what is necessary for the simulation)
 """
 
-from pydss.pymaker.numeric import Wad, Rad, Ray
+from pydss.pymaker.numeric import Ray
 from pydss.util import require
 
 
 class Abacus:
+    """ Defines a price curve for a dutch auction.
     """
-    """
-
-    def __init__(self):
-        pass
 
     def file(self, what, data):
         pass
@@ -22,7 +19,6 @@ class Abacus:
         top: initial price
         dur: seconds since action has started
         """
-        pass
 
 
 class LinearDecrease(Abacus):
