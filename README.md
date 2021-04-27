@@ -4,6 +4,8 @@ StableSims is an open-source research project aimed at simulating potential defe
 
 This project is conducted through [Blockchain @ Berkeley](http://blockchain.berkeley.edu/), utilizes the [cadCAD](https://github.com/cadCAD-org/cadCAD) simulation library, and TAKES NO CREDIT FOR THE MAKER PROTOCOL LOGIC THAT WAS COPIED VERBATIM FROM THE [SOURCE CODE](https://github.com/makerdao/dss).
 
+Check out our [docs](./docs/) for more technical info!
+
 ## Simulating the Maker Protocol's "Black Thursday"
 
 ### Context: Black Thursday

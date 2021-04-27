@@ -3,8 +3,10 @@
     (contains simulation parameters, experiment name, etc.)
 """
 
+from datetime import datetime
+import copy
+from pydss.pymaker.numeric import Wad, Rad, Ray
 from pydss.util import RequireException
-
 
 class Experiment:
     """
@@ -167,5 +169,27 @@ class Experiment:
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_END"})
 
-            # TODO: Stream back stats
-            # For now: write to file
+            self.write(self.generate_name(), state, _t)
+
+    def format_data(self, state, full_state=True):
+        data = state if full_state else state["stats"]
+        data = copy.deepcopy(data)
+        for key, value in data.items():
+            if isinstance(value, (Ray, Rad, Wad)):
+                data[key] = float(data[value])
+            elif isinstance(value, dict):
+                data[key] = self.format_data(value)
+            elif hasattr(value, '__iter__'):
+                data[key] = list(map(lambda x: self.format_data(x), value))
+
+        return data
+
+    def write(self, filename, data, t):
+        with open(filename, "a") as f:
+            f.write("==================\n")
+            f.write("Timestep: {}".format(t))
+            f.write(self.format_data(data) + "\n")
+
+    def generate_name(self):
+        name = datetime.now().strftime("Experiment %d-%m-%Y at %H.%M.%S.txt")
+        return name
