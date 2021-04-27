@@ -1,69 +1,24 @@
-""" Experiment Module
-    Class-based representation of an experiment
-    (contains simulation parameters, experiment name, etc.)
+""" Extension of the experiment module using the Dutch Auction system.
 """
 
-from datetime import datetime
-import copy
-from pydss.pymaker.numeric import Wad, Rad, Ray
+from copy import deepcopy
+import matplotlib.pyplot as plt
+
 from pydss.util import RequireException
+from experiments.experiment import Experiment
 
-class Experiment:
+
+class DutchAuctionExperiment(Experiment):
+    """ Experiment engine fit for the set of contracts in Maker's
+        liquidations 2.0 system.
     """
-    Cat = Cat
-    DaiJoin = DaiJoin
-    Flapper = Flapper
-    Flippers = dict[str: Flipper]
-    Flopper = Flopper
-    GemJoin = GemJoin
-    Spotter = Spotter
-    Vat = Vat
-    Vow = Vow
-
-    Keepers = dict[str: Keeper]
-    sort_actions = function
-
-    ilk_ids = list[str]
-
-    stat_trackers = list[function]
-    parameters = dict
-    """
-
-    def __init__(
-        self,
-        contracts,
-        keepers,
-        sort_actions,
-        ilk_ids,
-        Token,
-        stat_trackers,
-        parameters,
-    ):
-        """
-        contracts: dict of smart contract classes, e.g. {"Cat": MyCustomCatClass}
-        keepers: dict of keeper classes, e.g. {"MyCustomKeeper": MyCustomKeeperClass}
-        sort_actions: sort key used to decide the order in which keepers act each timestep
-        ilk_ids: list of ilks by their ticker symbol
-        Token: token class
-        stat_trackers: list of methods that measure stats over the course of the experiment,
-        e.g.: [num_new_kicks]
-        parameters: dict of parameters used to instantiate the contracts, keepers, and simulation,
-        e.g.: {"Spotter": {...}, "MyCustomKeeper": {...}, "timesteps": ...}
-        """
-        self.file_contracts(contracts)
-
-        self.Keepers = keepers
-        self.sort_actions = sort_actions
-        self.ilk_ids = ilk_ids
-        self.Token = Token
-        self.stat_trackers = stat_trackers
-        self.parameters = parameters
 
     def file_contracts(self, contracts):
-        self.Cat = contracts["Cat"]
+        self.Abacus = contracts["Abacus"]
+        self.Clipper = contracts["Clipper"]
         self.DaiJoin = contracts["DaiJoin"]
+        self.Dog = contracts["Dog"]
         self.Flapper = contracts["Flapper"]
-        self.Flipper = contracts["Flipper"]
         self.Flopper = contracts["Flopper"]
         self.GemJoin = contracts["GemJoin"]
         self.Spotter = contracts["Spotter"]
@@ -105,29 +60,38 @@ class Experiment:
         for what in ("wait", "dump", "sump", "bump", "hump"):
             vow.file(what, self.parameters["Vow"][what])
 
-        cat = self.Cat(vat)
-        cat.file("vow", vow)
-        cat.file("box", self.parameters["Cat"]["box"])
+        calc = self.Abacus()
+        for what in self.parameters["Abacus"]:
+            calc.file(what, self.parameters["Abacus"][what])
 
-        flippers = {}
+        dog = self.Dog(vat)
+        dog.file("vow", vow)
+        dog.file("Hole", self.parameters["Dog"]["Hole"])
         for ilk_id in ilks:
-            flipper = self.Flipper(vat, cat, ilk_id,)
-            flipper.file("beg", self.parameters["Flipper"][ilk_id]["beg"])
-            flipper.file("ttl", self.parameters["Flipper"][ilk_id]["ttl"])
-            flipper.file("tau", self.parameters["Flipper"][ilk_id]["tau"])
-            flippers[ilk_id] = flipper
+            dog.file_ilk(ilk_id, "chop", self.parameters["Dog"][ilk_id]["chop"])
+            dog.file_ilk(ilk_id, "hole", self.parameters["Dog"][ilk_id]["hole"])
 
-            cat.file_ilk(ilk_id, "chop", self.parameters["Cat"][ilk_id]["chop"])
-            cat.file_ilk(ilk_id, "dunk", self.parameters["Cat"][ilk_id]["dunk"])
-            cat.file_ilk(ilk_id, "flip", flipper)
+        clippers = {}
+        for ilk_id in ilks:
+            clipper = self.Clipper(vat, spotter, dog, ilk_id)
+            dog.file_ilk(ilk_id, "clip", clipper)
+            clipper.file("buf", self.parameters["Clipper"][ilk_id]["buf"])
+            clipper.file("tail", self.parameters["Clipper"][ilk_id]["tail"])
+            clipper.file("cusp", self.parameters["Clipper"][ilk_id]["cusp"])
+            clipper.file("chip", self.parameters["Clipper"][ilk_id]["chip"])
+            clipper.file("tip", self.parameters["Clipper"][ilk_id]["tip"])
+            clipper.file_address("vow", vow)
+            clipper.file_address("calc", calc)
+            clippers[ilk_id] = clipper
 
         # Initialize state
         state = {
-            "cat": cat,
+            "calc": calc,
+            "clippers": clippers,
             "dai": dai,
             "dai_join": dai_join,
+            "dog": dog,
             "flapper": flapper,
-            "flippers": flippers,
             "flopper": flopper,
             "gem_joins": gem_joins,
             "ilks": ilks,
@@ -149,6 +113,7 @@ class Experiment:
                 state["keepers"][keeper_name].append(Keeper(*keeper_params))
 
         # Run simulation
+        historical_stats = []
         for t in range(self.parameters["timesteps"]):
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_START"})
@@ -169,27 +134,31 @@ class Experiment:
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_END"})
 
-            self.write(self.generate_name(), state, _t)
+            historical_stats.append(deepcopy(state["stats"]))
+            # big_daddy = max(
+            #     state["stats"]["keeper_balances"],
+            #     key=lambda kpr: float(state["stats"]["keeper_balances"][kpr]["ETH"]),
+            # )
 
-    def format_data(self, state, full_state=True):
-        data = state if full_state else state["stats"]
-        data = copy.deepcopy(data)
-        for key, value in data.items():
-            if isinstance(value, (Ray, Rad, Wad)):
-                data[key] = float(data[value])
-            elif isinstance(value, dict):
-                data[key] = self.format_data(value)
-            elif hasattr(value, '__iter__'):
-                data[key] = list(map(lambda x: self.format_data(x), value))
-
-        return data
-
-    def write(self, filename, data, t):
-        with open(filename, "a") as f:
-            f.write("==================\n")
-            f.write("Timestep: {}".format(t))
-            f.write(self.format_data(data) + "\n")
-
-    def generate_name(self):
-        name = datetime.now().strftime("Experiment %d-%m-%Y at %H.%M.%S.txt")
-        return name
+        print(
+            [
+                float(balance["ETH"])
+                for balance in historical_stats[-1]["keeper_balances"].values()
+            ]
+        )
+        _, axs = plt.subplots(4)
+        time_range = list(range(self.parameters["timesteps"]))
+        axs[0].plot(
+            time_range, [stats["ilk_price"]["ETH"] for stats in historical_stats]
+        )
+        axs[1].plot(time_range, [stats["num_new_barks"] for stats in historical_stats])
+        axs[2].plot(
+            time_range, [stats["num_sales_taken"] for stats in historical_stats]
+        )
+        axs[3].hist(
+            [
+                float(balance["ETH"])
+                for balance in historical_stats[-1]["keeper_balances"].values()
+            ]
+        )
+        plt.show()

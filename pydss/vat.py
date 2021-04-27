@@ -157,3 +157,9 @@ class Vat:
             self.sin[w] = Rad(0)
         self.sin[w] -= dtab
         self.vice -= dtab
+
+    def suck(self, u, v, rad):
+        self.sin[u] += rad
+        self.dai[v] += rad
+        self.vice += rad
+        self.debt += rad
