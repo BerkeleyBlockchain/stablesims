@@ -1,6 +1,9 @@
 """ Extension of the experiment module using the Dutch Auction system.
 """
 
+from copy import deepcopy
+import matplotlib.pyplot as plt
+
 from pydss.util import RequireException
 from experiments.experiment import Experiment
 
@@ -110,6 +113,7 @@ class DutchAuctionExperiment(Experiment):
                 state["keepers"][keeper_name].append(Keeper(*keeper_params))
 
         # Run simulation
+        historical_stats = []
         for t in range(self.parameters["timesteps"]):
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_START"})
@@ -130,7 +134,31 @@ class DutchAuctionExperiment(Experiment):
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_END"})
 
-            print(state["stats"])
+            historical_stats.append(deepcopy(state["stats"]))
+            # big_daddy = max(
+            #     state["stats"]["keeper_balances"],
+            #     key=lambda kpr: float(state["stats"]["keeper_balances"][kpr]["ETH"]),
+            # )
 
-            # TODO: Stream back stats
-            # For now: write to file
+        print(
+            [
+                float(balance["ETH"])
+                for balance in historical_stats[-1]["keeper_balances"].values()
+            ]
+        )
+        _, axs = plt.subplots(4)
+        time_range = list(range(self.parameters["timesteps"]))
+        axs[0].plot(
+            time_range, [stats["ilk_price"]["ETH"] for stats in historical_stats]
+        )
+        axs[1].plot(time_range, [stats["num_new_barks"] for stats in historical_stats])
+        axs[2].plot(
+            time_range, [stats["num_sales_taken"] for stats in historical_stats]
+        )
+        axs[3].hist(
+            [
+                float(balance["ETH"])
+                for balance in historical_stats[-1]["keeper_balances"].values()
+            ]
+        )
+        plt.show()

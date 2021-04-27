@@ -15,6 +15,7 @@ from experiments.dutch_auctions.dutch_auctions_stats import (
     num_new_barks,
     num_sales_taken,
 )
+from experiments.stats import ilk_price, keeper_gem_balances
 from pydss.join import DaiJoin, GemJoin
 from pydss.spot import Spotter, PipLike
 from pydss.vat import Vat
@@ -44,7 +45,12 @@ keepers = {
 }
 sort_actions = lambda _: random.random()
 ilk_ids = ["ETH"]
-stat_trackers = [num_new_barks(), num_sales_taken()]
+stat_trackers = [
+    num_new_barks(),
+    num_sales_taken(),
+    keeper_gem_balances(),
+    ilk_price("ETH"),
+]
 parameters = {
     "Abacus": {"tau": 72},
     "Clipper": {
@@ -65,7 +71,7 @@ parameters = {
     },
     "Keepers": {
         "NaiveVaultKeeper": {
-            "amount": 500,
+            "amount": 50,
             "get_params": lambda state: [
                 state["vat"],
                 state["dai_join"],
@@ -89,7 +95,7 @@ parameters = {
                     {
                         "ilk_id": "ETH",
                         "token": state["ilks"]["ETH"],
-                        "init_balance": random.gauss(250, 64.655),
+                        "init_balance": random.gauss(25, 6.466),
                         "gem_join": state["gem_joins"]["ETH"],
                         "c_ratio": random.gauss(2, 0.216),
                         "clipper": state["clippers"]["ETH"],
@@ -112,7 +118,7 @@ parameters = {
                     {
                         "ilk_id": "ETH",
                         "token": state["ilks"]["ETH"],
-                        "init_balance": random.gauss(10, 2.155),
+                        "init_balance": random.gauss(100, 2.155),
                         "gem_join": state["gem_joins"]["ETH"],
                         "c_ratio": random.gauss(1.5, 0.216),
                     }

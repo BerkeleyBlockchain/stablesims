@@ -123,14 +123,12 @@ class NaiveClipperKeeper(ClipperKeeper):
         pip = clipper.spotter.ilks[ilk_id].pip
         val = pip.peek(t)
         max_price = Ray(val / Wad(clipper.spotter.par)) * self.desired_discounts[ilk_id]
-        amt = (
-            sale.lot * max_price
-            if Rad(sale.lot * max_price) <= self.vat.dai.get(self.ADDRESS, Rad(0))
-            else Wad(self.vat.dai.get(self.ADDRESS, Rad(0)))
+        amt = Wad(
+            Rad.min(Rad(sale.lot * max_price), self.vat.dai.get(self.ADDRESS, Rad(0)))
         )
         stance["max_price"] = max_price
         stance["amt"] = amt
-        stance["who"] = ""
+        stance["who"] = self.ADDRESS
         stance["data"] = []
 
         return stance
