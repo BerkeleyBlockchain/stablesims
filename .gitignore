@@ -1,0 +1,6 @@
+*.pyc
+.ipynb_checkpoints/
+stablesims-venv/
+.vscode/
+*.profraw
+.DS_Store

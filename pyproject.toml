@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "bab-stablesims"
+version = "0.1.0"
+description = ""
+authors = ["Andrew Kirillov <kirillov.edu@gmail.com>", "Sehyun Chung <sehyun@berkeley.edu>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+cadcad = "^0.4.22"
+numpy = "^1.19.0"
+pandas = "^1.0.5"
+matplotlib = "^3.3.0"
+uuid = "^1.30"
+ipdb = "^0.13.4"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+pylint = "^2.5.3"
+black = "^19.10b0"
+autohooks = "^2.1.0"
+autohooks-plugin-pylint = "^1.2.0"
+autohooks-plugin-black = "^1.2.0"
+jedi = "^0.17.2"
+
+[tool.autohooks]
+mode = "poetry"
+pre-commit = ["autohooks.plugins.black", "autohooks.plugins.pylint"]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
