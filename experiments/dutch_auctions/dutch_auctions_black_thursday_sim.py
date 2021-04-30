@@ -10,6 +10,7 @@ from experiments.dutch_auctions.dog import Dog
 from experiments.dutch_auctions.dutch_auctions_keeper import (
     BarkKeeper,
     NaiveClipperKeeper,
+    RedoKeeper,
 )
 from experiments.dutch_auctions.dutch_auctions_stats import (
     num_new_barks,
@@ -40,6 +41,7 @@ contracts = {
 keepers = {
     "NaiveVaultKeeper": NaiveVaultKeeper,
     "NaiveClipperKeeper": NaiveClipperKeeper,
+    "RedoKeeper": RedoKeeper,
     "BarkKeeper": BarkKeeper,
     "SpotterKeeper": SpotterKeeper,
 }
@@ -81,7 +83,7 @@ parameters = {
                         "token": state["ilks"]["ETH"],
                         "init_balance": random.gauss(10, 2.155),
                         "gem_join": state["gem_joins"]["ETH"],
-                        "c_ratio": random.gauss(1.5, 0.216),
+                        "spot_padding": Wad.from_number(random.gauss(12 / 14, 0.216)),
                     }
                 ],
             ],
@@ -97,9 +99,26 @@ parameters = {
                         "token": state["ilks"]["ETH"],
                         "init_balance": random.gauss(25, 6.466),
                         "gem_join": state["gem_joins"]["ETH"],
-                        "c_ratio": random.gauss(2, 0.216),
+                        "spot_padding": Wad.from_number(random.gauss(12 / 14, 0.216)),
                         "clipper": state["clippers"]["ETH"],
                         "desired_discount": Ray.from_number(random.gauss(0.85, 0.061)),
+                    }
+                ],
+            ],
+        },
+        "RedoKeeper": {
+            "amount": 5,
+            "get_params": lambda state: [
+                state["vat"],
+                state["dai_join"],
+                [
+                    {
+                        "ilk_id": "ETH",
+                        "token": state["ilks"]["ETH"],
+                        "init_balance": random.gauss(25, 6.466),
+                        "gem_join": state["gem_joins"]["ETH"],
+                        "spot_padding": Wad.from_number(random.gauss(12 / 14, 0.216)),
+                        "clipper": state["clippers"]["ETH"],
                     }
                 ],
             ],
@@ -112,7 +131,7 @@ parameters = {
             ],
         },
         "BarkKeeper": {
-            "amount": 1,
+            "amount": 5,
             "get_params": lambda state: [
                 [
                     {
@@ -120,7 +139,7 @@ parameters = {
                         "token": state["ilks"]["ETH"],
                         "init_balance": random.gauss(100, 2.155),
                         "gem_join": state["gem_joins"]["ETH"],
-                        "c_ratio": random.gauss(1.5, 0.216),
+                        "spot_padding": Wad.from_number(random.gauss(12 / 14, 0.216)),
                     }
                 ],
                 state["dog"],
