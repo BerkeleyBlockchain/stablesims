@@ -22,6 +22,7 @@ from pydss.spot import Spotter, PipLike
 from pydss.vat import Vat
 from pydss.vow import Vow
 from pydss.token import Token
+from pydss.uniswap import Uniswap
 from pydss.pymaker.numeric import Wad, Rad, Ray
 from pydss.keeper import NaiveVaultKeeper, SpotterKeeper
 
@@ -37,6 +38,7 @@ contracts = {
     "Spotter": Spotter,
     "Vat": Vat,
     "Vow": Vow,
+    "Uniswap": Uniswap,
 }
 keepers = {
     "NaiveVaultKeeper": NaiveVaultKeeper,
@@ -46,17 +48,17 @@ keepers = {
     "SpotterKeeper": SpotterKeeper,
 }
 sort_actions = lambda _: random.random()
-ilk_ids = ["ETH"]
+ilk_ids = ["WETH"]
 stat_trackers = [
     num_new_barks(),
     num_sales_taken(),
     keeper_gem_balances(),
-    ilk_price("ETH"),
+    ilk_price("WETH"),
 ]
 parameters = {
     "Abacus": {"tau": 72},
     "Clipper": {
-        "ETH": {
+        "WETH": {
             "buf": Ray.from_number(1.05),
             "tail": 72,
             "cusp": Ray.from_number(0.5),
@@ -66,7 +68,7 @@ parameters = {
     },
     "Dog": {
         "Hole": Rad(15000000000000000000000000000000000000000000000000000),
-        "ETH": {
+        "WETH": {
             "chop": Wad.from_number(1.13),
             "hole": Rad(15000000000000000000000000000000000000000000000000000),
         },
@@ -79,13 +81,14 @@ parameters = {
                 state["dai_join"],
                 [
                     {
-                        "ilk_id": "ETH",
-                        "token": state["ilks"]["ETH"],
+                        "ilk_id": "WETH",
+                        "token": state["ilks"]["WETH"],
                         "init_balance": random.gauss(10, 2.155),
-                        "gem_join": state["gem_joins"]["ETH"],
+                        "gem_join": state["gem_joins"]["WETH"],
                         "spot_padding": Wad.from_number(random.gauss(12 / 14, 0.216)),
                     }
                 ],
+                state["uniswap"],
             ],
         },
         "NaiveClipperKeeper": {
@@ -95,15 +98,16 @@ parameters = {
                 state["dai_join"],
                 [
                     {
-                        "ilk_id": "ETH",
-                        "token": state["ilks"]["ETH"],
+                        "ilk_id": "WETH",
+                        "token": state["ilks"]["WETH"],
                         "init_balance": random.gauss(25, 6.466),
-                        "gem_join": state["gem_joins"]["ETH"],
+                        "gem_join": state["gem_joins"]["WETH"],
                         "spot_padding": Wad.from_number(random.gauss(12 / 14, 0.216)),
-                        "clipper": state["clippers"]["ETH"],
+                        "clipper": state["clippers"]["WETH"],
                         "desired_discount": Ray.from_number(random.gauss(0.85, 0.061)),
                     }
                 ],
+                state["uniswap"],
             ],
         },
         "RedoKeeper": {
@@ -113,20 +117,21 @@ parameters = {
                 state["dai_join"],
                 [
                     {
-                        "ilk_id": "ETH",
-                        "token": state["ilks"]["ETH"],
+                        "ilk_id": "WETH",
+                        "token": state["ilks"]["WETH"],
                         "init_balance": random.gauss(25, 6.466),
-                        "gem_join": state["gem_joins"]["ETH"],
+                        "gem_join": state["gem_joins"]["WETH"],
                         "spot_padding": Wad.from_number(random.gauss(12 / 14, 0.216)),
-                        "clipper": state["clippers"]["ETH"],
+                        "clipper": state["clippers"]["WETH"],
                     }
                 ],
+                state["uniswap"],
             ],
         },
         "SpotterKeeper": {
             "amount": 1,
             "get_params": lambda state: [
-                [{"ilk_id": "ETH", "token": state["ilks"]["ETH"], "init_balance": 0}],
+                [{"ilk_id": "WETH", "token": state["ilks"]["WETH"], "init_balance": 0}],
                 state["spotter"],
             ],
         },
@@ -135,22 +140,23 @@ parameters = {
             "get_params": lambda state: [
                 [
                     {
-                        "ilk_id": "ETH",
-                        "token": state["ilks"]["ETH"],
+                        "ilk_id": "WETH",
+                        "token": state["ilks"]["WETH"],
                         "init_balance": random.gauss(100, 2.155),
-                        "gem_join": state["gem_joins"]["ETH"],
+                        "gem_join": state["gem_joins"]["WETH"],
                         "spot_padding": Wad.from_number(random.gauss(12 / 14, 0.216)),
                     }
                 ],
                 state["dog"],
                 state["vat"],
                 state["dai_join"],
+                state["uniswap"],
             ],
         },
     },
     "Spotter": {
         "par": Ray(1000000000000000000000000000),
-        "ETH": {
+        "WETH": {
             "pip": PipLike("price_feeds/eth_black_thursday_10min.json"),
             "mat": Wad(1500000000000000000),
         },
@@ -158,7 +164,7 @@ parameters = {
     "timesteps": 144,
     "Vat": {
         "Line": Rad(1621230562029182607785180351895167282074137639278363742),
-        "ETH": {
+        "WETH": {
             "line": Rad(590000000000000000000000000000000000000000000000000000),
             "dust": Rad(500000000000000000000000000000000000000000000000),
         },
@@ -169,6 +175,15 @@ parameters = {
         "sump": Rad(50000000000000000000000000000000000000000000000000),
         "bump": Rad(10000000000000000000000000000000000000000000000000),
         "hump": Rad(4000000000000000000000000000000000000000000000000000),
+    },
+    "Uniswap": {
+        "pairs": {
+            "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11": {
+                "path": "",  # No liquidity data for Black Thursday
+                "token0": "DAI",
+                "token1": "WETH",
+            }
+        }
     },
 }
 

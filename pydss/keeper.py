@@ -36,6 +36,7 @@ class VaultKeeper(Keeper):
     vat = Vat
     dai_join = DaiJoin
     gem_joins = dict[str: GemJoin]
+    uniswap = Uniswap
 
     urns = dict[int: str]
     num_urns = int
@@ -43,7 +44,7 @@ class VaultKeeper(Keeper):
     spot_paddings = dict[str: Wad]
     """
 
-    def __init__(self, vat, dai_join, ilks):
+    def __init__(self, vat, dai_join, ilks, uniswap):
         """ Here, each ilk object in `ilks` must also contain a "gem_join" field with a GemJoin
             object, as well as a "spot_padding" field w/ denoting what % of maximum debt
             to open a vault with. This should be a Wad.
@@ -54,6 +55,7 @@ class VaultKeeper(Keeper):
         self.vat = vat
         self.dai_join = dai_join
         self.gem_joins = {}
+        self.uniswap = uniswap
         self.urns = {}
         self.num_urns = 0
         self.spot_paddings = {}
@@ -137,7 +139,7 @@ class FlipperKeeper(AuctionKeeper):
     flippers = dict[str: Flipper]
     """
 
-    def __init__(self, vat, dai_join, ilks, spotter):
+    def __init__(self, vat, dai_join, ilks, uniswap, spotter):
         """ Here, each ilk object in `ilks` must also contain a "flipper" field with a Flipper
             object.
         """
@@ -148,7 +150,7 @@ class FlipperKeeper(AuctionKeeper):
 
         self.spotter = spotter
 
-        super().__init__(vat, dai_join, ilks)
+        super().__init__(vat, dai_join, ilks, uniswap)
 
     def generate_actions_for_timestep(self, t):
         actions = []
@@ -281,9 +283,9 @@ class NaiveFlipperKeeper(FlipperKeeper):
 
 
 class PatientFlipperKeeper(NaiveFlipperKeeper):
-    def __init__(self, vat, dai_join, ilks, spotter, other_keepers):
+    def __init__(self, vat, dai_join, ilks, uniswap, spotter, other_keepers):
         self.other_keepers = other_keepers
-        super().__init__(vat, dai_join, ilks, spotter)
+        super().__init__(vat, dai_join, ilks, uniswap, spotter)
 
     def run_bidding_model(self, bid, ilk_id):
         if bid.tic != 0:

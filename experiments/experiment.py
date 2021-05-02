@@ -70,6 +70,7 @@ class Experiment:
         self.Spotter = contracts["Spotter"]
         self.Vat = contracts["Vat"]
         self.Vow = contracts["Vow"]
+        self.Uniswap = contracts["Uniswap"]
 
     def run(self):
         # Initialize assets
@@ -122,6 +123,8 @@ class Experiment:
             cat.file_ilk(ilk_id, "dunk", self.parameters["Cat"][ilk_id]["dunk"])
             cat.file_ilk(ilk_id, "flip", flipper)
 
+        uniswap = self.Uniswap(self.parameters["Uniswap"]["pairs"])
+
         # Initialize state
         state = {
             "cat": cat,
@@ -136,6 +139,7 @@ class Experiment:
             "stats": {},
             "vat": vat,
             "vow": vow,
+            "uniswap": uniswap,
         }
 
         # Initialize keepers
