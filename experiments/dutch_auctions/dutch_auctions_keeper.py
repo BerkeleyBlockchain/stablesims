@@ -40,6 +40,7 @@ class BarkKeeper(VaultKeeper):
 class ClipperKeeper(VaultKeeper):
     """
     clippers = {str: Clipper}
+    vat = Vat
     """
 
     def __init__(self, vat, dai_join, ilks):
@@ -51,6 +52,13 @@ class ClipperKeeper(VaultKeeper):
             self.clippers[ilk["ilk_id"]] = ilk["clipper"]
 
         super().__init__(vat, dai_join, ilks)
+
+
+class ClipperBidder(ClipperKeeper):
+    """
+    clippers = {str: Clipper}
+    vat = Vat
+    """
 
     def generate_actions_for_timestep(self, t):
         actions = []
@@ -89,7 +97,7 @@ class ClipperKeeper(VaultKeeper):
         raise NotImplementedError
 
 
-class NaiveClipperKeeper(ClipperKeeper):
+class NaiveClipperKeeper(ClipperBidder):
     """ Takes a sale when its price is below this keeper's desired discount.
     """
 
@@ -132,3 +140,30 @@ class NaiveClipperKeeper(ClipperKeeper):
         stance["data"] = []
 
         return stance
+
+
+class RedoKeeper(ClipperKeeper):
+    """
+    clippers = {str: Clipper}
+    vat = Vat
+    """
+
+    def generate_actions_for_timestep(self, t):
+        actions = []
+        self.open_max_vaults(actions)
+        for ilk_id in self.ilks:
+            clipper = self.clippers[ilk_id]
+            for sale in clipper.sales:
+                done, _ = clipper.status(sale.tic, sale.top, t)
+                if done:
+                    actions.append(
+                        {
+                            "key": "REDO",
+                            "keeper": self,
+                            "handler": self.clippers[ilk_id].redo,
+                            "args": [sale.id, self.ADDRESS, t],
+                            "kwargs": {},
+                        }
+                    )
+
+        return actions
