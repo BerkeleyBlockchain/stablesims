@@ -7,36 +7,6 @@ from pydss.keeper import VaultKeeper
 from pydss.pymaker.numeric import Wad, Rad, Ray
 
 
-class BarkKeeper(VaultKeeper):
-    """
-    dog = Dog
-    vat = Vat
-    """
-
-    def __init__(self, ilks, dog, vat, dai_join, uniswap):
-        self.dog = dog
-        self.vat = vat
-        super().__init__(vat, dai_join, ilks, uniswap)
-
-    def generate_actions_for_timestep(self, t):
-        actions = []
-        self.open_max_vaults(actions)
-        for ilk_id in self.ilks:
-            ilk = self.vat.ilks[ilk_id]
-            for urn in self.vat.urns[ilk_id].values():
-                if Rad(urn.ink * ilk.spot) < Rad(urn.art * ilk.rate):
-                    actions.append(
-                        {
-                            "key": "BARK",
-                            "keeper": self,
-                            "handler": self.dog.bark,
-                            "args": [ilk_id, urn.ADDRESS, self.ADDRESS, t],
-                            "kwargs": {},
-                        }
-                    )
-        return actions
-
-
 class ClipperKeeper(VaultKeeper):
     """
     clippers = {str: Clipper}
@@ -131,15 +101,56 @@ class NaiveClipperKeeper(ClipperBidder):
         pip = clipper.spotter.ilks[ilk_id].pip
         val = pip.peek(t)
         max_price = Ray(val / Wad(clipper.spotter.par)) * self.desired_discounts[ilk_id]
-        amt = Wad(
-            Rad.min(Rad(sale.lot * max_price), self.vat.dai.get(self.ADDRESS, Rad(0)))
-        )
+        dai = self.vat.dai.get(self.ADDRESS, Rad(0))
+        desired_amt_dai = Rad(sale.lot * max_price)
+        if desired_amt_dai <= dai:
+            amt = sale.lot
+        else:
+            amt = Wad(dai / Rad(max_price))
         stance["max_price"] = max_price
         stance["amt"] = amt
         stance["who"] = self.ADDRESS
         stance["data"] = []
 
         return stance
+
+
+class BarkKeeper(NaiveClipperKeeper):
+    """
+    dog = Dog
+    vat = Vat
+    """
+
+    def __init__(self, ilks, dog, vat, dai_join, uniswap):
+        self.dog = dog
+        super().__init__(vat, dai_join, ilks, uniswap)
+
+    def generate_actions_for_timestep(self, t):
+        actions = []
+        self.open_max_vaults(actions)
+        for ilk_id in self.ilks:
+            ilk = self.vat.ilks[ilk_id]
+            for urn in self.vat.urns[ilk_id].values():
+                # If unsafe and would be profitable
+                # would be profitable = liquidating as much as i can at my desired discount
+                #                       - slippage
+                is_unsafe = Rad(urn.ink * ilk.spot) < Rad(urn.art * ilk.rate)
+                # dai = self.vat.dai.get(self.ADDRESS, Rad(0))
+                # desired_slice = self.run_bidding_model({"lot": urn.ink}, ilk_id, t)[
+                #     "amt"
+                # ]
+                # is_profitable =
+                if is_unsafe:
+                    actions.append(
+                        {
+                            "key": "BARK",
+                            "keeper": self,
+                            "handler": self.dog.bark,
+                            "args": [ilk_id, urn.ADDRESS, self.ADDRESS, t],
+                            "kwargs": {},
+                        }
+                    )
+        return actions
 
 
 class RedoKeeper(ClipperKeeper):
