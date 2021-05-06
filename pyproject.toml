@@ -6,12 +6,12 @@ authors = ["Andrew Kirillov <kirillov.edu@gmail.com>", "Sehyun Chung <sehyun@ber
 
 [tool.poetry.dependencies]
 python = "^3.8"
-cadcad = "^0.4.22"
 numpy = "^1.19.0"
 pandas = "^1.0.5"
 matplotlib = "^3.3.0"
-uuid = "^1.30"
 ipdb = "^0.13.4"
+requests = "^2.25.1"
+uuid = "^1.30"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

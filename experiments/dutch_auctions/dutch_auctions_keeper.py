@@ -13,10 +13,10 @@ class BarkKeeper(VaultKeeper):
     vat = Vat
     """
 
-    def __init__(self, ilks, dog, vat, dai_join):
+    def __init__(self, ilks, dog, vat, dai_join, uniswap):
         self.dog = dog
         self.vat = vat
-        super().__init__(vat, dai_join, ilks)
+        super().__init__(vat, dai_join, ilks, uniswap)
 
     def generate_actions_for_timestep(self, t):
         actions = []
@@ -43,7 +43,7 @@ class ClipperKeeper(VaultKeeper):
     vat = Vat
     """
 
-    def __init__(self, vat, dai_join, ilks):
+    def __init__(self, vat, dai_join, ilks, uniswap):
         """ ilks = [{"ilk_id": ..., "clipper": ...}]
         """
 
@@ -51,7 +51,7 @@ class ClipperKeeper(VaultKeeper):
         for ilk in ilks:
             self.clippers[ilk["ilk_id"]] = ilk["clipper"]
 
-        super().__init__(vat, dai_join, ilks)
+        super().__init__(vat, dai_join, ilks, uniswap)
 
 
 class ClipperBidder(ClipperKeeper):
@@ -101,12 +101,12 @@ class NaiveClipperKeeper(ClipperBidder):
     """ Takes a sale when its price is below this keeper's desired discount.
     """
 
-    def __init__(self, vat, dai_join, ilks):
+    def __init__(self, vat, dai_join, ilks, uniswap):
         self.desired_discounts = {}
         for ilk in ilks:
             self.desired_discounts[ilk["ilk_id"]] = ilk["desired_discount"]
 
-        super().__init__(vat, dai_join, ilks)
+        super().__init__(vat, dai_join, ilks, uniswap)
 
     def find_sales_to_take(self, t):
         sales_to_take = {}
