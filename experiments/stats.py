@@ -14,7 +14,7 @@
 
 
 def ilk_price(ilk_id):
-    def track_stat(state, action):
+    def track_stat(state, action, _results):
         # TODO: Constantize the action keys somewhere
         if action["key"] == "POKE":
             if not state["stats"].get("ilk_price"):
@@ -27,7 +27,7 @@ def ilk_price(ilk_id):
 
 
 def num_new_bites():
-    def track_stat(state, action):
+    def track_stat(state, action, _results):
         if action["key"] == "T_START":
             state["stats"]["num_new_bites"] = 0
         elif action["key"] == "BITE":
@@ -37,7 +37,7 @@ def num_new_bites():
 
 
 def num_bids_placed():
-    def track_stat(state, action):
+    def track_stat(state, action, _results):
         if action["key"] == "T_START":
             state["stats"]["num_bids_placed"] = 0
         elif action["key"] == "TEND" or action["key"] == "DENT":
@@ -56,7 +56,7 @@ def num_active_bids():
 
 
 def keeper_gem_balances():
-    def track_stat(state, action):
+    def track_stat(state, action, _results):
         if action["key"] == "T_END":
             if not state["stats"].get("keeper_balances"):
                 state["stats"]["keeper_balances"] = {}

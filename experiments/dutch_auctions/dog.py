@@ -84,7 +84,7 @@ class Dog:
 
         require(dink > Wad(0), "Dog/null-auction")
         require(
-            dart <= Wad.from_number(2 ** 255) and dink <= Wad.from_number(2 * 255),
+            dart <= Wad.from_number(2 ** 255) and dink <= Wad.from_number(2 ** 255),
             "Dog/overflow",
         )
 
@@ -105,6 +105,7 @@ class Dog:
         self.ilks[ilk_id].dirt = milk.dirt + tab
 
         milk.clip.kick(tab, dink, urn_id, kpr, now)
+        return [tab]
 
     def digs(self, ilk_id, rad):
         self.Dirt -= rad

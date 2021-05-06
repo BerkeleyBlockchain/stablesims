@@ -8,7 +8,7 @@ from pydss.util import RequireException
 from experiments.experiment import Experiment
 
 
-class DutchAuctionExperiment(Experiment):
+class DutchAuctionsExperiment(Experiment):
     """ Experiment engine fit for the set of contracts in Maker's
         liquidations 2.0 system.
     """
@@ -26,6 +26,8 @@ class DutchAuctionExperiment(Experiment):
         self.Vow = contracts["Vow"]
 
     def run(self):
+        # import ipdb
+        # ipdb.set_trace(context=6)
         # Initialize assets
         dai = self.Token("DAI")
         # mkr = self.Token("MKR")
@@ -116,7 +118,7 @@ class DutchAuctionExperiment(Experiment):
         historical_stats = []
         for t in range(self.parameters["timesteps"]):
             for track_stat in self.stat_trackers:
-                track_stat(state, {"key": "T_START"})
+                track_stat(state, {"key": "T_START"}, [])
 
             actions_t = []
             for keeper_name in state["keepers"]:
@@ -125,28 +127,18 @@ class DutchAuctionExperiment(Experiment):
 
             for action in sorted(actions_t, key=self.sort_actions):
                 try:
-                    action["handler"](*action["args"], **action["kwargs"])
+                    results = action["handler"](*action["args"], **action["kwargs"])
                 except RequireException:
                     continue
                 for track_stat in self.stat_trackers:
-                    track_stat(state, action)
+                    track_stat(state, action, results or [])
 
             for track_stat in self.stat_trackers:
-                track_stat(state, {"key": "T_END"})
+                track_stat(state, {"key": "T_END"}, [])
 
             historical_stats.append(deepcopy(state["stats"]))
-            # big_daddy = max(
-            #     state["stats"]["keeper_balances"],
-            #     key=lambda kpr: float(state["stats"]["keeper_balances"][kpr]["ETH"]),
-            # )
 
-        print(
-            [
-                float(balance["ETH"])
-                for balance in historical_stats[-1]["keeper_balances"].values()
-            ]
-        )
-        _, axs = plt.subplots(4)
+        _, axs = plt.subplots(5)
         time_range = list(range(self.parameters["timesteps"]))
         axs[0].plot(
             time_range, [stats["ilk_price"]["ETH"] for stats in historical_stats]
@@ -155,10 +147,14 @@ class DutchAuctionExperiment(Experiment):
         axs[2].plot(
             time_range, [stats["num_sales_taken"] for stats in historical_stats]
         )
-        axs[3].hist(
-            [
-                float(balance["ETH"])
-                for balance in historical_stats[-1]["keeper_balances"].values()
-            ]
+        # axs[3].hist(
+        #     [
+        #         float(balance["ETH"])
+        #         for balance in historical_stats[-1]["keeper_balances"].values()
+        #     ]
+        # )
+        axs[3].plot(
+            time_range, [stats["incentive_amount"] for stats in historical_stats]
         )
+        axs[4].plot(time_range, [stats["auction_debt"] for stats in historical_stats])
         plt.show()

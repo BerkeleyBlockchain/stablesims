@@ -71,7 +71,7 @@ class ClipperBidder(ClipperKeeper):
         for ilk_id in sales_to_take:
             for sale in sales_to_take[ilk_id]:
                 stance = self.run_bidding_model(sale, ilk_id, t)
-                if stance:
+                if stance["amt"] > Wad(0):
                     actions.append(
                         {
                             "key": "TAKE",
@@ -153,7 +153,7 @@ class RedoKeeper(ClipperKeeper):
         self.open_max_vaults(actions)
         for ilk_id in self.ilks:
             clipper = self.clippers[ilk_id]
-            for sale in clipper.sales:
+            for sale in clipper.sales.values():
                 done, _ = clipper.status(sale.tic, sale.top, t)
                 if done:
                     actions.append(
@@ -163,6 +163,7 @@ class RedoKeeper(ClipperKeeper):
                             "handler": self.clippers[ilk_id].redo,
                             "args": [sale.id, self.ADDRESS, t],
                             "kwargs": {},
+                            "extra": {"ilk_id": ilk_id,},
                         }
                     )
 
