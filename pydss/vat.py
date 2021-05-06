@@ -160,6 +160,8 @@ class Vat:
 
     def suck(self, u, v, rad):
         self.sin[u] += rad
+        if not self.dai.get(v):
+            self.dai[v] = Rad(0)
         self.dai[v] += rad
         self.vice += rad
         self.debt += rad

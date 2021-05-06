@@ -105,7 +105,7 @@ class Dog:
         self.ilks[ilk_id].dirt = milk.dirt + tab
 
         milk.clip.kick(tab, dink, urn_id, kpr, now)
-        return tab
+        return [tab]
 
     def digs(self, ilk_id, rad):
         self.Dirt -= rad

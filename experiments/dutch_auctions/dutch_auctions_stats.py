@@ -27,7 +27,7 @@ def num_sales_taken():
 def incentive_amount():
     def track_stat(state, action, results):
         if action["key"] == "T_START":
-            state["stats"]["incentive_amount"] = 0
+            state["stats"]["incentive_amount"] = Rad(0)
         elif action["key"] == "BARK":
             ilk_id = action["args"][0]
             clip = state["clippers"][ilk_id]
@@ -41,5 +41,13 @@ def incentive_amount():
             sale = clip.sales[sale_id]
             incentive = clip.tip + sale.tab * Rad(clip.chip)
             state["stats"]["incentive_amount"] += incentive
+
+    return track_stat
+
+
+def auction_debt():
+    def track_stat(state, action, _results):
+        if action["key"] == "T_START":
+            state["stats"]["auction_debt"] = state["dog"].Dirt
 
     return track_stat

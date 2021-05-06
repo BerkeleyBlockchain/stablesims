@@ -175,9 +175,9 @@ class Clipper:
         price = Ray(val / Wad(self.spotter.par))
         self.sales[sale_id].top = price * self.buf
 
-        if self.tip > 0 or self.chip > 0:
+        if self.tip > Rad(0) or self.chip > Wad(0):
             dust = self.vat.ilks[self.ilk_id].dust
-            if tab >= dust and lot * price >= dust:
+            if tab >= dust and Rad(lot * price) >= dust:
                 self.vat.suck(self.vow.ADDRESS, kpr, self.tip + tab * Rad(self.chip))
 
     @lock

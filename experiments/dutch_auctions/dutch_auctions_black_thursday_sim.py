@@ -3,7 +3,7 @@
 
 import random
 
-from experiments.dutch_auctions.dutch_auctions_experiment import DutchAuctionExperiment
+from experiments.dutch_auctions.dutch_auctions_experiment import DutchAuctionsExperiment
 from experiments.dutch_auctions.abaci import LinearDecrease
 from experiments.dutch_auctions.clip import Clipper
 from experiments.dutch_auctions.dog import Dog
@@ -15,8 +15,13 @@ from experiments.dutch_auctions.dutch_auctions_keeper import (
 from experiments.dutch_auctions.dutch_auctions_stats import (
     num_new_barks,
     num_sales_taken,
+    incentive_amount,
+    auction_debt,
 )
-from experiments.stats import ilk_price, keeper_gem_balances
+from experiments.stats import (
+    ilk_price,
+    # keeper_gem_balances
+)
 from pydss.join import DaiJoin, GemJoin
 from pydss.spot import Spotter, PipLike
 from pydss.vat import Vat
@@ -50,8 +55,10 @@ ilk_ids = ["ETH"]
 stat_trackers = [
     num_new_barks(),
     num_sales_taken(),
-    keeper_gem_balances(),
+    # keeper_gem_balances(),
     ilk_price("ETH"),
+    incentive_amount(),
+    auction_debt(),
 ]
 parameters = {
     "Abacus": {"tau": 72},
@@ -115,7 +122,7 @@ parameters = {
                     {
                         "ilk_id": "ETH",
                         "token": state["ilks"]["ETH"],
-                        "init_balance": random.gauss(25, 6.466),
+                        "init_balance": random.gauss(100, 2.155),
                         "gem_join": state["gem_joins"]["ETH"],
                         "spot_padding": Wad.from_number(random.gauss(12 / 14, 0.216)),
                         "clipper": state["clippers"]["ETH"],
@@ -172,6 +179,6 @@ parameters = {
     },
 }
 
-DutchAuctionsBlackThursday = DutchAuctionExperiment(
+DutchAuctionsBlackThursday = DutchAuctionsExperiment(
     contracts, keepers, sort_actions, ilk_ids, Token, stat_trackers, parameters
 )
