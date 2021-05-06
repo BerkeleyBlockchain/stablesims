@@ -163,6 +163,7 @@ class RedoKeeper(ClipperKeeper):
                             "handler": self.clippers[ilk_id].redo,
                             "args": [sale.id, self.ADDRESS, t],
                             "kwargs": {},
+                            "extra": {"ilk_id": ilk_id,},
                         }
                     )
 

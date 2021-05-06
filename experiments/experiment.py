@@ -152,7 +152,7 @@ class Experiment:
         # Run simulation
         for t in range(self.parameters["timesteps"]):
             for track_stat in self.stat_trackers:
-                track_stat(state, {"key": "T_START"})
+                track_stat(state, {"key": "T_START"}, [])
 
             actions_t = []
             for keeper_name in state["keepers"]:
@@ -161,14 +161,15 @@ class Experiment:
 
             for action in sorted(actions_t, key=self.sort_actions):
                 try:
-                    action["handler"](*action["args"], **action["kwargs"])
+                    results = action["handler"](*action["args"], **action["kwargs"])
+                    results = list(results) if results else []
                 except RequireException:
                     continue
                 for track_stat in self.stat_trackers:
-                    track_stat(state, action)
+                    track_stat(state, action, results)
 
             for track_stat in self.stat_trackers:
-                track_stat(state, {"key": "T_END"})
+                track_stat(state, {"key": "T_END"}, [])
 
             self.write(
                 datetime.now().strftime("Experiment %d-%m-%Y at %H.%M.%S.txt"), state, t

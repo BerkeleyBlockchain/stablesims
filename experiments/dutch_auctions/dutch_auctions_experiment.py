@@ -116,7 +116,7 @@ class DutchAuctionExperiment(Experiment):
         historical_stats = []
         for t in range(self.parameters["timesteps"]):
             for track_stat in self.stat_trackers:
-                track_stat(state, {"key": "T_START"})
+                track_stat(state, {"key": "T_START"}, [])
 
             actions_t = []
             for keeper_name in state["keepers"]:
@@ -125,27 +125,17 @@ class DutchAuctionExperiment(Experiment):
 
             for action in sorted(actions_t, key=self.sort_actions):
                 try:
-                    action["handler"](*action["args"], **action["kwargs"])
+                    results = action["handler"](*action["args"], **action["kwargs"])
                 except RequireException:
                     continue
                 for track_stat in self.stat_trackers:
-                    track_stat(state, action)
+                    track_stat(state, action, results)
 
             for track_stat in self.stat_trackers:
-                track_stat(state, {"key": "T_END"})
+                track_stat(state, {"key": "T_END"}, results)
 
             historical_stats.append(deepcopy(state["stats"]))
-            # big_daddy = max(
-            #     state["stats"]["keeper_balances"],
-            #     key=lambda kpr: float(state["stats"]["keeper_balances"][kpr]["ETH"]),
-            # )
 
-        print(
-            [
-                float(balance["ETH"])
-                for balance in historical_stats[-1]["keeper_balances"].values()
-            ]
-        )
         _, axs = plt.subplots(4)
         time_range = list(range(self.parameters["timesteps"]))
         axs[0].plot(
