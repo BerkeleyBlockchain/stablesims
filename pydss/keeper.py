@@ -28,6 +28,7 @@ class Keeper:
             self.ilks[ilk["ilk_id"]].transferFrom("", self.ADDRESS, ilk["init_balance"])
 
     def generate_actions_for_timestep(self, t):
+        # take into account state["gas"]
         pass
 
 
