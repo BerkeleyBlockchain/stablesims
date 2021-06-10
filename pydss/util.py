@@ -1,6 +1,8 @@
 """ Utility Module
     Contains utility functions such as those for raising exceptions.
 """
+import json
+import random
 
 
 class RequireException(Exception):
@@ -14,3 +16,10 @@ def require(cond, message):
 
     if not cond:
         raise RequireException(message)
+
+
+def random_sample_gas():
+    with open("../price_feeds/gas/eth_gas.json") as f:
+        data = json.load(f)
+    i = random.randint(0, len(data["data"]))
+    return data["data"][i]["avgGasDay"]
