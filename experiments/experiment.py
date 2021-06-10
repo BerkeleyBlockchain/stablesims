@@ -124,6 +124,7 @@ class Experiment:
             "flapper": flapper,
             "flippers": flippers,
             "flopper": flopper,
+            "gas": [],
             "gem_joins": gem_joins,
             "ilks": ilks,
             "spotter": spotter,
@@ -131,6 +132,10 @@ class Experiment:
             "vat": vat,
             "vow": vow,
         }
+
+        # Initialize Gas Fees
+        # gas = select from historical fees
+        # state["gas"].append(gas)
 
         # Initialize keepers
         state["keepers"] = {keeper_name: [] for keeper_name in self.Keepers}
@@ -152,6 +157,8 @@ class Experiment:
             for keeper_name in state["keepers"]:
                 for keeper in state["keepers"][keeper_name]:
                     actions_t.extend(keeper.generate_actions_for_timestep(t))
+
+            # update state["gas"] based on actions_t
 
             for action in sorted(actions_t, key=self.sort_actions):
                 try:
