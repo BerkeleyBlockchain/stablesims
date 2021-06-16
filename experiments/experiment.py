@@ -124,7 +124,7 @@ class Experiment:
             "flapper": flapper,
             "flippers": flippers,
             "flopper": flopper,
-            "gas": [],
+            "gas": 0,
             "gem_joins": gem_joins,
             "ilks": ilks,
             "spotter": spotter,

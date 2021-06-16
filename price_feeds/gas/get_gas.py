@@ -36,12 +36,22 @@ def fetch_gas_day(network):
         # search_type="scan",
         body={
             "_source": ["timestamp", "gasPrice.num"],
-            "query": {"bool": {"must": [{"range": {"timestamp": {"gte": "now-2y"}}}]}},
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "range": {
+                                "timestamp": {"gte": "1583971200", "lt": "1584057600"}
+                            }
+                        }
+                    ],
+                }
+            },
             "aggs": {
                 "hour_bucket": {
                     "date_histogram": {
                         "field": "timestamp",
-                        "interval": "1d",
+                        "interval": "1m",
                         "format": "yyyy-MM-dd hh:mm:ss",
                     },
                     "aggs": {
@@ -146,4 +156,6 @@ def get_gas_price_day():
 
 if __name__ == "__main__":
     df_day = get_gas_price_day()
-    df_day.to_json("eth_gas.json", orient="table", index=False)
+    df_day.to_json(
+        "price_feeds/gas/eth_gas_hourly_7d.json", orient="table", index=False
+    )
