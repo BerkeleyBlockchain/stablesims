@@ -150,7 +150,9 @@ parameters = {
                         "token": state["ilks"]["WETH"],
                         "init_balance": random.gauss(100, 2.155),
                         "gem_join": state["gem_joins"]["WETH"],
+                        "clipper": state["clippers"]["WETH"],
                         "spot_padding": Wad.from_number(random.gauss(12 / 14, 0.216)),
+                        "desired_discount": Ray.from_number(random.gauss(0.85, 0.061)),
                     }
                 ],
                 state["dog"],

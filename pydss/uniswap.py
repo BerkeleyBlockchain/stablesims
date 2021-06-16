@@ -35,4 +35,4 @@ class Uniswap:
         new_in_reserve = in_reserve - in_amt
         new_out_reserve = k / new_in_reserve
         new_rate = new_in_reserve / new_out_reserve
-        return (new_rate - initial_rate) / initial_rate
+        return (out_reserve - new_out_reserve, (new_rate - initial_rate) / initial_rate)

@@ -11,6 +11,7 @@ from experiments.stats import (
     num_bids_placed,
     num_active_bids,
     keeper_gem_balances,
+    auction_debt,
 )
 from pydss.cat import Cat
 from pydss.join import DaiJoin, GemJoin
@@ -23,7 +24,7 @@ from pydss.uniswap import Uniswap
 from pydss.pymaker.numeric import Wad, Rad, Ray
 from pydss.keeper import (
     NaiveFlipperKeeper,
-    PatientFlipperKeeper,
+    # PatientFlipperKeeper,
     SpotterKeeper,
     BiteKeeper,
     NaiveVaultKeeper,
@@ -45,7 +46,7 @@ contracts = {
 keepers = {
     "NaiveVaultKeeper": NaiveVaultKeeper,
     "NaiveFlipperKeeper": NaiveFlipperKeeper,
-    "PatientFlipperKeeper": PatientFlipperKeeper,
+    # "PatientFlipperKeeper": PatientFlipperKeeper,
     "SpotterKeeper": SpotterKeeper,
     "BiteKeeper": BiteKeeper,
 }
@@ -57,6 +58,7 @@ stat_trackers = [
     num_bids_placed(),
     keeper_gem_balances(),
     num_active_bids(),
+    auction_debt(),
 ]
 parameters = {
     "Cat": {
@@ -104,26 +106,26 @@ parameters = {
                 state["spotter"],
             ],
         },
-        "PatientFlipperKeeper": {
-            "amount": 1,
-            "get_params": lambda state: [
-                state["vat"],
-                state["dai_join"],
-                [
-                    {
-                        "ilk_id": "WETH",
-                        "token": state["ilks"]["WETH"],
-                        "init_balance": 500,
-                        "gem_join": state["gem_joins"]["WETH"],
-                        "spot_padding": Wad.from_number(random.gauss(3 / 4, 0.216)),
-                        "flipper": state["flippers"]["WETH"],
-                    }
-                ],
-                state["spotter"],
-                state["uniswap"],
-                state["keepers"]["NaiveFlipperKeeper"],
-            ],
-        },
+        # "PatientFlipperKeeper": {
+        #     "amount": 1,
+        #     "get_params": lambda state: [
+        #         state["vat"],
+        #         state["dai_join"],
+        #         [
+        #             {
+        #                 "ilk_id": "WETH",
+        #                 "token": state["ilks"]["WETH"],
+        #                 "init_balance": 500,
+        #                 "gem_join": state["gem_joins"]["WETH"],
+        #                 "spot_padding": Wad.from_number(random.gauss(3 / 4, 0.216)),
+        #                 "flipper": state["flippers"]["WETH"],
+        #             }
+        #         ],
+        #         state["uniswap"],
+        #         state["spotter"],
+        #         state["keepers"]["NaiveFlipperKeeper"],
+        #     ],
+        # },
         "SpotterKeeper": {
             "amount": 1,
             "get_params": lambda state: [

@@ -139,6 +139,12 @@ class BarkKeeper(NaiveClipperKeeper):
                 # desired_slice = self.run_bidding_model({"lot": urn.ink}, ilk_id, t)[
                 #     "amt"
                 # ]
+                # expected_dai = self.uniswap.get_slippage(
+                #     "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11",
+                #     "WETH",
+                #     desired_slice
+                # )[0]
+                # expected_incentive =
                 # is_profitable =
                 if is_unsafe:
                     actions.append(

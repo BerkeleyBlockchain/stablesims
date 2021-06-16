@@ -3,8 +3,8 @@
     (contains simulation parameters, experiment name, etc.)
 """
 
-from datetime import datetime
-import copy
+from copy import deepcopy
+import matplotlib.pyplot as plt
 from pydss.pymaker.numeric import Wad, Rad, Ray
 from pydss.util import RequireException
 
@@ -154,6 +154,7 @@ class Experiment:
                 state["keepers"][keeper_name].append(Keeper(*keeper_params))
 
         # Run simulation
+        historical_stats = []
         for t in range(self.parameters["timesteps"]):
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_START"}, [])
@@ -175,13 +176,26 @@ class Experiment:
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_END"}, [])
 
-            self.write(
-                datetime.now().strftime("Experiment %d-%m-%Y at %H.%M.%S.txt"), state, t
-            )
+            historical_stats.append(deepcopy(state["stats"]))
+
+        _, axs = plt.subplots(4)
+        time_range = list(range(self.parameters["timesteps"]))
+        axs[0].plot(
+            time_range, [stats["ilk_price"]["WETH"] for stats in historical_stats]
+        )
+        axs[1].plot(time_range, [stats["num_new_bites"] for stats in historical_stats])
+        axs[2].plot(
+            time_range, [stats["num_bids_placed"] for stats in historical_stats]
+        )
+        axs[3].plot(time_range, [stats["auction_debt"] for stats in historical_stats])
+        plt.show()
+        # self.write(
+        #     datetime.now().strftime("Experiment %d-%m-%Y at %H.%M.%S.txt"), state, t
+        # )
 
     def format_data(self, state, full_state=True):
         data = state if full_state else state["stats"]
-        data = copy.deepcopy(data)
+        data = deepcopy(data)
         for key, value in data.items():
             if isinstance(value, (Ray, Rad, Wad)):
                 data[key] = float(data[value])
