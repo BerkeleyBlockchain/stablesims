@@ -52,7 +52,7 @@ def fetch_gas_day(network):
                 "hour_bucket": {
                     "date_histogram": {
                         "field": "timestamp",
-                        "interval": "1m",
+                        "interval": "10m",
                         "format": "yyyy-MM-dd hh:mm:ss",
                     },
                     "aggs": {
@@ -158,5 +158,5 @@ def get_gas_price_day():
 if __name__ == "__main__":
     df_day = get_gas_price_day()
     df_day.to_json(
-        "price_feeds/gas/gas_black_thursday_1min.json", orient="table", index=False
+        "price_feeds/gas/gas_black_thursday_10min.json", orient="table", index=False
     )
