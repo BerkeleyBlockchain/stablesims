@@ -1,7 +1,8 @@
-import json
-import os
-from datetime import datetime
+""" Retrieve ETH gas fees during Black Thursday
+"""
 
+
+import os
 import pandas as pd
 from elasticsearch import Elasticsearch
 
@@ -157,5 +158,5 @@ def get_gas_price_day():
 if __name__ == "__main__":
     df_day = get_gas_price_day()
     df_day.to_json(
-        "price_feeds/gas/eth_gas_hourly_7d.json", orient="table", index=False
+        "price_feeds/gas/gas_black_thursday_1min.json", orient="table", index=False
     )
