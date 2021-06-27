@@ -46,65 +46,94 @@ def incentive_amount():
 
 
 def auction_debt():
-    def track_stat(state, action):
+    def track_stat(state, action, results):
         if action["key"] == "T_START":
             state["stats"]["auction_debt"] = state["dog"].Dirt
 
     return track_stat
 #net difference
-def net_diff():
+def net_difference():
     def track_stat(state, results, action):
-        if action["key"] == "T_START":
-            state["stats"]["net_diff"] = Rad(0)
+
+        if action["key"] == "T_START" and "net_difference" not in state["stats"]:
+            state["stats"]["net_difference"]["cumulative_incentive"] = Rad(0)
+            state["stats"]["net_difference"]["cumulative_bid"] = Rad(0)
+            state["stats"]["net_difference"]["cumulative_ratio"] = Rad(0)
+            state["stats"]["started"] = True
         elif action["key"] == "BARK":
             ilk_id = action["args"][0]
             clip = state["clippers"][ilk_id]
             tab = results[0]
-            incentive = clip.tip + tab * Rad(clip.chip)
-            state["stats"]["net_diff"] -= incentive
+            state["stats"]["net_difference"]["cumulative_incentive"] \
+                += clip.tip + tab * Rad(clip.chip)
+            state["stats"]["net_difference"]["cumulative_ratio"] = \
+                state["stats"]["net_difference"]["cumulative_bid"] \
+                - state["stats"]["net_difference"]["cumulative_incentive"]
         elif action["key"] == "REDO":
             sale_id = action["args"][0]
             ilk_id = action["extra"]["ilk_id"]
             clip = state["clippers"][ilk_id]
             sale = clip.sales[sale_id]
-            incentive = clip.tip + sale.tab * Rad(clip.chip)
-            state["stats"]["net_diff"] -= incentive
+            state["stats"]["net_difference"]["cumulative_incentive"] \
+                += clip.tip + sale.tab * Rad(clip.chip)
+            state["stats"]["net_difference"]["cumulative_ratio"] \
+                = state["stats"]["net_difference"]["cumulative_bid"] \
+                - state["stats"]["net_difference"]["cumulative_incentive"]
         elif action["key"] == "TAKE":
-            state["stats"]["net_diff"] += results[0]
+            state["stats"]["net_difference"]["cumulative_bid"] += results[0]
+            if state["stats"]["net_difference"]["cumulative_incentive"] == 0:
+                return 0
+            state["stats"]["net_difference"]["cumulative_ratio"] \
+                = state["stats"]["net_difference"]["cumulative_bid"] \
+                - state["stats"]["net_difference"]["cumulative_incentive"]
     return track_stat
 
 
 #differenceratio
-def net_diff():
+def difference_ratio():
     def track_stat(state, results, action):
-        if action["key"] == "T_START":
-            state["stats"]["net_diff"] = Rad(1)
+
+        if action["key"] == "T_START" and "difference_ratio" not in state["stats"]:
+            state["stats"]["difference_ratio"]["cumulative_incentive"] = Rad(0)
+            state["stats"]["difference_ratio"]["cumulative_bid"] = Rad(0)
+            state["stats"]["difference_ratio"]["cumulative_ratio"] = Rad(0)
         elif action["key"] == "BARK":
             ilk_id = action["args"][0]
             clip = state["clippers"][ilk_id]
             tab = results[0]
-            incentive = clip.tip + tab * Rad(clip.chip)
-            state["stats"]["net_diff"] /= incentive
+            state["stats"]["difference_ratio"]["cumulative_incentive"]\
+                += clip.tip + tab * Rad(clip.chip)
+            state["stats"]["difference_ratio"]["cumulative_ratio"] = \
+                state["stats"]["difference_ratio"]["cumulative_bid"]\
+                / state["stats"]["difference_ratio"]["cumulative_incentive"]
         elif action["key"] == "REDO":
             sale_id = action["args"][0]
             ilk_id = action["extra"]["ilk_id"]
             clip = state["clippers"][ilk_id]
             sale = clip.sales[sale_id]
-            incentive = clip.tip + sale.tab * Rad(clip.chip)
-            state["stats"]["net_diff"] /= incentive
+            state["stats"]["difference_ratio"]["cumulative_incentive"]\
+                += clip.tip + sale.tab * Rad(clip.chip)
+            state["stats"]["difference_ratio"]["cumulative_ratio"] \
+                = state["stats"]["difference_ratio"]["cumulative_bid"] \
+                / state["stats"]["difference_ratio"]["cumulative_incentive"]
         elif action["key"] == "TAKE":
-            state["stats"]["net_diff"] *= results[0]
+            state["stats"]["difference_ratio"]["cumulative_bid"] += results[0]
+            if state["stats"]["difference_ratio"]["cumulative_incentive"] == 0:
+                return 0
+            state["stats"]["difference_ratio"]["cumulative_ratio"] \
+                = state["stats"]["difference_ratio"]["cumulative_bid"] \
+                / state["stats"]["difference_ratio"]["cumulative_incentive"]
     return track_stat
 
 #colateralization ratio
-def colf():
+def collateralization_ratio():
     def track_stat(state, results, action):
         num = 0
         denom = 0
         if action["key"] == "TAKE":
 
-            for i in results[1]:
-                num+=Rad(i.ink * i.spot)
-                denom+=Rad(i.art * i.rate)
+            for i in state["vat"]["urns"]:
+                num += Rad(i.ink * i.spot)
+                denom += Rad(i.art * i.rate)
             state["stats"]["col"] = num/denom
     return track_stat
