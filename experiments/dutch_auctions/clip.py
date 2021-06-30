@@ -228,6 +228,7 @@ class Clipper:
         else:
             self.sales[sale_id].tab = tab
             self.sales[sale_id].lot = lot
+        return [owe, self.vat.urns]
 
     def _remove(self, sale_id):
         _index = self.sales[sale_id].pos

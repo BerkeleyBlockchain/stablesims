@@ -24,6 +24,7 @@ from experiments.stats import (
 )
 from pydss.join import DaiJoin, GemJoin
 from pydss.spot import Spotter, PipLike
+from pydss.gas_oracle import GasOracle
 from pydss.vat import Vat
 from pydss.vow import Vow
 from pydss.token import Token
@@ -39,6 +40,7 @@ contracts = {
     "Dog": Dog,
     "Flapper": None,
     "Flopper": None,
+    "GasOracle": GasOracle,
     "GemJoin": GemJoin,
     "Spotter": Spotter,
     "Vat": Vat,
@@ -159,6 +161,7 @@ parameters = {
                 state["vat"],
                 state["dai_join"],
                 state["uniswap"],
+                state["gas_oracle"],
             ],
         },
     },

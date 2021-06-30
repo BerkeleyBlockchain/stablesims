@@ -160,7 +160,9 @@ class BarkKeeper(NaiveClipperKeeper):
         # would be profitable = liquidating as much as i can at my desired discount
         #                       - slippage
         clip = self.clippers["clippers"][ilk_id]
+
         gas = self.gas_oracle.peek(t)  # TODO: convert to gas in ETH
+        gas *= (10 ** -9) / Wad(clip.spotter.par)
         # dai = self.vat.dai.get(self.ADDRESS, Rad(0))
         desired_slice = self.run_bidding_model({"lot": urn.ink}, ilk_id, t)["amt"]
         expected_dai = self.uniswap.get_slippage(
