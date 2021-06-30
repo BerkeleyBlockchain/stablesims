@@ -133,6 +133,28 @@ class BarkKeeper(NaiveClipperKeeper):
 
         super().__init__(vat, dai_join, ilks, uniswap, gas_oracle)
 
+    def calculate_tab(self, ilk_id, urn_id):
+        art = self.vat.urns[ilk_id][urn_id].art
+        milk = self.ilks[ilk_id]
+
+        rate = self.vat.ilks[ilk_id].rate
+        dust = self.vat.ilks[ilk_id].dust
+
+        room = min(self.dog.Hole - self.dog.Dirt, milk.hole - milk.dirt)
+
+        dart = min(art, Wad(room / Rad(rate)) / milk.chop)
+
+        if Rad(rate * (art - dart)) < dust:
+            # Q: What if art > room?
+            # Resetting dart = art here can push past liq limit
+            dart = art
+
+        due = Rad(rate * dart)
+
+        tab = due * Rad(milk.chop)
+
+        return tab
+
     def is_profitable(self, urn, ilk_id, t, threshold=0):
         # If unsafe and would be profitable
         # would be profitable = liquidating as much as i can at my desired discount
@@ -145,7 +167,8 @@ class BarkKeeper(NaiveClipperKeeper):
             "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11", "WETH", desired_slice
         )[0]
         post_gas = expected_dai - gas
-        incentive = clip.tip + sale.tab * Rad(
+        tab = self.calculate_tab(ilk_id, urn.id)
+        incentive = clip.tip + tab * Rad(
             clip.chip
         )  # somehow get sale of current auction in current timestep
         expected_incentive = post_gas + incentive
