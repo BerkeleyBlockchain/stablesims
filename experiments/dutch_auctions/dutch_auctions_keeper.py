@@ -161,21 +161,21 @@ class BarkKeeper(NaiveClipperKeeper):
         #                       - slippage
         clip = self.clippers["clippers"][ilk_id]
 
-        gas = self.gas_oracle.peek(t)  # TODO: convert to gas in ETH
-        gas *= (10 ** -9) / Wad(clip.spotter.par)
-        # dai = self.vat.dai.get(self.ADDRESS, Rad(0))
+        gas_limit = 300000
+        gas_price = self.gas_oracle.peek(t) * ((10 ** -9) / Wad(clip.spotter.par))
+        expected_gas = gas_limit * gas_price
+
         desired_slice = self.run_bidding_model({"lot": urn.ink}, ilk_id, t)["amt"]
         expected_dai = self.uniswap.get_slippage(
             "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11", "WETH", desired_slice
         )[0]
-        post_gas = expected_dai - gas
-        tab = self.calculate_tab(ilk_id, urn.id)
-        incentive = clip.tip + tab * Rad(
-            clip.chip
-        )  # somehow get sale of current auction in current timestep
-        expected_incentive = post_gas + incentive
 
-        return expected_incentive > threshold
+        tab = self.calculate_tab(ilk_id, urn.id)
+        expected_incentive = clip.tip + tab * Rad(clip.chip)
+
+        profit = expected_dai - expected_gas + expected_incentive
+
+        return profit > threshold
 
     def generate_actions_for_timestep(self, t):
         actions = []
