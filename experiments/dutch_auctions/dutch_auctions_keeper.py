@@ -160,10 +160,12 @@ class BarkKeeper(NaiveClipperKeeper):
         # would be profitable = liquidating as much as i can at my desired discount
         #                       - slippage
         clip = self.clippers["clippers"][ilk_id]
+        pip = clip.spotter.ilks[ilk_id].pip
 
+        val = pip.peek(t)
         gas_limit = 300000
-        gas_price = self.gas_oracle.peek(t) * ((10 ** -9) / Wad(clip.spotter.par))
-        expected_gas = gas_limit * gas_price
+        gas_price = self.gas_oracle.peek(t) * (10 ** -9) * (val / Wad(clip.spotter.par))
+        expected_gas = Rad(gas_limit * gas_price)
 
         desired_slice = self.run_bidding_model({"lot": urn.ink}, ilk_id, t)["amt"]
         expected_dai = self.uniswap.get_slippage(
