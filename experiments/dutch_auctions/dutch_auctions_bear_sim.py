@@ -71,7 +71,7 @@ parameters = {
             "tail": 72,
             "cusp": Ray.from_number(0.5),
             "chip": Wad.from_number(0.08),
-            "tip": Rad(0),
+            "tip": Rad.from_number(1000),
         }
     },
     "Dog": {
@@ -116,7 +116,7 @@ parameters = {
                     }
                 ],
                 state["uniswap"],
-                # state["gas_oracle"],
+                state["gas_oracle"],
             ],
         },
         "RedoKeeper": {
@@ -135,7 +135,7 @@ parameters = {
                     }
                 ],
                 state["uniswap"],
-                # TODO: add gas_oracle
+                state["gas_oracle"],
             ],
         },
         "SpotterKeeper": {
@@ -148,6 +148,8 @@ parameters = {
         "BarkKeeper": {
             "amount": 5,
             "get_params": lambda state: [
+                state["vat"],
+                state["dai_join"],
                 [
                     {
                         "ilk_id": "WETH",
@@ -159,25 +161,20 @@ parameters = {
                         "desired_discount": Ray.from_number(random.gauss(0.85, 0.061)),
                     }
                 ],
-                state["dog"],
-                state["vat"],
-                state["dai_join"],
                 state["uniswap"],
                 state["gas_oracle"],
+                state["dog"],
             ],
         },
     },
     "Spotter": {
         "par": Ray(1000000000000000000000000000),
         "WETH": {
-            "pip": PipLike("price_feeds/eth_bull_10min.json"),
+            "pip": PipLike("price_feeds/eth_bear_10min.json"),
             "mat": Wad(1500000000000000000),
         },
     },
-    "GasOracle": {
-        # TODO: Get gas price feeds for other date ranges
-        "price_feed_file": "price_feeds/gas/gas_black_thursday_10min.json"
-    },
+    "GasOracle": {"price_feed_file": "price_feeds/gas/gas_bear_10min.json"},
     "timesteps": 144,
     "Vat": {
         "Line": Rad(1621230562029182607785180351895167282074137639278363742),
@@ -196,7 +193,7 @@ parameters = {
     "Uniswap": {
         "pairs": {
             "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11": {
-                "path": "price_feeds/eth_dai_bull_liquidity_10m.json",
+                "path": "price_feeds/eth_dai_bear_liquidity_10m.json",
                 "token0": "DAI",
                 "token1": "WETH",
             }
@@ -204,6 +201,6 @@ parameters = {
     },
 }
 
-DutchAuctionsBull = DutchAuctionsExperiment(
+DutchAuctionsBear = DutchAuctionsExperiment(
     contracts, keepers, sort_actions, ilk_ids, Token, stat_trackers, parameters
 )

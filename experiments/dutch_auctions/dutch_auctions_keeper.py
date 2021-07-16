@@ -5,6 +5,7 @@
 
 from pydss.keeper import VaultKeeper
 from pydss.pymaker.numeric import Wad, Rad, Ray
+from experiments.dutch_auctions.clip import Sale
 
 
 class ClipperKeeper(VaultKeeper):
@@ -84,6 +85,30 @@ class NaiveClipperKeeper(ClipperBidder):
 
         super().__init__(vat, dai_join, ilks, uniswap, gas_oracle)
 
+    def is_profitable(self, sale, ilk_id, t):
+        clip = self.clippers[ilk_id]
+        pip = clip.spotter.ilks[ilk_id].pip
+
+        val = pip.peek(t)
+        # TODO: Pull from Gaussian
+        gas_limit = Wad.from_number(300000)
+        # Gas price denominated in DAI/gas unit
+        gas_price = (
+            self.gas_oracle.peek(t)
+            * Wad.from_number(10 ** -9)
+            * (val / Wad(clip.spotter.par))
+        )
+        expected_gas = Rad(gas_limit * gas_price)
+
+        desired_slice = self.run_bidding_model(sale, ilk_id, t)["amt"]
+        expected_dai = self.uniswap.get_slippage(
+            "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11", "WETH", desired_slice, t
+        )[0]
+
+        profit = expected_dai - expected_gas
+
+        return profit > threshold
+
     def find_sales_to_take(self, t):
         sales_to_take = {}
         for ilk_id in self.ilks:
@@ -93,7 +118,12 @@ class NaiveClipperKeeper(ClipperBidder):
                 done, price = clipper.status(sale.tic, sale.top, t)
                 pip = clipper.spotter.ilks[ilk_id].pip
                 val = pip.peek(t)
-                if not done and price <= Ray(val / Wad(clipper.spotter.par)) * des_disc:
+                is_profitable = self.is_profitable(sale, ilk_id, t)
+                if (
+                    not done
+                    and price <= Ray(val / Wad(clipper.spotter.par)) * des_disc
+                    and is_profitable
+                ):
                     if not sales_to_take.get(ilk_id):
                         sales_to_take[ilk_id] = []
                     sales_to_take[ilk_id].append(sale)
@@ -108,9 +138,9 @@ class NaiveClipperKeeper(ClipperBidder):
         val = pip.peek(t)
         max_price = Ray(val / Wad(clipper.spotter.par)) * self.desired_discounts[ilk_id]
         dai = self.vat.dai.get(self.ADDRESS, Rad(0))
-        desired_amt_dai = Rad(sale["lot"] * max_price)
+        desired_amt_dai = Rad(sale.lot * max_price)
         if desired_amt_dai <= dai:
-            amt = sale["lot"]
+            amt = sale.lot
         else:
             amt = Wad(dai / Rad(max_price))
         stance["max_price"] = max_price
@@ -121,17 +151,10 @@ class NaiveClipperKeeper(ClipperBidder):
         return stance
 
 
-class BarkKeeper(NaiveClipperKeeper):
-    """
-    dog = Dog
-    vat = Vat
-    gas_oracle = GasOracle
-    """
-
-    def __init__(self, ilks, dog, vat, dai_join, uniswap, gas_oracle):
-        self.dog = dog
-
-        super().__init__(vat, dai_join, ilks, uniswap, gas_oracle)
+class IncentivizedKeeper(ClipperKeeper):
+    def __init__(self, vat, dai_join, ilks, uniswap, gas_oracle):
+        self.gas_oracle = gas_oracle
+        super().__init__(vat, dai_join, ilks, uniswap)
 
     def calculate_tab(self, ilk_id, urn_id):
         art = self.vat.urns[ilk_id][urn_id].art
@@ -155,15 +178,13 @@ class BarkKeeper(NaiveClipperKeeper):
 
         return tab
 
-    def is_profitable(self, urn, ilk_id, t, threshold=Rad(0)):
-        # If unsafe and would be profitable
-        # would be profitable = liquidating as much as i can at my desired discount
-        #                       - slippage
+    def is_profitable(self, sale, ilk_id, t, threshold=Rad(0)):
         clip = self.clippers[ilk_id]
         pip = clip.spotter.ilks[ilk_id].pip
 
         val = pip.peek(t)
         gas_limit = Wad.from_number(300000)
+        # Gas price denominated in DAI/gas unit
         gas_price = (
             self.gas_oracle.peek(t)
             * Wad.from_number(10 ** -9)
@@ -171,26 +192,37 @@ class BarkKeeper(NaiveClipperKeeper):
         )
         expected_gas = Rad(gas_limit * gas_price)
 
-        desired_slice = self.run_bidding_model({"lot": urn.ink}, ilk_id, t)["amt"]
-        expected_dai = self.uniswap.get_slippage(
-            "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11", "WETH", desired_slice, t
-        )[0]
+        expected_incentive = clip.tip + sale.tab * Rad(clip.chip)
 
-        tab = self.calculate_tab(ilk_id, urn.ADDRESS)
-        expected_incentive = clip.tip + tab * Rad(clip.chip)
-
-        profit = expected_dai - expected_gas + expected_incentive
+        profit = expected_incentive - expected_gas
 
         return profit > threshold
 
+
+class BarkKeeper(IncentivizedKeeper):
+    """
+    dog = Dog
+    vat = Vat
+    gas_oracle = GasOracle
+    """
+
+    def __init__(self, vat, dai_join, ilks, uniswap, gas_oracle, dog):
+        self.dog = dog
+
+        super().__init__(vat, dai_join, ilks, uniswap, gas_oracle)
+
     def generate_actions_for_timestep(self, t):
+        # TODO: also include bid-placing actions
         actions = []
         self.open_max_vaults(actions)
         for ilk_id in self.ilks:
             ilk = self.vat.ilks[ilk_id]
             for urn in self.vat.urns[ilk_id].values():
                 is_unsafe = Rad(urn.ink * ilk.spot) < Rad(urn.art * ilk.rate)
-                is_profitable = self.is_profitable(urn, ilk_id, t)
+                # call calculate_tab, create fake Sale object, pass into is_profitable
+                expected_tab = self.calculate_tab(ilk_id, urn.ADDRESS)
+                fake_sale = Sale(None, expected_tab, None, None, None, None, None,)
+                is_profitable = self.is_profitable(fake_sale, ilk_id, t)
                 if is_unsafe and is_profitable:
                     actions.append(
                         {
@@ -204,7 +236,7 @@ class BarkKeeper(NaiveClipperKeeper):
         return actions
 
 
-class RedoKeeper(ClipperKeeper):
+class RedoKeeper(IncentivizedKeeper):
     """
     clippers = {str: Clipper}
     vat = Vat
@@ -217,7 +249,8 @@ class RedoKeeper(ClipperKeeper):
             clipper = self.clippers[ilk_id]
             for sale in clipper.sales.values():
                 done, _ = clipper.status(sale.tic, sale.top, t)
-                if done:
+                is_profitable = self.is_profitable(sale, ilk_id, t)
+                if done and is_profitable:
                     actions.append(
                         {
                             "key": "REDO",

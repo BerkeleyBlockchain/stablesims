@@ -28,8 +28,9 @@ class DutchAuctionsExperiment(Experiment):
         self.GasOracle = contracts["GasOracle"]
 
     def run(self):
-        # import ipdb
-        # ipdb.set_trace(context=6)
+        import ipdb
+
+        ipdb.set_trace(context=6)
         # Initialize assets
         dai = self.Token("DAI")
         # mkr = self.Token("MKR")
