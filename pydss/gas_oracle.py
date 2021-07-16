@@ -5,6 +5,8 @@
 
 import json
 
+from pydss.pymaker.numeric import Wad
+
 
 class GasOracle:
     """
@@ -20,4 +22,4 @@ class GasOracle:
         with open(self.price_feed_file) as price_feed_json:
             # TODO: Constantize the "avgGasDay" field here
             # TODO: Format gas feed file to get rid of "data"
-            return json.load(price_feed_json)["data"][now]["avgGasDay"]
+            return Wad.from_number(json.load(price_feed_json)["data"][now]["avgGasDay"])

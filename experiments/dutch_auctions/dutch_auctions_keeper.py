@@ -108,9 +108,9 @@ class NaiveClipperKeeper(ClipperBidder):
         val = pip.peek(t)
         max_price = Ray(val / Wad(clipper.spotter.par)) * self.desired_discounts[ilk_id]
         dai = self.vat.dai.get(self.ADDRESS, Rad(0))
-        desired_amt_dai = Rad(sale.lot * max_price)
+        desired_amt_dai = Rad(sale["lot"] * max_price)
         if desired_amt_dai <= dai:
-            amt = sale.lot
+            amt = sale["lot"]
         else:
             amt = Wad(dai / Rad(max_price))
         stance["max_price"] = max_price
@@ -135,7 +135,7 @@ class BarkKeeper(NaiveClipperKeeper):
 
     def calculate_tab(self, ilk_id, urn_id):
         art = self.vat.urns[ilk_id][urn_id].art
-        milk = self.ilks[ilk_id]
+        milk = self.dog.ilks[ilk_id]
 
         rate = self.vat.ilks[ilk_id].rate
         dust = self.vat.ilks[ilk_id].dust
@@ -155,24 +155,28 @@ class BarkKeeper(NaiveClipperKeeper):
 
         return tab
 
-    def is_profitable(self, urn, ilk_id, t, threshold=0):
+    def is_profitable(self, urn, ilk_id, t, threshold=Rad(0)):
         # If unsafe and would be profitable
         # would be profitable = liquidating as much as i can at my desired discount
         #                       - slippage
-        clip = self.clippers["clippers"][ilk_id]
+        clip = self.clippers[ilk_id]
         pip = clip.spotter.ilks[ilk_id].pip
 
         val = pip.peek(t)
-        gas_limit = 300000
-        gas_price = self.gas_oracle.peek(t) * (10 ** -9) * (val / Wad(clip.spotter.par))
+        gas_limit = Wad.from_number(300000)
+        gas_price = (
+            self.gas_oracle.peek(t)
+            * Wad.from_number(10 ** -9)
+            * (val / Wad(clip.spotter.par))
+        )
         expected_gas = Rad(gas_limit * gas_price)
 
         desired_slice = self.run_bidding_model({"lot": urn.ink}, ilk_id, t)["amt"]
         expected_dai = self.uniswap.get_slippage(
-            "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11", "WETH", desired_slice
+            "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11", "WETH", desired_slice, t
         )[0]
 
-        tab = self.calculate_tab(ilk_id, urn.id)
+        tab = self.calculate_tab(ilk_id, urn.ADDRESS)
         expected_incentive = clip.tip + tab * Rad(clip.chip)
 
         profit = expected_dai - expected_gas + expected_incentive

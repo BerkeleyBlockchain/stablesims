@@ -48,7 +48,8 @@ class DutchAuctionsExperiment(Experiment):
         for ilk_id in ilks:
             spotter.file_ilk(ilk_id, "pip", self.parameters["Spotter"][ilk_id]["pip"])
             spotter.file_ilk(ilk_id, "mat", self.parameters["Spotter"][ilk_id]["mat"])
-        gas_oracle = self.GasOracle
+
+        gas_oracle = self.GasOracle(self.parameters["GasOracle"]["price_feed_file"])
         dai_join = self.DaiJoin(vat, dai)
         gem_joins = {
             ilk_id: self.GemJoin(vat, ilk_id, ilk_token)
