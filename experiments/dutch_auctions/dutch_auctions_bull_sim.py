@@ -170,11 +170,14 @@ parameters = {
     "Spotter": {
         "par": Ray(1000000000000000000000000000),
         "WETH": {
-            "pip": PipLike("price_feeds/eth_black_thursday_10min.json"),
+            "pip": PipLike("price_feeds/eth_bull_10min.json"),
             "mat": Wad(1500000000000000000),
         },
     },
-    "GasOracle": {"price_feed_file": "price_feeds/gas/gas_black_thursday_10min.json"},
+    "GasOracle": {
+        # TODO: Get gas price feeds for other date ranges
+        "price_feed_file": "price_feeds/gas/gas_black_thursday_10min.json"
+    },
     "timesteps": 144,
     "Vat": {
         "Line": Rad(1621230562029182607785180351895167282074137639278363742),
@@ -193,7 +196,7 @@ parameters = {
     "Uniswap": {
         "pairs": {
             "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11": {
-                "path": "",  # No liquidity data for Black Thursday
+                "path": "price_feeds/eth_dai_bull_liquidity_10m.json",
                 "token0": "DAI",
                 "token1": "WETH",
             }
@@ -201,6 +204,6 @@ parameters = {
     },
 }
 
-DutchAuctionsBlackThursday = DutchAuctionsExperiment(
+DutchAuctionsBull = DutchAuctionsExperiment(
     contracts, keepers, sort_actions, ilk_ids, Token, stat_trackers, parameters
 )

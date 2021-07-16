@@ -95,3 +95,4 @@ class Flapper:
 
         self.bids[bid_id].bid = bid
         self.bids[bid_id].tic = now + self.ttl
+        return [bid]

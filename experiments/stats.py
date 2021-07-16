@@ -47,7 +47,7 @@ def num_bids_placed():
 
 
 def num_active_bids():
-    def track_stat(state, _action):
+    def track_stat(state, _action, _results):
         state["stats"]["num_active_bids"] = {
             ilk_id: len(state["flippers"][ilk_id].bids) for ilk_id in state["flippers"]
         }
@@ -66,5 +66,13 @@ def keeper_gem_balances():
                         ilk_id: state["vat"].gem[ilk_id].get(keeper.ADDRESS, 0)
                         for ilk_id in state["ilks"]
                     }
+
+    return track_stat
+
+
+def auction_debt():
+    def track_stat(state, action, _results):
+        if action["key"] == "T_START":
+            state["stats"]["auction_debt"] = state["cat"].litter
 
     return track_stat

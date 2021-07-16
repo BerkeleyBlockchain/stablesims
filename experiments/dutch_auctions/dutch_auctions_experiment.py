@@ -24,6 +24,8 @@ class DutchAuctionsExperiment(Experiment):
         self.Spotter = contracts["Spotter"]
         self.Vat = contracts["Vat"]
         self.Vow = contracts["Vow"]
+        self.Uniswap = contracts["Uniswap"]
+        self.GasOracle = contracts["GasOracle"]
 
     def run(self):
         # import ipdb
@@ -47,6 +49,7 @@ class DutchAuctionsExperiment(Experiment):
             spotter.file_ilk(ilk_id, "pip", self.parameters["Spotter"][ilk_id]["pip"])
             spotter.file_ilk(ilk_id, "mat", self.parameters["Spotter"][ilk_id]["mat"])
 
+        gas_oracle = self.GasOracle(self.parameters["GasOracle"]["price_feed_file"])
         dai_join = self.DaiJoin(vat, dai)
         gem_joins = {
             ilk_id: self.GemJoin(vat, ilk_id, ilk_token)
@@ -86,6 +89,8 @@ class DutchAuctionsExperiment(Experiment):
             clipper.file_address("calc", calc)
             clippers[ilk_id] = clipper
 
+        uniswap = self.Uniswap(self.parameters["Uniswap"]["pairs"])
+
         # Initialize state
         state = {
             "calc": calc,
@@ -101,6 +106,8 @@ class DutchAuctionsExperiment(Experiment):
             "stats": {},
             "vat": vat,
             "vow": vow,
+            "uniswap": uniswap,
+            "gas_oracle": gas_oracle,
         }
 
         # Initialize keepers
@@ -138,23 +145,14 @@ class DutchAuctionsExperiment(Experiment):
 
             historical_stats.append(deepcopy(state["stats"]))
 
-        _, axs = plt.subplots(5)
+        _, axs = plt.subplots(4)
         time_range = list(range(self.parameters["timesteps"]))
         axs[0].plot(
-            time_range, [stats["ilk_price"]["ETH"] for stats in historical_stats]
+            time_range, [stats["ilk_price"]["WETH"] for stats in historical_stats]
         )
         axs[1].plot(time_range, [stats["num_new_barks"] for stats in historical_stats])
         axs[2].plot(
             time_range, [stats["num_sales_taken"] for stats in historical_stats]
         )
-        # axs[3].hist(
-        #     [
-        #         float(balance["ETH"])
-        #         for balance in historical_stats[-1]["keeper_balances"].values()
-        #     ]
-        # )
-        axs[3].plot(
-            time_range, [stats["incentive_amount"] for stats in historical_stats]
-        )
-        axs[4].plot(time_range, [stats["auction_debt"] for stats in historical_stats])
+        axs[3].plot(time_range, [stats["auction_debt"] for stats in historical_stats])
         plt.show()
