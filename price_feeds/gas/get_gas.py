@@ -1,10 +1,21 @@
 """ Retrieve ETH gas fees during Black Thursday
+    Instructions:
+    From project root, run this file with the following env variables:
+    ELASTIC_EMAIL="[email]"
+    ELASTIC_AUTH="[auth_key]"
+    filename="[filename]"
+    start="[UNIX timestamp]"
+    end="[UNIX timestamp]"
+    python3 price_feeds/gas/get_gas.py
 """
 
 
 import os
+import sys
+
 import pandas as pd
 from elasticsearch import Elasticsearch
+
 
 # Initialize the ElasticSearch Client
 def initialize_elastic(network):
@@ -29,7 +40,7 @@ networks = [
 # define a function to fetch daily percentiles for the past 2 years
 
 
-def fetch_gas_day(network):
+def fetch_gas_day(network, start, end):
     es = initialize_elastic(network)
     return es.search(
         index="tx",
@@ -38,15 +49,7 @@ def fetch_gas_day(network):
         body={
             "_source": ["timestamp", "gasPrice.num"],
             "query": {
-                "bool": {
-                    "must": [
-                        {
-                            "range": {
-                                "timestamp": {"gte": "1583971200", "lt": "1584057600"}
-                            }
-                        }
-                    ],
-                }
+                "bool": {"must": [{"range": {"timestamp": {"gte": start, "lt": end}}}],}
             },
             "aggs": {
                 "hour_bucket": {
@@ -126,8 +129,8 @@ def concat_dictionaries_df(
     return df
 
 
-def get_gas_price_day():
-    eth_day = fetch_gas_day(networks[0])
+def get_gas_price_day(start, end):
+    eth_day = fetch_gas_day(networks[0], start, end)
     df_gas_day = query_to_dataframe(eth_day)
 
     # Column Names for Day Df
@@ -156,7 +159,12 @@ def get_gas_price_day():
 
 
 if __name__ == "__main__":
-    df_day = get_gas_price_day()
-    df_day.to_json(
-        "price_feeds/gas/gas_black_thursday_10min.json", orient="table", index=False
-    )
+    file = os.getenv("filename")
+    start_timestamp = os.getenv("start")
+    end_timestamp = os.getenv("end")
+
+    if not (file or start_timestamp or end_timestamp):
+        print("Please enter filename or start/end timestamps")
+        sys.exit()
+    df_day = get_gas_price_day(start_timestamp, end_timestamp)
+    df_day.to_json(f"price_feeds/gas/{file}.json", orient="table", index=False)
