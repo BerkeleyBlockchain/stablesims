@@ -3,8 +3,11 @@
 
 
 import os
+import sys
+
 import pandas as pd
 from elasticsearch import Elasticsearch
+
 
 # Initialize the ElasticSearch Client
 def initialize_elastic(network):
@@ -42,7 +45,7 @@ def fetch_gas_day(network):
                     "must": [
                         {
                             "range": {
-                                "timestamp": {"gte": "1583971200", "lt": "1584057600"}
+                                "timestamp": {"gte": "1578096000", "lt": "1578182400"}
                             }
                         }
                     ],
@@ -157,6 +160,10 @@ def get_gas_price_day():
 
 if __name__ == "__main__":
     df_day = get_gas_price_day()
-    df_day.to_json(
-        "price_feeds/gas/gas_black_thursday_10min.json", orient="table", index=False
-    )
+
+    file = os.getenv("filename")
+
+    if not file:
+        print("Please enter filename")
+        sys.exit()
+    df_day.to_json(f"price_feeds/gas/{file}.json", orient="table", index=False)
