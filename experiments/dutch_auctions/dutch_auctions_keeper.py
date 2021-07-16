@@ -28,7 +28,13 @@ class ClipperBidder(ClipperKeeper):
     """
     clippers = {str: Clipper}
     vat = Vat
+    gas_oracle = GasOracle
     """
+
+    def __init__(self, vat, dai_join, ilks, uniswap, gas_oracle=None):
+        self.gas_oracle = gas_oracle
+
+        super().__init__(vat, dai_join, ilks, uniswap)
 
     def generate_actions_for_timestep(self, t):
         actions = []
@@ -71,12 +77,12 @@ class NaiveClipperKeeper(ClipperBidder):
     """ Takes a sale when its price is below this keeper's desired discount.
     """
 
-    def __init__(self, vat, dai_join, ilks, uniswap):
+    def __init__(self, vat, dai_join, ilks, uniswap, gas_oracle=None):
         self.desired_discounts = {}
         for ilk in ilks:
             self.desired_discounts[ilk["ilk_id"]] = ilk["desired_discount"]
 
-        super().__init__(vat, dai_join, ilks, uniswap)
+        super().__init__(vat, dai_join, ilks, uniswap, gas_oracle)
 
     def find_sales_to_take(self, t):
         sales_to_take = {}
@@ -102,9 +108,9 @@ class NaiveClipperKeeper(ClipperBidder):
         val = pip.peek(t)
         max_price = Ray(val / Wad(clipper.spotter.par)) * self.desired_discounts[ilk_id]
         dai = self.vat.dai.get(self.ADDRESS, Rad(0))
-        desired_amt_dai = Rad(sale.lot * max_price)
+        desired_amt_dai = Rad(sale["lot"] * max_price)
         if desired_amt_dai <= dai:
-            amt = sale.lot
+            amt = sale["lot"]
         else:
             amt = Wad(dai / Rad(max_price))
         stance["max_price"] = max_price
@@ -119,11 +125,63 @@ class BarkKeeper(NaiveClipperKeeper):
     """
     dog = Dog
     vat = Vat
+    gas_oracle = GasOracle
     """
 
-    def __init__(self, ilks, dog, vat, dai_join, uniswap):
+    def __init__(self, ilks, dog, vat, dai_join, uniswap, gas_oracle):
         self.dog = dog
-        super().__init__(vat, dai_join, ilks, uniswap)
+
+        super().__init__(vat, dai_join, ilks, uniswap, gas_oracle)
+
+    def calculate_tab(self, ilk_id, urn_id):
+        art = self.vat.urns[ilk_id][urn_id].art
+        milk = self.dog.ilks[ilk_id]
+
+        rate = self.vat.ilks[ilk_id].rate
+        dust = self.vat.ilks[ilk_id].dust
+
+        room = min(self.dog.Hole - self.dog.Dirt, milk.hole - milk.dirt)
+
+        dart = min(art, Wad(room / Rad(rate)) / milk.chop)
+
+        if Rad(rate * (art - dart)) < dust:
+            # Q: What if art > room?
+            # Resetting dart = art here can push past liq limit
+            dart = art
+
+        due = Rad(rate * dart)
+
+        tab = due * Rad(milk.chop)
+
+        return tab
+
+    def is_profitable(self, urn, ilk_id, t, threshold=Rad(0)):
+        # If unsafe and would be profitable
+        # would be profitable = liquidating as much as i can at my desired discount
+        #                       - slippage
+        clip = self.clippers[ilk_id]
+        pip = clip.spotter.ilks[ilk_id].pip
+
+        val = pip.peek(t)
+        gas_limit = Wad.from_number(300000)
+        gas_price = (
+            self.gas_oracle.peek(t)
+            * Wad.from_number(10 ** -9)
+            * (val / Wad(clip.spotter.par))
+        )
+        expected_gas = Rad(gas_limit * gas_price)
+
+        desired_slice = self.run_bidding_model({"lot": urn.ink}, ilk_id, t)["amt"]
+        expected_dai = self.uniswap.get_slippage(
+            "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11", "WETH", desired_slice, t
+        )[0]
+
+        tab = self.calculate_tab(ilk_id, urn.ADDRESS)
+        expected_incentive = clip.tip + tab * Rad(clip.chip)
+
+        profit = expected_dai - expected_gas + expected_incentive
+
+        return profit > threshold
 
     def generate_actions_for_timestep(self, t):
         actions = []
@@ -131,22 +189,9 @@ class BarkKeeper(NaiveClipperKeeper):
         for ilk_id in self.ilks:
             ilk = self.vat.ilks[ilk_id]
             for urn in self.vat.urns[ilk_id].values():
-                # If unsafe and would be profitable
-                # would be profitable = liquidating as much as i can at my desired discount
-                #                       - slippage
                 is_unsafe = Rad(urn.ink * ilk.spot) < Rad(urn.art * ilk.rate)
-                # dai = self.vat.dai.get(self.ADDRESS, Rad(0))
-                # desired_slice = self.run_bidding_model({"lot": urn.ink}, ilk_id, t)[
-                #     "amt"
-                # ]
-                # expected_dai = self.uniswap.get_slippage(
-                #     "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11",
-                #     "WETH",
-                #     desired_slice
-                # )[0]
-                # expected_incentive =
-                # is_profitable =
-                if is_unsafe:
+                is_profitable = self.is_profitable(urn, ilk_id, t)
+                if is_unsafe and is_profitable:
                     actions.append(
                         {
                             "key": "BARK",

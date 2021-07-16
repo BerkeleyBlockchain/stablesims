@@ -25,6 +25,7 @@ class DutchAuctionsExperiment(Experiment):
         self.Vat = contracts["Vat"]
         self.Vow = contracts["Vow"]
         self.Uniswap = contracts["Uniswap"]
+        self.GasOracle = contracts["GasOracle"]
 
     def run(self):
         # import ipdb
@@ -48,6 +49,7 @@ class DutchAuctionsExperiment(Experiment):
             spotter.file_ilk(ilk_id, "pip", self.parameters["Spotter"][ilk_id]["pip"])
             spotter.file_ilk(ilk_id, "mat", self.parameters["Spotter"][ilk_id]["mat"])
 
+        gas_oracle = self.GasOracle(self.parameters["GasOracle"]["price_feed_file"])
         dai_join = self.DaiJoin(vat, dai)
         gem_joins = {
             ilk_id: self.GemJoin(vat, ilk_id, ilk_token)
@@ -105,6 +107,7 @@ class DutchAuctionsExperiment(Experiment):
             "vat": vat,
             "vow": vow,
             "uniswap": uniswap,
+            "gas_oracle": gas_oracle,
         }
 
         # Initialize keepers
