@@ -85,18 +85,18 @@ class NaiveClipperKeeper(ClipperBidder):
 
         super().__init__(vat, dai_join, ilks, uniswap, gas_oracle)
 
-    def is_profitable(self, sale, ilk_id, t):
-        clip = self.clippers[ilk_id]
-        pip = clip.spotter.ilks[ilk_id].pip
+    def is_profitable(self, sale, ilk_id, t, threshold=Rad(0)):
+        weth_clip = self.clippers["WETH"]
+        weth_pip = weth_clip.spotter.ilks["WETH"].pip
 
-        val = pip.peek(t)
+        weth_val = weth_pip.peek(t)
         # TODO: Pull from Gaussian
         gas_limit = Wad.from_number(300000)
         # Gas price denominated in DAI/gas unit
         gas_price = (
             self.gas_oracle.peek(t)
-            * Wad.from_number(10 ** -9)
-            * (val / Wad(clip.spotter.par))
+            * Wad.from_number(10 ** -18)
+            * (weth_val / Wad(weth_clip.spotter.par))
         )
         expected_gas = Rad(gas_limit * gas_price)
 
@@ -156,6 +156,40 @@ class IncentivizedKeeper(ClipperKeeper):
         self.gas_oracle = gas_oracle
         super().__init__(vat, dai_join, ilks, uniswap)
 
+    def is_profitable(self, sale, ilk_id, t, threshold=Rad(0)):
+        weth_clip = self.clippers["WETH"]
+        weth_pip = weth_clip.spotter.ilks["WETH"].pip
+        ilk_clip = self.clippers[ilk_id]
+
+        weth_val = weth_pip.peek(t)
+        gas_limit = Wad.from_number(300000)
+        # Gas price denominated in DAI/gas unit
+        gas_price = (
+            self.gas_oracle.peek(t)
+            * Wad.from_number(10 ** -18)
+            * (weth_val / Wad(weth_clip.spotter.par))
+        )
+        expected_gas = Rad(gas_limit * gas_price)
+
+        expected_incentive = ilk_clip.tip + sale.tab * Rad(ilk_clip.chip)
+
+        profit = expected_incentive - expected_gas
+
+        return profit > threshold
+
+
+class BarkKeeper(IncentivizedKeeper):
+    """
+    dog = Dog
+    vat = Vat
+    gas_oracle = GasOracle
+    """
+
+    def __init__(self, vat, dai_join, ilks, uniswap, gas_oracle, dog):
+        self.dog = dog
+
+        super().__init__(vat, dai_join, ilks, uniswap, gas_oracle)
+
     def calculate_tab(self, ilk_id, urn_id):
         art = self.vat.urns[ilk_id][urn_id].art
         milk = self.dog.ilks[ilk_id]
@@ -177,39 +211,6 @@ class IncentivizedKeeper(ClipperKeeper):
         tab = due * Rad(milk.chop)
 
         return tab
-
-    def is_profitable(self, sale, ilk_id, t, threshold=Rad(0)):
-        clip = self.clippers[ilk_id]
-        pip = clip.spotter.ilks[ilk_id].pip
-
-        val = pip.peek(t)
-        gas_limit = Wad.from_number(300000)
-        # Gas price denominated in DAI/gas unit
-        gas_price = (
-            self.gas_oracle.peek(t)
-            * Wad.from_number(10 ** -9)
-            * (val / Wad(clip.spotter.par))
-        )
-        expected_gas = Rad(gas_limit * gas_price)
-
-        expected_incentive = clip.tip + sale.tab * Rad(clip.chip)
-
-        profit = expected_incentive - expected_gas
-
-        return profit > threshold
-
-
-class BarkKeeper(IncentivizedKeeper):
-    """
-    dog = Dog
-    vat = Vat
-    gas_oracle = GasOracle
-    """
-
-    def __init__(self, vat, dai_join, ilks, uniswap, gas_oracle, dog):
-        self.dog = dog
-
-        super().__init__(vat, dai_join, ilks, uniswap, gas_oracle)
 
     def generate_actions_for_timestep(self, t):
         # TODO: also include bid-placing actions

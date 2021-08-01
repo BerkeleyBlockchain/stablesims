@@ -32,11 +32,11 @@ class Uniswap:
         out_token = next(filter(lambda x: x != in_token, self.pairs[pair_id].keys()))
         in_reserve = Wad.from_number(float(self.pairs[pair_id][in_token]))
         out_reserve = Wad.from_number(float(self.pairs[pair_id][out_token]))
-        initial_rate = in_reserve / out_reserve
+        initial_rate = out_reserve / in_reserve
         k = in_reserve * out_reserve
-        new_in_reserve = in_reserve - in_amt
+        new_in_reserve = in_reserve + in_amt
         new_out_reserve = k / new_in_reserve
-        new_rate = new_in_reserve / new_out_reserve
+        new_rate = new_out_reserve / new_in_reserve
         return (
             Rad(out_reserve - new_out_reserve),
             (new_rate - initial_rate) / initial_rate,
