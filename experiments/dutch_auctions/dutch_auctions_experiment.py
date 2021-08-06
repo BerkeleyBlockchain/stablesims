@@ -1,6 +1,7 @@
 """ Extension of the experiment module using the Dutch Auction system.
 """
 
+import os
 from copy import deepcopy
 import matplotlib.pyplot as plt
 
@@ -28,9 +29,6 @@ class DutchAuctionsExperiment(Experiment):
         self.GasOracle = contracts["GasOracle"]
 
     def run(self):
-        import ipdb
-
-        ipdb.set_trace(context=6)
         # Initialize assets
         dai = self.Token("DAI")
         # mkr = self.Token("MKR")
@@ -156,4 +154,4 @@ class DutchAuctionsExperiment(Experiment):
             time_range, [stats["num_sales_taken"] for stats in historical_stats]
         )
         axs[3].plot(time_range, [stats["auction_debt"] for stats in historical_stats])
-        plt.show()
+        plt.savefig(f"figures/{os.getenv('sim')}.png")

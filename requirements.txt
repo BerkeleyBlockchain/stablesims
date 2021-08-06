@@ -1,0 +1,6 @@
+numpy > 1.19.0
+pandas > 1.0.5
+matplotlib > 3.3.0
+ipdb > 0.13.4
+requests > 2.25.1
+uuid > 1.3
