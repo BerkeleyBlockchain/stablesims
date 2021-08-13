@@ -3,6 +3,8 @@
     Dutch auction liquidation system.
 """
 
+from numpy import random
+
 from pydss.keeper import VaultKeeper
 from pydss.pymaker.numeric import Wad, Rad, Ray
 from experiments.dutch_auctions.clip import Sale
@@ -90,8 +92,7 @@ class NaiveClipperKeeper(ClipperBidder):
         weth_pip = weth_clip.spotter.ilks["WETH"].pip
 
         weth_val = weth_pip.peek(t)
-        # TODO: Pull from Gaussian
-        gas_limit = Wad.from_number(300000)
+        gas_limit = Wad.from_number(random.normal(300000, 30000))
         # Gas price denominated in DAI/gas unit
         gas_price = (
             self.gas_oracle.peek(t)
