@@ -154,4 +154,4 @@ class DutchAuctionsExperiment(Experiment):
             time_range, [stats["num_sales_taken"] for stats in historical_stats]
         )
         axs[3].plot(time_range, [stats["auction_debt"] for stats in historical_stats])
-        plt.savefig(f"/figures/{os.getenv('sim')}.png")
+        plt.savefig(f"/bab-stablesims/figures/{os.getenv('sim')}.png")

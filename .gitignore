@@ -4,3 +4,4 @@ stablesims-venv/
 .vscode/
 *.profraw
 .DS_Store
+figures/*
