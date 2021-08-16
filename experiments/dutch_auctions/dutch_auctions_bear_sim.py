@@ -3,7 +3,6 @@
 
 import random
 
-from experiments.dutch_auctions.dutch_auctions_experiment import DutchAuctionsExperiment
 from experiments.dutch_auctions.abaci import LinearDecrease
 from experiments.dutch_auctions.clip import Clipper
 from experiments.dutch_auctions.dog import Dog
@@ -27,7 +26,6 @@ from pydss.spot import Spotter, PipLike
 from pydss.gas_oracle import GasOracle
 from pydss.vat import Vat
 from pydss.vow import Vow
-from pydss.token import Token
 from pydss.uniswap import Uniswap
 from pydss.pymaker.numeric import Wad, Rad, Ray
 from pydss.keeper import NaiveVaultKeeper, SpotterKeeper
@@ -200,7 +198,3 @@ parameters = {
         }
     },
 }
-
-DutchAuctionsBear = DutchAuctionsExperiment(
-    contracts, keepers, sort_actions, ilk_ids, Token, stat_trackers, parameters
-)
