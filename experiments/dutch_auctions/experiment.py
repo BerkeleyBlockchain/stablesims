@@ -145,12 +145,9 @@ class DutchAuctionsExperiment(Experiment):
 
         _, axs = plt.subplots(4)
         time_range = list(range(self.parameters["timesteps"]))
-        axs[0].plot(
-            time_range, [stats["ilk_price"]["WETH"] for stats in historical_stats]
-        )
+        plt.title(f"Chip: {float(state['clippers']['WETH'].chip)}, Tip: {float(state['clippers']['WETH'].tip)}")
+        axs[0].plot(time_range, [stats["ilk_price"]["WETH"] for stats in historical_stats])
         axs[1].plot(time_range, [stats["num_new_barks"] for stats in historical_stats])
-        axs[2].plot(
-            time_range, [stats["num_sales_taken"] for stats in historical_stats]
-        )
-        axs[3].plot(time_range, [stats["auction_debt"] for stats in historical_stats])
+        axs[2].plot(time_range, [stats["num_unsafe_vaults"] for stats in historical_stats])
+        axs[3].plot(time_range, [stats["incentive_amount"] for stats in historical_stats])
         plt.savefig(f"/bab-stablesims/figures/{sim_name}.png")

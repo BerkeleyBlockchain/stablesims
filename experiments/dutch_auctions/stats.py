@@ -1,7 +1,7 @@
 """ Stats Module for Dutch Auctions experiments.
 """
 
-from pydss.pymaker.numeric import Rad
+from pydss.pymaker.numeric import Rad, Ray
 
 
 def num_new_barks():
@@ -45,9 +45,21 @@ def incentive_amount():
     return track_stat
 
 
+def num_unsafe_vaults(ilk_id):
+    def track_stat(state, action, results):
+        ilk = state["vat"].ilks[ilk_id]
+        if action["key"] == "T_END":
+            state["stats"]["num_unsafe_vaults"] = len([
+                1 for urn in state["vat"].urns[ilk_id].values()
+                if ilk.spot > Ray(0) and Rad(urn.ink * ilk.spot) < Rad(urn.art * ilk.rate)
+            ])
+
+    return track_stat
+
+
 def auction_debt():
     def track_stat(state, action, _results):
-        if action["key"] == "T_START":
+        if action["key"] == "T_END":
             state["stats"]["auction_debt"] = state["dog"].Dirt
 
     return track_stat

@@ -1,4 +1,4 @@
-""" Black Thursday experiment using Dutch Auctions.
+""" Experiment using Dutch Auctions.
 """
 
 import random
@@ -13,13 +13,11 @@ from experiments.dutch_auctions.dutch_auctions_keeper import (
 )
 from experiments.dutch_auctions.dutch_auctions_stats import (
     num_new_barks,
-    num_sales_taken,
+    num_unsafe_vaults,
     incentive_amount,
-    auction_debt,
 )
 from experiments.stats import (
     ilk_price,
-    # keeper_gem_balances
 )
 from pydss.join import DaiJoin, GemJoin
 from pydss.spot import Spotter, PipLike
@@ -55,10 +53,9 @@ keepers = {
 sort_actions = lambda _: random.random()
 ilk_ids = ["WETH"]
 stat_trackers = [
-    num_new_barks(),
-    num_sales_taken(),
     incentive_amount(),
-    auction_debt(),
+    num_new_barks(),
+    num_unsafe_vaults("WETH"),
     ilk_price("WETH"),
 ]
 parameters = {
@@ -168,11 +165,11 @@ parameters = {
     "Spotter": {
         "par": Ray(1000000000000000000000000000),
         "WETH": {
-            "pip": PipLike("price_feeds/eth_bear_10min.json"),
+            "pip": PipLike(""),
             "mat": Wad(1500000000000000000),
         },
     },
-    "GasOracle": {"price_feed_file": "price_feeds/gas/gas_bear_10min.json"},
+    "GasOracle": {"price_feed_file": ""},
     "timesteps": 144,
     "Vat": {
         "Line": Rad(1621230562029182607785180351895167282074137639278363742),
@@ -191,7 +188,7 @@ parameters = {
     "Uniswap": {
         "pairs": {
             "0xa478c2975ab1ea89e8196811f51a7b7ade33eb11": {
-                "path": "price_feeds/eth_dai_bear_liquidity_10m.json",
+                "path": "",
                 "token0": "DAI",
                 "token1": "WETH",
             }

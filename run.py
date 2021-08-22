@@ -8,8 +8,9 @@ from copy import deepcopy
 import numpy as np
 from pydss.pymaker.numeric import Wad, Rad
 from pydss.token import Token
+from pydss.spot import PipLike
 from experiments.dutch_auctions.dutch_auctions_experiment import DutchAuctionsExperiment
-from experiments.dutch_auctions.dutch_auctions_bear_sim import (
+from experiments.dutch_auctions.dutch_auctions_sim import (
     contracts,
     keepers,
     sort_actions,
@@ -17,15 +18,6 @@ from experiments.dutch_auctions.dutch_auctions_bear_sim import (
     stat_trackers,
     parameters,
 )
-
-if __name__ == "__main__":
-    sim_name = os.getenv("sim")
-
-    if not sim_name:
-        print("Please enter simulation name ")
-        sys.exit()
-
-    run(sim_name)
 
 
 def sweep(param_paths, init_parameters):
@@ -58,28 +50,31 @@ def sweep(param_paths, init_parameters):
     return param_objs
 
 
-def run(sim):
-    if sim == "DutchAuctionsBear":
-        paramObjs = sweep(
-            {
-                "Clipper.WETH.chip": [Wad.from_number(0.08), Wad.from_number(0.10),],
-                "Clipper.WETH.tip": [Rad.from_number(500), Rad.from_number(1000),],
-            },
-            parameters,
+if __name__ == "__main__":
+    def run():
+    paramObjs = sweep(
+        {
+            "Spotter.WETH.pip": [PipLike("price_feeds/eth_bear_10min.json")],
+            "GasOracle.price_feed_file": ["price_feeds/gas/gas_bear_10min.json"],
+            "Uniswap.pairs.0xa478c2975ab1ea89e8196811f51a7b7ade33eb11.path": ["price_feeds/eth_dai_bear_liquidity_10m.json"]
+            "Clipper.WETH.chip": [Wad.from_number(0)],
+            "Clipper.WETH.tip": [Rad.from_number(0)],
+        },
+        parameters,
+    )
+
+    DutchAuctionsSims = [
+        DutchAuctionsExperiment(
+            contracts,
+            keepers,
+            sort_actions,
+            ilk_ids,
+            Token,
+            stat_trackers,
+            paramObj,
         )
+        for paramObj in paramObjs
+    ]
 
-        DutchAuctionsBearSims = [
-            DutchAuctionsExperiment(
-                contracts,
-                keepers,
-                sort_actions,
-                ilk_ids,
-                Token,
-                stat_trackers,
-                paramObj,
-            )
-            for paramObj in paramObjs
-        ]
-
-        for i, DutchAuctionsBearSim in enumerate(DutchAuctionsBearSims):
-            DutchAuctionsBearSim.run(f"DutchAuctionsBear_{i}")
+    for i, DutchAuctionsSim in enumerate(DutchAuctionsSims):
+        DutchAuctionsSim.run(f"DutchAuctions_{i}")

@@ -220,7 +220,7 @@ class BarkKeeper(IncentivizedKeeper):
         for ilk_id in self.ilks:
             ilk = self.vat.ilks[ilk_id]
             for urn in self.vat.urns[ilk_id].values():
-                is_unsafe = Rad(urn.ink * ilk.spot) < Rad(urn.art * ilk.rate)
+                is_unsafe = ilk.spot > Ray(0) and Rad(urn.ink * ilk.spot) < Rad(urn.art * ilk.rate)
                 # call calculate_tab, create fake Sale object, pass into is_profitable
                 expected_tab = self.calculate_tab(ilk_id, urn.ADDRESS)
                 fake_sale = Sale(None, expected_tab, None, None, None, None, None,)
