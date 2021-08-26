@@ -159,7 +159,7 @@ def get_gas_price_day(start, end):
 
 
 if __name__ == "__main__":
-    file = os.getenv("filename")
+    filename = os.getenv("filename")
     start_timestamp = os.getenv("start")
     end_timestamp = os.getenv("end")
 
@@ -167,4 +167,4 @@ if __name__ == "__main__":
         print("Please enter filename or start/end timestamps")
         sys.exit()
     df_day = get_gas_price_day(start_timestamp, end_timestamp)
-    df_day.to_json(f"price_feeds/gas/{file}.json", orient="table", index=False)
+    df_day.to_json(f"feeds/gas/{file}.json", orient="table", index=False)
