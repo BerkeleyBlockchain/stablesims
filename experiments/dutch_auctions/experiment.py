@@ -150,4 +150,26 @@ class DutchAuctionsExperiment(Experiment):
         axs[1].plot(time_range, [stats["num_new_barks"] for stats in historical_stats])
         axs[2].plot(time_range, [stats["num_unsafe_vaults"] for stats in historical_stats])
         axs[3].plot(time_range, [stats["incentive_amount"] for stats in historical_stats])
-        plt.savefig(f"/bab-stablesims/figures/{sim_name}.png")
+        plt.savefig(f"/bab-stablesims/experiments/dutch_auctions/results/{sim_name}.png")
+        self.write(
+            f"/bab-stablesims/experiments/dutch_auctions/results/{sim_name}_state.json", state
+        )
+
+    def format_data(self, state, full_state=True):
+        data = state if full_state else state["stats"]
+        data = deepcopy(data)
+        for key, value in data.items():
+            if isinstance(value, (Ray, Rad, Wad)):
+                data[key] = float(data[value])
+            elif isinstance(value, dict):
+                data[key] = self.format_data(value)
+            elif hasattr(value, "__iter__"):
+                data[key] = list(map(self.format_data, value))
+
+        return data
+
+    def write(self, filename, data, t):
+        with open(filename, "a") as f:
+            f.write("==================\n")
+            f.write("Timestep: {}".format(t))
+            f.write(self.format_data(data) + "\n")

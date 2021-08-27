@@ -51,30 +51,39 @@ def sweep(param_paths, init_parameters):
 
 
 if __name__ == "__main__":
-    def run():
-    paramObjs = sweep(
-        {
-            "Spotter.WETH.pip": [PipLike("price_feeds/eth_bear_10min.json")],
-            "GasOracle.price_feed_file": ["price_feeds/gas/gas_bear_10min.json"],
-            "Uniswap.pairs.0xa478c2975ab1ea89e8196811f51a7b7ade33eb11.path": ["price_feeds/eth_dai_bear_liquidity_10m.json"]
-            "Clipper.WETH.chip": [Wad.from_number(0)],
-            "Clipper.WETH.tip": [Rad.from_number(0)],
-        },
-        parameters,
-    )
+    for timeframe in [
+            "01-11-2021",
+            "01-21-2021",
+            "02-22-2021",
+            "05-19-2021",
+            "06-21-2021",
+            "09-05-2020",
+    ]:
+        timeframe_params = deepcopy(parameters)
+        timeframe_params["Spotter"]["WETH"]["pip"] = PipLike(f"feeds/eth/{timeframe}.json")
+        timeframe_params["GasOracle"]["price_feed_file"] = f"feeds/gas/{timeframe}.json"
+        timeframe_params["Uniswap"]["pairs"]["0xa478c2975ab1ea89e8196811f51a7b7ade33eb11"]["path"] = f"feeds/eth_dai_liquidity/{timeframe}.json"
 
-    DutchAuctionsSims = [
-        DutchAuctionsExperiment(
-            contracts,
-            keepers,
-            sort_actions,
-            ilk_ids,
-            Token,
-            stat_trackers,
-            paramObj,
+        swept_params = sweep(
+            {
+                "Clipper.WETH.chip": [Wad.from_number(0.001), Wad.from_number(0.01), Wad.from_number(0.1)],
+                "Clipper.WETH.tip": [Rad.from_number(100), Rad.from_number(500), Rad.from_number(1000)],
+            },
+            timeframe_params,
         )
-        for paramObj in paramObjs
-    ]
 
-    for i, DutchAuctionsSim in enumerate(DutchAuctionsSims):
-        DutchAuctionsSim.run(f"DutchAuctions_{i}")
+        DutchAuctionsSims = [
+            DutchAuctionsExperiment(
+                contracts,
+                keepers,
+                sort_actions,
+                ilk_ids,
+                Token,
+                stat_trackers,
+                params,
+            )
+            for params in swept_params
+        ]
+
+        for i, DutchAuctionsSim in enumerate(DutchAuctionsSims):
+            DutchAuctionsSim.run(f"DutchAuctions_{timeframe}_{i}")
