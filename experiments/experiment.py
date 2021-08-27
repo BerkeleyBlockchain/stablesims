@@ -7,6 +7,7 @@ from copy import deepcopy
 import matplotlib.pyplot as plt
 from pydss.pymaker.numeric import Wad, Rad, Ray
 from pydss.util import RequireException
+import pandas as pd
 
 
 class Experiment:
@@ -207,8 +208,20 @@ class Experiment:
 
         return data
 
+    def format_stats(self, stats):
+        """
+        required format
+        {"Product":{"0":"Desktop Computer","1":"Tablet","2":"Printer","3":"Laptop"},"Price":{"0":700,"1":250,"2":100,"3":1200}}
+        """
+
     def write(self, filename, data, t):
+        # with open(filename, "a") as f:
+        #     f.write("==================\n")
+        #     f.write("Timestep: {}".format(t))
+        #     f.write(self.format_data(data) + "\n")
+
         with open(filename, "a") as f:
-            f.write("==================\n")
-            f.write("Timestep: {}".format(t))
-            f.write(self.format_data(data) + "\n")
+            f.write(self.format_stats(f"experiments/dutch_auctions/results/{filename}.json"))
+            df = pd.read_json(f"experiments/dutch_auctions/results/{filename}.json")
+            df.to_csv(f"experiments/dutch_auctions/results/{filename}.csv")
+
