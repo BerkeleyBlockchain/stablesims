@@ -3,15 +3,15 @@
 
 import random
 
-from experiments.dutch_auctions.abaci import LinearDecrease
-from experiments.dutch_auctions.clip import Clipper
-from experiments.dutch_auctions.dog import Dog
-from experiments.dutch_auctions.dutch_auctions_keeper import (
+from pydss.dutch_auctions.abaci import LinearDecrease
+from pydss.dutch_auctions.clip import Clipper
+from pydss.dutch_auctions.dog import Dog
+from pydss.dutch_auctions.keeper import (
     BarkKeeper,
     NaiveClipperKeeper,
     RedoKeeper,
 )
-from experiments.dutch_auctions.dutch_auctions_stats import (
+from experiments.dutch_auctions.stats import (
     num_new_barks,
     num_unsafe_vaults,
     incentive_amount,

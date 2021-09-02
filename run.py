@@ -1,5 +1,4 @@
 """ Run Simultions
-sim="[SIM_NAME]" python3 run.py
 """
 
 import os
@@ -9,8 +8,8 @@ import numpy as np
 from pydss.pymaker.numeric import Wad, Rad
 from pydss.token import Token
 from pydss.spot import PipLike
-from experiments.dutch_auctions.dutch_auctions_experiment import DutchAuctionsExperiment
-from experiments.dutch_auctions.dutch_auctions_sim import (
+from experiments.dutch_auctions.experiment import DutchAuctionsExperiment
+from experiments.dutch_auctions.sim import (
     contracts,
     keepers,
     sort_actions,

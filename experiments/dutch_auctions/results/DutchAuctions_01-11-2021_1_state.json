@@ -1,0 +1,288 @@
+==================
+Timestep: 0{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1232.55}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 1{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1237.5}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 2{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1231.56}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 3{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1230.08}, 'num_unsafe_vaults': 1}
+==================
+Timestep: 4{'incentive_amount': 1043.2558143006622, 'num_new_barks': 1, 'ilk_price': {'WETH': 1215.18}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 5{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1217.42}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 6{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1223.88}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 7{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1218.08}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 8{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1223.82}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 9{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1217.37}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 10{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1190.42}, 'num_unsafe_vaults': 1}
+==================
+Timestep: 11{'incentive_amount': 191.8506105372262, 'num_new_barks': 1, 'ilk_price': {'WETH': 1208.06}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 12{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1180.87}, 'num_unsafe_vaults': 2}
+==================
+Timestep: 13{'incentive_amount': 399.19402514944284, 'num_new_barks': 2, 'ilk_price': {'WETH': 1173.8}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 14{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1179.15}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 15{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1201.22}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 16{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1194.62}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 17{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1185.28}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 18{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1172.11}, 'num_unsafe_vaults': 1}
+==================
+Timestep: 19{'incentive_amount': 185.14441768063838, 'num_new_barks': 1, 'ilk_price': {'WETH': 1120.33}, 'num_unsafe_vaults': 4}
+==================
+Timestep: 20{'incentive_amount': 830.7355156354724, 'num_new_barks': 4, 'ilk_price': {'WETH': 1108.38}, 'num_unsafe_vaults': 1}
+==================
+Timestep: 21{'incentive_amount': 162.05793055929428, 'num_new_barks': 1, 'ilk_price': {'WETH': 1038.41}, 'num_unsafe_vaults': 6}
+==================
+Timestep: 22{'incentive_amount': 1306.0665316379914, 'num_new_barks': 3, 'ilk_price': {'WETH': 1096.25}, 'num_unsafe_vaults': 1}
+==================
+Timestep: 23{'incentive_amount': 179.42575120563737, 'num_new_barks': 1, 'ilk_price': {'WETH': 1101.49}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 24{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1124.4}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 25{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1114.11}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 26{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1068.27}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 27{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1104.13}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 28{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1107.54}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 29{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1112.85}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 30{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1123.07}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 31{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1122.75}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 32{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1119.72}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 33{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1109.26}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 34{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1088.63}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 35{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1092.25}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 36{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1073.9}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 37{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1068.36}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 38{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1081.21}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 39{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1070.58}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 40{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1010.0}, 'num_unsafe_vaults': 7}
+==================
+Timestep: 41{'incentive_amount': 1530.813319347766, 'num_new_barks': 6, 'ilk_price': {'WETH': 1017.9}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 42{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1035.4}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 43{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1021.15}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 44{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1049.71}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 45{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1069.79}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 46{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1069.93}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 47{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1071.07}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 48{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1088.99}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 49{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1098.82}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 50{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1094.01}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 51{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1102.21}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 52{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1119.62}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 53{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1107.04}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 54{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1088.83}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 55{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1098.49}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 56{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1108.7}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 57{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1101.24}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 58{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1105.94}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 59{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1133.33}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 60{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1141.42}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 61{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1135.02}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 62{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1120.47}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 63{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1115.06}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 64{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1121.32}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 65{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1111.21}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 66{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1100.64}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 67{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1081.41}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 68{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1086.02}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 69{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1095.6}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 70{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1084.11}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 71{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1065.41}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 72{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1054.83}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 73{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1066.03}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 74{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1096.69}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 75{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1092.49}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 76{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1087.52}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 77{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1071.04}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 78{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1074.43}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 79{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1055.82}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 80{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1048.26}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 81{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1039.64}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 82{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1057.75}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 83{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1020.82}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 84{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 983.41}, 'num_unsafe_vaults': 2}
+==================
+Timestep: 85{'incentive_amount': 349.0822052947691, 'num_new_barks': 2, 'ilk_price': {'WETH': 985.58}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 86{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1020.59}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 87{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1020.45}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 88{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1035.6}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 89{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1037.86}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 90{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1027.79}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 91{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1028.58}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 92{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1012.24}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 93{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1004.37}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 94{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 972.33}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 95{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 974.25}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 96{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 953.47}, 'num_unsafe_vaults': 1}
+==================
+Timestep: 97{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 931.11}, 'num_unsafe_vaults': 3}
+==================
+Timestep: 98{'incentive_amount': 792.0803728942434, 'num_new_barks': 1, 'ilk_price': {'WETH': 952.03}, 'num_unsafe_vaults': 1}
+==================
+Timestep: 99{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 915.77}, 'num_unsafe_vaults': 3}
+==================
+Timestep: 100{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 924.46}, 'num_unsafe_vaults': 3}
+==================
+Timestep: 101{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 959.76}, 'num_unsafe_vaults': 1}
+==================
+Timestep: 102{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 941.91}, 'num_unsafe_vaults': 1}
+==================
+Timestep: 103{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 963.97}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 104{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 983.78}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 105{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1016.81}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 106{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 990.09}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 107{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 997.2}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 108{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 985.14}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 109{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 995.88}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 110{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1014.21}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 111{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1014.75}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 112{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1010.87}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 113{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 993.47}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 114{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 992.7}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 115{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 970.18}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 116{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 953.84}, 'num_unsafe_vaults': 1}
+==================
+Timestep: 117{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 969.98}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 118{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 988.06}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 119{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 984.73}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 120{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 959.0}, 'num_unsafe_vaults': 1}
+==================
+Timestep: 121{'incentive_amount': 151.89235212229107, 'num_new_barks': 1, 'ilk_price': {'WETH': 977.64}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 122{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 975.11}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 123{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 978.0}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 124{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1010.1}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 125{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1019.21}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 126{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1009.56}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 127{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1029.77}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 128{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1042.04}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 129{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1033.99}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 130{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1029.38}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 131{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1031.25}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 132{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1038.24}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 133{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1064.8}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 134{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1065.89}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 135{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1059.67}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 136{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1057.53}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 137{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1059.66}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 138{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1066.64}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 139{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1088.53}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 140{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1082.96}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 141{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1071.99}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 142{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1088.74}, 'num_unsafe_vaults': 0}
+==================
+Timestep: 143{'incentive_amount': 0.0, 'num_new_barks': 0, 'ilk_price': {'WETH': 1089.01}, 'num_unsafe_vaults': 0}

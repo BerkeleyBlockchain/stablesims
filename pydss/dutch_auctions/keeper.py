@@ -7,7 +7,7 @@ from numpy import random
 
 from pydss.keeper import VaultKeeper
 from pydss.pymaker.numeric import Wad, Rad, Ray
-from experiments.dutch_auctions.clip import Sale
+from pydss.dutch_auctions.clip import Sale
 
 
 class ClipperKeeper(VaultKeeper):

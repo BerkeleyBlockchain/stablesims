@@ -7,23 +7,25 @@ import os
 import json
 
 def fetch_block_numbers_for_timestamps(from_timestamp, to_timestamp):
-    query = f"""
-    {{
-        blocks(
-            orderBy: timestamp,
-            orderDirection: asc,
-            where: {{timestamp_gte: {from_timestamp}, timestamp_lt: {to_timestamp}}})
+    block_numbers = []
+    for timestamp in range(from_timestamp, to_timestamp, 600):
+        query = f"""
         {{
-            number
-        }}
-    }}"""
+            blocks(
+                orderBy: timestamp,
+                orderDirection: asc,
+                where: {{timestamp_gte: {timestamp}, timestamp_lt: {timestamp + 600}}})
+            {{
+                number
+            }}
+        }}"""
+        blocks = requests.post(
+            "https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks",
+            json={"query": query}
+        ).json()["data"]["blocks"]
+        block_numbers.append(int(blocks[0]["number"]))
 
-    blocks = requests.post(
-        "https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks",
-        json={"query": query}
-    ).json()["data"]["blocks"]
-
-    return [int(block["number"]) for block in blocks]
+    return block_numbers
 
 def fetch_liquidity_for_block_numbers(block_numbers):
     pairs = []
@@ -58,8 +60,8 @@ def fetch_liquidity_for_block_numbers(block_numbers):
 
 if __name__ == "__main__":
     filename = os.getenv("filename")
-    from_timestamp = os.getenv("from")
-    to_timestamp = os.getenv("to")
+    from_timestamp = int(os.getenv("from"))
+    to_timestamp = int(os.getenv("to"))
 
     if not (filename or from_timestamp or to_timestamp):
         print("Please enter filename or from/to timestamps")

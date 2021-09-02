@@ -12,6 +12,30 @@
     "trades_count": 90
   },
   {
+    "time_period_start": "2020-09-05T00:20:00.0000000Z",
+    "time_period_end": "2020-09-05T00:30:00.0000000Z",
+    "time_open": "2020-09-05T00:28:12.7674230Z",
+    "time_close": "2020-09-05T00:29:59.0236940Z",
+    "price_open": 388.570000000,
+    "price_high": 389.650000000,
+    "price_low": 388.570000000,
+    "price_close": 389.650000000,
+    "volume_traded": 129.210258010,
+    "trades_count": 90
+  },
+  {
+    "time_period_start": "2020-09-05T00:20:00.0000000Z",
+    "time_period_end": "2020-09-05T00:30:00.0000000Z",
+    "time_open": "2020-09-05T00:28:12.7674230Z",
+    "time_close": "2020-09-05T00:29:59.0236940Z",
+    "price_open": 388.570000000,
+    "price_high": 389.650000000,
+    "price_low": 388.570000000,
+    "price_close": 389.650000000,
+    "volume_traded": 129.210258010,
+    "trades_count": 90
+  },
+  {
     "time_period_start": "2020-09-05T00:30:00.0000000Z",
     "time_period_end": "2020-09-05T00:40:00.0000000Z",
     "time_open": "2020-09-05T00:30:00.0597580Z",
