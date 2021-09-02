@@ -1,6 +1,7 @@
 """ Extension of the experiment module using the Dutch Auction system.
 """
 
+import csv
 from copy import deepcopy
 import matplotlib.pyplot as plt
 
@@ -28,7 +29,7 @@ class DutchAuctionsExperiment(Experiment):
         self.Uniswap = contracts["Uniswap"]
         self.GasOracle = contracts["GasOracle"]
 
-    def run(self, sim_name):
+    def run(self, sim_name, filename, fieldnames):
         # Initialize assets
         dai = self.Token("DAI")
         # mkr = self.Token("MKR")
@@ -156,6 +157,20 @@ class DutchAuctionsExperiment(Experiment):
         axs[2].plot(time_range, [stats["num_unsafe_vaults"] for stats in historical_stats])
         axs[3].plot(time_range, [stats["incentive_amount"] for stats in historical_stats])
         plt.savefig(f"/bab-stablesims/experiments/dutch_auctions/results/{sim_name}.png")
+        # self.write(
+        #     f"/bab-stablesims/experiments/dutch_auctions/results/{sim_name}_state.json", state
+        # )
+        self.write_csv(fieldnames, filename, sim_name, state["stats"])
+
+    def write_csv(self, fieldnames, filename, sim_name, data):
+        """ Write stats to one csv with the name field indicating which sim was run
+        """
+        with open(filename, mode="a") as csv_file:
+            writer = csv.DicWriter(csv_file, fieldnames=fieldnames)
+
+            data["name"] = sim_name
+
+            writer.writerow(data)
 
     def format_data(self, state, full_state=True):
         data = state if full_state else state["stats"]
