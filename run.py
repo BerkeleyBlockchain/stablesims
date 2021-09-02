@@ -2,6 +2,7 @@
 sim="[SIM_NAME]" python3 run.py
 """
 
+import csv
 import os
 import sys
 from copy import deepcopy
@@ -85,5 +86,11 @@ if __name__ == "__main__":
             for params in swept_params
         ]
 
+        csv_filename = 'run1.csv'
+        fieldnames = ['name', 'num_new_barks', 'num_sales_taken', 'incentive_amount', 'num_unsafe_vaults', 'auction_debt']
+        with open('csv_filename', mode='w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            writer.writeheader()
+
         for i, DutchAuctionsSim in enumerate(DutchAuctionsSims):
-            DutchAuctionsSim.run(f"DutchAuctions_{timeframe}_{i}")
+            DutchAuctionsSim.run(f"DutchAuctions_{timeframe}_{i}", filename=filename, fieldnames=fieldnames)
