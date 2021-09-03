@@ -166,11 +166,14 @@ class DutchAuctionsExperiment(Experiment):
         """ Write stats to one csv with the name field indicating which sim was run
         """
         with open(filename, mode="a") as csv_file:
-            writer = csv.DicWriter(csv_file, fieldnames=fieldnames)
-
-            data["name"] = sim_name
-
-            writer.writerow(data)
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            stats = {}
+            for key in data.keys():
+                if key in fieldnames:
+                    stats[key] = data[key]
+            stats["name"] = sim_name
+            print(data)
+            writer.writerow(stats)
 
     def format_data(self, state, full_state=True):
         data = state if full_state else state["stats"]

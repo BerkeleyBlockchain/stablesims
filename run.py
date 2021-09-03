@@ -85,9 +85,9 @@ if __name__ == "__main__":
             for params in swept_params
         ]
 
-        csv_filename = '/bab-stablesims/experiments/dutch_auctions/results/run_1.csv'
+        filename = '/bab-stablesims/experiments/dutch_auctions/results/run_1.csv'
         fieldnames = ['name', 'num_new_barks', 'num_sales_taken', 'incentive_amount', 'num_unsafe_vaults', 'auction_debt']
-        with open('csv_filename', mode='w') as csv_file:
+        with open(filename, mode='w') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
 
