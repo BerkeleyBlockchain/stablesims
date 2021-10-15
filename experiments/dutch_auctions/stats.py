@@ -63,3 +63,30 @@ def auction_debt():
             state["stats"]["auction_debt"] = state["dog"].Dirt
 
     return track_stat
+
+
+def avg_time_to_liquidation(ilk_id):
+    unsafe_ts = {}
+    liquidation_times = {}
+
+    def is_unsafe(urn, ilk):
+        return ilk.spot > Ray(0) and Rad(urn.ink * ilk.spot) < Rad(urn.art * ilk.rate)
+        
+    def track_stat(state, action, _results):
+        if action["key"] == "T_END":
+            ilk = state["vat"].ilks[ilk_id]
+
+            for urn_address, urn in state["vat"].urns[ilk_id].items():
+                if is_unsafe(urn, ilk) and urn_address not in unsafe_ts:
+                    unsafe_ts[urn_address] = state["t"]
+                elif urn_address in unsafe_ts and urn_address not in liquidation_times and not is_unsafe(urn, ilk):
+                    del unsafe_ts[urn_address]
+
+        if action["key"] == "BARK":
+            urn_address = action["args"][1]
+            liquidation_time = state["t"] - unsafe_ts[urn_address]
+            liquidation_times[urn_address] = liquidation_time
+
+            state["stats"]["avg_time_to_liquidation"] = sum(liquidation_times.values()) / len(liquidation_times)
+
+    return track_stat

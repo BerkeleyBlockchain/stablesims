@@ -15,9 +15,13 @@ from experiments.dutch_auctions.stats import (
     num_new_barks,
     num_unsafe_vaults,
     incentive_amount,
+    num_sales_taken,
+    auction_debt,
+    avg_time_to_liquidation,
 )
 from experiments.stats import (
     ilk_price,
+    gas_price_gwei,
 )
 from pydss.join import DaiJoin, GemJoin
 from pydss.spot import Spotter, PipLike
@@ -56,7 +60,11 @@ stat_trackers = [
     incentive_amount(),
     num_new_barks(),
     num_unsafe_vaults("WETH"),
+    num_sales_taken(),
+    auction_debt(),
     ilk_price("WETH"),
+    gas_price_gwei(),
+    avg_time_to_liquidation("WETH"),
 ]
 parameters = {
     "Abacus": {"tau": 72},

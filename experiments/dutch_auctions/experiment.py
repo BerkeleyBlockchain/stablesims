@@ -93,6 +93,7 @@ class DutchAuctionsExperiment(Experiment):
 
         # Initialize state
         state = {
+            "t": 0,
             "calc": calc,
             "clippers": clippers,
             "dai": dai,
@@ -124,6 +125,7 @@ class DutchAuctionsExperiment(Experiment):
         # Run simulation
         historical_stats = []
         for t in range(self.parameters["timesteps"]):
+            state["t"] = t
             for track_stat in self.stat_trackers:
                 track_stat(state, {"key": "T_START"}, [])
 
@@ -144,52 +146,44 @@ class DutchAuctionsExperiment(Experiment):
                 track_stat(state, {"key": "T_END"}, [])
 
             historical_stats.append(deepcopy(state["stats"]))
+            self.write_csv(fieldnames, filename, state["stats"])
 
-            self.write(
-                f"/bab-stablesims/experiments/dutch_auctions/results/{sim_name}_state.json", state, t
-            )
-
-        _, axs = plt.subplots(4)
         time_range = list(range(self.parameters["timesteps"]))
-        plt.title(f"Chip: {float(state['clippers']['WETH'].chip)}, Tip: {float(state['clippers']['WETH'].tip)}")
-        axs[0].plot(time_range, [stats["ilk_price"]["WETH"] for stats in historical_stats])
-        axs[1].plot(time_range, [stats["num_new_barks"] for stats in historical_stats])
-        axs[2].plot(time_range, [stats["num_unsafe_vaults"] for stats in historical_stats])
-        axs[3].plot(time_range, [stats["incentive_amount"] for stats in historical_stats])
+        fig = plt.figure(figsize=(6,6))
+        axs = fig.subplots(5)
+        fig.suptitle(f"Timeframe: {sim_name.split('_')[1]}, Chip: {float(state['clippers']['WETH'].chip)}, Tip: {float(state['clippers']['WETH'].tip)}")
+        fig.tight_layout(pad=2, h_pad=2)
+        axs[0].plot(time_range, [stats["WETH_price"] for stats in historical_stats])
+        axs[0].title.set_text("ETH price ($)")
+        axs[1].plot(time_range, [stats["gas_price_gwei"] for stats in historical_stats])
+        axs[1].title.set_text("Gas price (Gwei)")
+        axs[2].plot(time_range, [stats["num_new_barks"] for stats in historical_stats])
+        axs[2].title.set_text("Number of liquidations")
+        axs[3].plot(time_range, [stats["num_unsafe_vaults"] for stats in historical_stats])
+        axs[3].title.set_text("Number of unsafe vaults")
+        axs[4].plot(time_range, [stats["incentive_amount"] for stats in historical_stats])
+        axs[4].title.set_text("Incentive amount paid ($)")
         plt.savefig(f"/bab-stablesims/experiments/dutch_auctions/results/{sim_name}.png")
-        # self.write(
-        #     f"/bab-stablesims/experiments/dutch_auctions/results/{sim_name}_state.json", state
-        # )
-        self.write_csv(fieldnames, filename, sim_name, state["stats"])
 
-    def write_csv(self, fieldnames, filename, sim_name, data):
+    def write_csv(self, fieldnames, filename, data):
         """ Write stats to one csv with the name field indicating which sim was run
         """
         with open(filename, mode="a") as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-            stats = {}
-            for key in data.keys():
-                if key in fieldnames:
-                    stats[key] = data[key]
-            stats["name"] = sim_name
+            stats = self.format_data(data, fieldnames)
             print(data)
             writer.writerow(stats)
 
-    def format_data(self, state, full_state=True):
+    def format_data(self, state, fieldnames, full_state=True):
         data = state if full_state else state["stats"]
         data = deepcopy(data)
         for key, value in data.items():
-            if isinstance(value, (Ray, Rad, Wad)):
-                data[key] = float(value)
-            elif isinstance(value, dict):
-                data[key] = self.format_data(value)
-            elif hasattr(value, "__iter__"):
-                data[key] = list(map(self.format_data, value))
+            if key in fieldnames:
+                if isinstance(value, (Ray, Rad, Wad)):
+                    data[key] = float(value)
+                elif isinstance(value, dict):
+                    data[key] = self.format_data(value)
+                elif hasattr(value, "__iter__"):
+                    data[key] = list(map(self.format_data, value))
 
         return data
-
-    def write(self, filename, data, t):
-        with open(filename, "a") as f:
-            f.write("==================\n")
-            f.write("Timestep: {}".format(t))
-            f.write(str(self.format_data(data, False)) + "\n")

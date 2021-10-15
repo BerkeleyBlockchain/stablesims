@@ -12,15 +12,27 @@
     in response to a specific action you were listening for.
 """
 
+from pydss.pymaker.numeric import Wad
+
 
 def ilk_price(ilk_id):
     def track_stat(state, action, _results):
         # TODO: Constantize the action keys somewhere
         if action["key"] == "POKE":
-            if not state["stats"].get("ilk_price"):
-                state["stats"]["ilk_price"] = {}
-            state["stats"]["ilk_price"][ilk_id] = float(
+            # if not state["stats"].get(f"{ilk_id}_price"):
+            #     state["stats"][f"{ilk_id}_price"] = 0
+            state["stats"][f"{ilk_id}_price"] = float(
                 state["vat"].ilks[ilk_id].spot * state["spotter"].ilks[ilk_id].mat
+            )
+
+    return track_stat
+
+
+def gas_price_gwei():
+    def track_stat(state, action, _results):
+        if action["key"] == "T_START":
+            state["stats"]["gas_price_gwei"] = float(
+                state["gas_oracle"].peek(state["t"]) * Wad.from_number(10 ** -9)
             )
 
     return track_stat
