@@ -4,6 +4,7 @@
 import csv
 import os
 import sys
+import uuid
 from copy import deepcopy
 import numpy as np
 from pydss.pymaker.numeric import Wad, Rad
@@ -90,7 +91,7 @@ if __name__ == "__main__":
         fieldnames = ['WETH_price', 'gas_price_gwei', 'num_new_barks', 'num_sales_taken', 'incentive_amount', 'num_unsafe_vaults', 'auction_debt', 'avg_time_to_liquidation']
 
         for i, DutchAuctionsSim in enumerate(DutchAuctionsSims):
-            sim_name = f"DutchAuctions_{timeframe}_{i}_{}"
+            sim_name = f"DutchAuctions_{timeframe}_{i}_{uuid.uuid4()}"
             filename = f"/bab-stablesims/experiments/dutch_auctions/results/05-19-2021/{sim_name}.csv"
             with open(filename, mode='w') as csv_file:
                 writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
