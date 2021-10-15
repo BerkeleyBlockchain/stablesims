@@ -52,12 +52,12 @@ def sweep(param_paths, init_parameters):
 
 if __name__ == "__main__":
     for timeframe in [
-            "01-11-2021",
-            "01-21-2021",
-            "02-22-2021",
+            # "01-11-2021",
+            # "01-21-2021",
+            # "02-22-2021",
             "05-19-2021",
-            "06-21-2021",
-            "09-05-2020",
+            # "06-21-2021",
+            # "09-05-2020",
     ]:
         timeframe_params = deepcopy(parameters)
         timeframe_params["Spotter"]["WETH"]["pip"] = PipLike(f"feeds/eth/{timeframe}.json")
@@ -66,8 +66,10 @@ if __name__ == "__main__":
 
         swept_params = sweep(
             {
-                "Clipper.WETH.chip": [Wad.from_number(0.001), Wad.from_number(0.01), Wad.from_number(0.1)],
-                "Clipper.WETH.tip": [Rad.from_number(100), Rad.from_number(500), Rad.from_number(1000)],
+                # "Clipper.WETH.chip": [Wad.from_number(0.001), Wad.from_number(0.01), Wad.from_number(0.1)],
+                # "Clipper.WETH.tip": [Rad.from_number(100), Rad.from_number(500), Rad.from_number(1000)],
+                "Clipper.WETH.chip": [Wad.from_number(0.001)],
+                "Clipper.WETH.tip": [Rad.from_number(100)],
             },
             timeframe_params,
         )
@@ -88,8 +90,8 @@ if __name__ == "__main__":
         fieldnames = ['WETH_price', 'gas_price_gwei', 'num_new_barks', 'num_sales_taken', 'incentive_amount', 'num_unsafe_vaults', 'auction_debt', 'avg_time_to_liquidation']
 
         for i, DutchAuctionsSim in enumerate(DutchAuctionsSims):
-            sim_name = f"DutchAuctions_{timeframe}_{i}"
-            filename = f"/bab-stablesims/experiments/dutch_auctions/results/{sim_name}.csv"
+            sim_name = f"DutchAuctions_{timeframe}_{i}_{}"
+            filename = f"/bab-stablesims/experiments/dutch_auctions/results/05-19-2021/{sim_name}.csv"
             with open(filename, mode='w') as csv_file:
                 writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
                 writer.writeheader()

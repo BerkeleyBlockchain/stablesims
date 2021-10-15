@@ -163,7 +163,7 @@ class DutchAuctionsExperiment(Experiment):
         axs[3].title.set_text("Number of unsafe vaults")
         axs[4].plot(time_range, [stats["incentive_amount"] for stats in historical_stats])
         axs[4].title.set_text("Incentive amount paid ($)")
-        plt.savefig(f"/bab-stablesims/experiments/dutch_auctions/results/{sim_name}.png")
+        plt.savefig(f"/bab-stablesims/experiments/dutch_auctions/results/05-19-2021/{sim_name}.png")
 
     def write_csv(self, fieldnames, filename, data):
         """ Write stats to one csv with the name field indicating which sim was run
