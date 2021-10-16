@@ -70,7 +70,7 @@ if __name__ == "__main__":
                 # "Clipper.WETH.chip": [Wad.from_number(0.001), Wad.from_number(0.01), Wad.from_number(0.1)],
                 # "Clipper.WETH.tip": [Rad.from_number(100), Rad.from_number(500), Rad.from_number(1000)],
                 "Clipper.WETH.chip": [Wad.from_number(0.001)],
-                "Clipper.WETH.tip": [Rad.from_number(100)],
+                "Clipper.WETH.tip": [Rad.from_number(1000)],
             },
             timeframe_params,
         )
