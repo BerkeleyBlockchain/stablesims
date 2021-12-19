@@ -14,7 +14,7 @@ On March 12th, 2020, the price of ETH crashed from ~$194 to ~$110 in response to
 
 As the markets churned, Ethereum saw an incredibly high rate of transactions (amplified by dummy transactions meant to clog the mempool), spiking gas prices & network congestion.
 
-The drop in ETH price meant that vaults (CDPs) in the Maker Protocol would go undercollateralized, but network congestion meant that Maker's price oracles would delay in updating in-system price. Why does this matter?
+The drop in ETH price meant that vaults (CDPs) in the Maker Protocol would go undercollateralized, but network congestion meant that Maker's price oracles would delay updating in-system price. Why does this matter?
 
 Keepers knew ahead of time that liquidations would trigger, and had a chance to stock up on DAI for bids in the triggered collateral auctions. The resulting lack of DAI liquidity prevented Keepers from recycling their profits & participating in many auctions.
 
@@ -28,7 +28,7 @@ Sources:
 
 ### Our Response
 
-When we heard about what happened, our first thought, like many others', was, "what could Maker have done differently?" We started toying around with some ideas for defenses, and the more we did so, the more we wanted to test what we had come up with. However, there didn't exist a reasonable way to do this. Working on a local testchain with the Maker Protocol would introduce far too much unnecessary complexity, and would run far too slow for us to get much done.
+When we heard about what happened, our first thought, like many others, was, "what could Maker have done differently?" We started toying around with some ideas for defenses, and the more we did so, the more we wanted to test what we had come up with. However, there didn't exist a reasonable way to do this. Working on a local testchain with the Maker Protocol would introduce far too much unnecessary complexity, and would run far too slow for us to get much done.
 
 Thus, the idea for StableSims was born: create an off-chain simulation of the Maker Protocol for rapid experimentation.
 
